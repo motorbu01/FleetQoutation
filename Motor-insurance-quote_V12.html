@@ -201,14 +201,6 @@
                     คำแนะนำการออกงาน
                 </button>
 
-                <span class="hidden sm:inline text-slate-300">|</span>
-
-                <button type="button" onclick="openLogConfigModal()" title="ตั้งค่า Log Google Sheet" class="inline-flex items-center gap-2 bg-slate-50 hover:bg-slate-100 text-slate-500 hover:text-slate-700 font-medium py-2 px-3 rounded-xl text-sm transition-all border border-slate-200 shadow-sm">
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path><circle cx="12" cy="12" r="3"></circle></svg>
-                    <span class="hidden md:inline">ตั้งค่า Log</span>
-                </button>
-
-                <span class="hidden sm:inline text-slate-300">|</span>
 
                 <button type="button" onclick="toggleDarkMode()" id="darkModeToggleBtn" title="สลับโหมดมืด/สว่าง" class="inline-flex items-center gap-2 bg-slate-50 hover:bg-slate-100 text-slate-500 hover:text-slate-700 font-medium py-2 px-3 rounded-xl text-sm transition-all border border-slate-200 shadow-sm">
                     <svg id="darkModeIconMoon" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"></path></svg>
@@ -235,7 +227,23 @@
                         </div>
                         <span class="text-xs text-rose-500 font-medium">* จำเป็นต้องกรอกข้อมูล</span>
                     </div>
-                    
+
+                    <!-- Revise: กรอกเลขคิวเดิมเพื่อแก้ไข -->
+                    <div class="mb-5 p-4 bg-amber-50 border border-amber-200 rounded-xl">
+                        <p class="text-xs font-semibold text-amber-700 uppercase tracking-wide mb-2">🔄 Revise ใบเสนอราคาเดิม (ไม่บังคับ)</p>
+                        <div class="flex gap-2">
+                            <input type="text" id="reviseQuoteInput"
+                                class="flex-1 rounded-xl border border-amber-300 bg-white px-3 py-2 text-sm text-slate-800 focus:border-amber-500 focus:ring-2 focus:ring-amber-200 focus:outline-none transition-all"
+                                placeholder="เช่น motorfleetquot_no_202608250001">
+                            <button type="button" onclick="loadRevise()"
+                                class="shrink-0 flex items-center gap-1.5 bg-amber-500 hover:bg-amber-600 text-white text-sm font-medium px-4 py-2 rounded-xl transition-all">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
+                                โหลดข้อมูล
+                            </button>
+                        </div>
+                        <p id="reviseStatus" class="hidden text-xs mt-2"></p>
+                    </div>
+
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
                         <div>
                             <label class="block text-xs font-semibold text-slate-700 uppercase tracking-wide mb-1.5">ชื่อผู้เอาประกัน / หน่วยงาน <span class="text-rose-500">*</span></label>
@@ -252,6 +260,15 @@
                         <div>
                             <label class="block text-xs font-semibold text-slate-700 uppercase tracking-wide mb-1.5">ฝ่าย / สาขาที่ออกงาน <span class="text-rose-500">*</span></label>
                             <input type="text" id="issuerBranch" class="block w-full rounded-xl border border-slate-300 bg-white px-4 py-2.5 text-sm text-slate-800 shadow-sm focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 focus:outline-none transition-all" placeholder="เช่น ฝ่ายกิจการสาขา สาขาพระราม 2" required>
+                        </div>
+                    </div>
+
+                    <!-- เลขคิวใบเสนอราคา — แสดงหลัง export -->
+                    <div class="quote-no-box hidden mt-5 flex items-center gap-3 bg-indigo-50 border border-indigo-200 rounded-xl px-4 py-3">
+                        <svg class="w-5 h-5 text-indigo-500 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+                        <div>
+                            <p class="text-xs text-indigo-500 font-medium uppercase tracking-wide">เลขที่ใบเสนอราคา</p>
+                            <p id="quoteNoDisplay" class="text-sm font-bold text-indigo-700 mt-0.5">-</p>
                         </div>
                     </div>
                 </div>
@@ -651,6 +668,11 @@
                     <div>
                         <h2 class="text-xl font-bold text-slate-800">ใบเสนอราคาประกันภัยรถยนต์กลุ่ม</h2>
                         <p class="text-sm text-slate-500 mt-1">ผู้เอาประกัน: <span id="summaryClientName" class="font-semibold text-slate-700">-</span></p>
+                        <!-- เลขคิว summary view -->
+                        <p id="summaryQuoteNoRow" class="hidden text-sm mt-1.5 flex items-center gap-1.5">
+                            <span class="text-slate-400">เลขที่ใบเสนอราคา:</span>
+                            <span id="summaryQuoteNo" class="font-bold text-indigo-600">-</span>
+                        </p>
                     </div>
                     <div class="text-right text-xs text-slate-400">
                         <p>วันที่ออกงาน: <span id="summaryDateTime">-</span></p>
@@ -694,10 +716,16 @@
 
                 <!-- ปุ่มควบคุมในหน้าสรุป -->
                 <div class="flex flex-col sm:flex-row items-center justify-between gap-4 pt-4 border-t border-slate-100">
-                    <button type="button" onclick="backToForm()" class="w-full sm:w-auto flex items-center justify-center gap-2 bg-white border border-slate-300 hover:border-slate-400 hover:bg-slate-50 text-slate-700 font-medium py-3 px-6 rounded-xl transition-all shadow-sm">
-                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
-                        กลับไปแก้ไขข้อมูล
-                    </button>
+                    <div class="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
+                        <button type="button" onclick="backToForm()" class="w-full sm:w-auto flex items-center justify-center gap-2 bg-white border border-slate-300 hover:border-slate-400 hover:bg-slate-50 text-slate-700 font-medium py-3 px-6 rounded-xl transition-all shadow-sm">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
+                            กลับไปแก้ไขข้อมูล
+                        </button>
+                        <button type="button" onclick="startNewQuote()" class="w-full sm:w-auto flex items-center justify-center gap-2 bg-white border border-rose-300 hover:border-rose-400 hover:bg-rose-50 text-rose-600 font-medium py-3 px-6 rounded-xl transition-all shadow-sm">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
+                            เริ่มใบใหม่
+                        </button>
+                    </div>
 
                     <!-- ปุ่ม Export แบบเลือกรูปแบบ (Excel หรือ PDF) แทนที่ปุ่ม พิมพ์/PDF เดิม -->
                     <div class="relative w-full sm:w-auto" id="exportMenuWrapper">
@@ -707,14 +735,14 @@
                         </button>
 
                         <div id="exportMenu" class="hidden absolute right-0 bottom-full mb-2 w-64 bg-white border border-slate-200 rounded-xl shadow-[0_8px_30px_rgb(0,0,0,0.12)] overflow-hidden z-30">
-                            <button type="button" onclick="closeExportMenu(); exportQuoteToExcel();" class="w-full flex items-center gap-3 px-4 py-3 text-left text-sm text-slate-700 hover:bg-slate-50 transition-colors">
+                            <button type="button" onclick="closeExportMenu(); runWithQueue(exportQuoteToExcel);" class="w-full flex items-center gap-3 px-4 py-3 text-left text-sm text-slate-700 hover:bg-slate-50 transition-colors">
                                 <svg class="w-5 h-5 text-emerald-600 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-6h6v6M9 3v4a1 1 0 001 1h4a1 1 0 001-1V3M5 21h14a2 2 0 002-2V7l-4-4H7a2 2 0 00-2 2v14a2 2 0 002 2z"></path></svg>
                                 <div>
                                     <p class="font-medium">Export to Excel</p>
                                     <p class="text-xs text-slate-400">ไฟล์ .xlsx สำหรับงานกลุ่ม (Fleet)</p>
                                 </div>
                             </button>
-                            <button type="button" onclick="closeExportMenu(); exportCalculationDetailToExcel();" class="w-full flex items-center gap-3 px-4 py-3 text-left text-sm text-slate-700 hover:bg-slate-50 transition-colors border-t border-slate-100">
+                            <button type="button" onclick="closeExportMenu(); runWithQueue(exportCalculationDetailToExcel);" class="w-full flex items-center gap-3 px-4 py-3 text-left text-sm text-slate-700 hover:bg-slate-50 transition-colors border-t border-slate-100">
                                 <svg class="w-5 h-5 text-indigo-600 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
                                 <div>
                                     <p class="font-medium">ขอรายละเอียดไฟล์คำนวณ</p>
@@ -724,7 +752,6 @@
                         </div>
                     </div>
                 </div>
-
             </div>
         </div>
 
@@ -872,6 +899,41 @@
         // ปัดเศษทศนิยมทิ้ง (floor) เป็นจำนวนเต็ม .00 — ใช้ตามขั้นตอนที่กำหนด
         function floorToInt(n) {
             return Math.floor(n);
+        }
+
+        // ============ getPackageId (lookup Package ID ตาม code/cls/repair/weight) ============
+        function getPackageId(code, cls, repair, seat, weight, accessory) {
+            const w = parseFloat(weight) || 0;
+            if (cls === '1') {
+                switch (code) {
+                    case '110': return repair === 'ซ่อมห้าง' ? 462 : 457;
+                    case '120': return repair === 'ซ่อมห้าง' ? 466 : 467;
+                    case '210': return 10;
+                    case '220': return 14;
+                    case '320': return w <= 3000 ? 468 : 718;
+                    case '327': return 750;
+                    case '340': return 754;
+                    case '347': return 755;
+                    case '420': return 719;
+                    case '520': return 720;
+                    case '540': return 139;
+                }
+            } else if (cls === '3') {
+                switch (code) {
+                    case '110': return 457;
+                    case '120': return 466;
+                    case '210': return 10;
+                    case '220': return 14;
+                    case '320': return w <= 3000 ? 468 : 718;
+                    case '327': return 750;
+                    case '340': return 751;
+                    case '347': return 752;
+                    case '420': return 719;
+                    case '520': return 720;
+                    case '540': return 139;
+                }
+            }
+            return null;
         }
 
         // ================================================================
@@ -1422,12 +1484,16 @@
 
             const [rBrand, rModel, rSpec, rVoluntary, rCaryear, rMin, rSum, rMax, rCc, rGroup] = row;
 
-            // อัปเดตช่อง brandModelInput (ใช้ร่วมกับสรุปย่อ/มocked/excel เดิม) ให้ตรงกับที่เลือก
+            // อัปเดตช่อง brandModelInput (ใช้ร่วมกับสรุปย่อ/mocked/excel เดิม) ให้ตรงกับที่เลือก
             const hiddenTextInput = card.querySelector('.brandModelInput');
             if (hiddenTextInput) {
                 hiddenTextInput.value = `${rBrand} ${rModel} ${rSpec}`.trim();
                 updateVehicleSummary(card);
             }
+            // เก็บ brand/model/spec แยก field ไว้ใน dataset สำหรับ collectQuoteData()
+            card.dataset.savedBrand = rBrand || '';
+            card.dataset.savedModel = rModel || '';
+            card.dataset.savedSpec  = rSpec  || '';
 
             // เติมทุนประกัน (ค่าเฉลี่ยเริ่มต้น) และตั้ง min/max ให้ validate ตอน blur
             const sumInsuredInput = card.querySelector('.sumInsuredInput');
@@ -2837,6 +2903,10 @@
                 bmi.value = v.brandModel;
             }
             if (dbCont) dbCont.classList.add('hidden');
+            // เก็บ brand/model/spec ใน dataset เพื่อให้ collectQuoteData() ดึงกลับได้
+            card.dataset.savedBrand = v.brand || '';
+            card.dataset.savedModel = v.model || '';
+            card.dataset.savedSpec  = v.spec  || '';
             // ซ่อน toggle checkbox ด้วย (ไม่ให้ user switch ไป SearchBox ที่ข้อมูลไม่ตรง)
             const toggleWrap = card.querySelector('.carManualModeToggle')?.closest('label');
             if (toggleWrap) toggleWrap.classList.add('hidden');
@@ -3059,6 +3129,18 @@
             return xml.slice(0, match.index) + replacement + xml.slice(match.index + match[0].length);
         }
 
+        // =====================================================================
+        // runWithQueue — เรียกก่อน export ทุกครั้ง
+        // - ยังไม่มีเลขคิว → สร้างใหม่จาก Supabase
+        // - มีเลขคิวอยู่แล้ว (กลับมาแก้ไข) → เพิ่ม rv.N ต่อท้าย + INSERT record ใหม่
+        // =====================================================================
+        async function runWithQueue(exportFn) {
+            const quoteNo = await getNextQuoteNo();
+            currentQuoteNo = quoteNo;
+            displayQuoteNo(quoteNo);
+            await exportFn(quoteNo);
+        }
+
         async function exportQuoteToExcel() {
             if (typeof JSZip === 'undefined') {
                 alert('ไม่สามารถโหลดไลบรารีสำหรับสร้างไฟล์ Excel ได้ กรุณาตรวจสอบการเชื่อมต่ออินเทอร์เน็ต');
@@ -3103,6 +3185,7 @@
 
             // ===== ส่วนหัวใบเสนอราคา =====
             setCell('A2', 'ใบเสนอราคาประกันภัยรถยนต์  /  ผู้เอาประกันภัย: ' + clientName);
+            setCell('A3', `เลขที่ใบเสนอราคา: ${currentQuoteNo || '-'}`);
             setCell('A4', `วันที่ออกงาน: ${dateDisplay}    ฝ่าย/สาขาที่ออกงาน: ${issuerBranch}`);
             setCell('G43', issuerName);
 
@@ -3222,7 +3305,6 @@
                 a.click();
                 document.body.removeChild(a);
                 setTimeout(() => URL.revokeObjectURL(url), 2000);
-                sendLog('ใบเสนอราคา (Excel)');
             } catch (err) {
                 console.error(err);
                 alert('เกิดข้อผิดพลาดในการสร้างไฟล์ Excel: ' + err.message);
@@ -3319,8 +3401,8 @@
 
                 // ===== ส่วนหัว =====
                 setCell('A2', 'รายละเอียดไฟล์คำนวณ  /  ผู้เอาประกันภัย: ' + clientName);
+                setCell('A3', `เลขที่ใบเสนอราคา: ${currentQuoteNo || '-'}`);
                 setCell('A4', `วันที่ออกงาน: ${dateDisplay}    ฝ่าย/สาขาที่ออกงาน: ${issuerBranch}   ผู้เสนอราคา : ${issuerName}`);
-
                 // ===== รายคันรถ (แถว 8 เป็นต้นไป ตามโครงสร้าง Template) =====
                 const selectedCards = Array.from(cards).slice(0, MAX_ROWS);
                 const rowsXml = selectedCards.map((card, idx) => {
@@ -3499,7 +3581,6 @@
                 a.click();
                 document.body.removeChild(a);
                 setTimeout(() => URL.revokeObjectURL(url), 2000);
-                sendLog('รายละเอียดการคำนวณ (Excel)');
             } catch (err) {
                 console.error(err);
                 alert('เกิดข้อผิดพลาดในการสร้างไฟล์รายละเอียดไฟล์คำนวณ: ' + err.message);
@@ -3675,7 +3756,8 @@
                     <b>หมายเหตุ:</b>
                     ${notes}
                 </div>
-                <div style="font-size:12px;margin-top:14px;display:flex;justify-content:flex-end;">
+                <div style="font-size:12px;margin-top:14px;display:flex;justify-content:space-between;align-items:flex-end;">
+                    <div style="color:#4f46e5;font-weight:600;">เลขที่ใบเสนอราคา: ${escapeHtml(currentQuoteNo || '-')}</div>
                     <div>ผู้เสนอราคา : ${escapeHtml(meta.issuerName)}</div>
                 </div>
             `;
@@ -3749,7 +3831,6 @@
                 const safeName = clientName.replace(/[\\/:*?"<>|]/g, '_');
                 const fileName = `ใบเสนอราคางานกลุ่ม_${safeName}_${new Date().toISOString().slice(0, 10)}.pdf`;
                 doc.save(fileName);
-                sendLog('ใบเสนอราคา (PDF)');
             } catch (err) {
                 console.error(err);
                 if (printNode && printNode.parentNode) document.body.removeChild(printNode);
@@ -3763,157 +3844,359 @@
             document.getElementById('summaryView').classList.add('hidden');
             document.getElementById('formView').classList.remove('hidden');
             window.scrollTo({ top: 0, behavior: 'smooth' });
+            // ไม่ reset currentQuoteNo — เก็บเลขคิวเดิมไว้
+            // เพื่อให้พอกด export ซ้ำหลังแก้ไข จะได้เลขเดิม (ไม่รันต่อ)
         }
 
-        // ===================================================================
-        // ===== Google Apps Script Log =====
-        // ===================================================================
+        // =====================================================================
+        // collectQuoteData() — รวบรวมข้อมูลทั้งหมดจากฟอร์มเป็น JSON
+        // =====================================================================
+        function collectQuoteData() {
+            const num = (s) => parseFloat(String(s || '0').replace(/,/g, '')) || 0;
 
-        // คำนวณยอดเบี้ยรวมทุกคัน (vol net + prb net รวมกัน)
-        function calcTotalPremiumForLog() {
-            const num = (str) => parseFloat(String(str === undefined || str === null ? '0' : str).replace(/,/g, '')) || 0;
-            let total = 0;
+            const header = {
+                clientName:   (document.getElementById('clientName')?.value   || '').trim(),
+                issuerName:   (document.getElementById('issuerName')?.value   || '').trim(),
+                issuerBranch: (document.getElementById('issuerBranch')?.value || '').trim(),
+                dateTime:     (document.getElementById('currentDateTime')?.value || '')
+            };
+
+            const vehicles = [];
             document.querySelectorAll('.vehicle-card').forEach(card => {
-                const premiumEl = card.querySelector('.premiumInput');
-                const netPremium = num(premiumEl ? premiumEl.dataset.netPremium : 0);
-                const stamp = Math.ceil(netPremium * 0.004);
-                const vat = (netPremium + stamp) * 0.07;
-                total += netPremium + stamp + vat;
+                const prbSelect     = card.querySelector('.prbSelect');
+                const prbCodeSelect = card.querySelector('.prbCodeSelect');
+                const sumInsuredEl  = card.querySelector('.sumInsuredContainer')?.querySelector('input, select');
+                const seatInput     = card.querySelector('.seatInput');
+                const premiumInput  = card.querySelector('.premiumInput');
+                const prbPriceInput = card.querySelector('.prbPriceInput');
+                const bmi           = card.querySelector('.brandModelInput');
 
-                const prbStatus = card.querySelector('.prbSelect') ? card.querySelector('.prbSelect').value : 'ไม่รวม';
-                if (prbStatus === 'รวม') {
-                    const prbCodeEl = card.querySelector('.prbCodeSelect');
-                    const prbCode = prbCodeEl ? prbCodeEl.value : '';
-                    const prbNet = (prbCode && typeof prbNetPrices !== 'undefined' && prbNetPrices[prbCode] !== undefined) ? prbNetPrices[prbCode] : 0;
-                    const prbStamp = Math.ceil(prbNet * 0.004);
-                    const prbVat = (prbNet + prbStamp) * 0.07;
-                    total += prbNet + prbStamp + prbVat;
+                let brandModel = bmi?.value?.trim() || '';
+                const brandSel = card.querySelector('.carBrandSelect');
+                const modelSel = card.querySelector('.carModelSelect');
+                const specSel  = card.querySelector('.carSpecSelect');
+
+                // ถ้ามี select values ให้ใช้ก่อน (กรอกปกติ)
+                // ถ้าไม่มี (manual mode / restore) ดึงจาก dataset ที่เก็บไว้
+                const brand = brandSel?.value || card.dataset.savedBrand || '';
+                const model = modelSel?.value || card.dataset.savedModel || '';
+                const spec  = specSel?.value  || card.dataset.savedSpec  || '';
+
+                if (!brandModel && brand) {
+                    brandModel = [brand, model, spec].filter(Boolean).join(' ');
                 }
+
+                // --- คำนวณภาษีอากรแยก ภาคสมัครใจ vs พ.ร.บ. ---
+                const volNet   = num(premiumInput?.dataset?.netPremium);
+                const volStamp = Math.ceil(volNet * 0.004);
+                const volVat   = Math.round((volNet + volStamp) * 0.07 * 100) / 100;
+                const volTotal = Math.round((volNet + volStamp + volVat) * 100) / 100;
+
+                // พ.ร.บ.
+                const prbNet   = (prbSelect?.value === 'รวม' && prbCodeSelect?.value && prbNetPrices[prbCodeSelect.value])
+                                 ? prbNetPrices[prbCodeSelect.value] : 0;
+                const prbStamp = Math.ceil(prbNet * 0.004);
+                const prbVat   = Math.round((prbNet + prbStamp) * 0.07 * 100) / 100;
+                const prbTotal = Math.round((prbNet + prbStamp + prbVat) * 100) / 100;
+
+                // ส่วนลดที่ใช้
+                const groupDiscountVal = card.querySelector('.groupDiscountSelect')?.value || '0%';
+                const claimDiscountVal = card.querySelector('.claimDiscountSelect')?.value || '0%';
+                const driverFilter     = card.querySelector('.driverBehaviorFilter')?.value || 'ไม่ระบุ';
+                const driverLevel      = card.querySelector('.driverBehaviorDiscountSelect')?.value || '-';
+
+                vehicles.push({
+                    plate:                  card.querySelector('.plateInput')?.value?.trim() || '',
+                    brandModel,
+                    brand,
+                    model,
+                    spec,
+                    type:                   card.querySelector('.typeSelect')?.value        || '',
+                    repair:                 card.querySelector('.repairSelect')?.value      || '',
+                    vehicleCode:            card.querySelector('.vehicleCodeSelect')?.value || '',
+                    year:                   card.querySelector('.yearSelect')?.value        || '',
+                    cc:                     card.querySelector('.ccInput')?.value           || '0',
+                    weight:                 card.querySelector('.weightInput')?.value       || '0',
+                    seat:                   seatInput?.value                               || '',
+                    carGroup:               card.querySelector('.carGroupSelect')?.value    || '',
+                    sumInsured:             sumInsuredEl?.value                             || '0',
+                    accessory:              card.querySelector('.accessorySelect')?.value   || 'NO',
+                    // ภาคสมัครใจ (แยก net / stamp / vat / รวม)
+                    volNet,
+                    volStamp,
+                    volVat,
+                    volTotal,
+                    // พ.ร.บ. (แยก net / stamp / vat / รวม)
+                    prb:       prbSelect?.value || 'ไม่รวม',
+                    prbCode:   prbCodeSelect?.value || '',
+                    prbNet,
+                    prbStamp,
+                    prbVat,
+                    prbTotal,
+                    // ส่วนลด
+                    groupDiscount:          groupDiscountVal,
+                    claimDiscount:          claimDiscountVal,
+                    driverBehaviorFilter:   driverFilter,
+                    driverBehaviorDiscount: driverLevel,
+                    // รวมทั้งหมด
+                    grandTotal: Math.round((volTotal + prbTotal) * 100) / 100,
+                });
             });
-            return Math.round(total * 100) / 100;
+
+            return { header, vehicles };
         }
 
         // =====================================================================
-        // ▼▼▼ แก้ไข URL ที่นี่เพียงจุดเดียว ▼▼▼
-        // วาง Web App URL จาก Google Apps Script Deploy แทนข้อความด้านล่าง
-        // วิธีหา URL: Apps Script → Deploy → Manage deployments → คัดลอก Web app URL
+        // loadRevise() — โหลดข้อมูลทั้งหมดจาก Supabase ตามเลขคิวที่กรอก
+        // แล้ว set currentQuoteNo = base quote → export ครั้งหน้าจะได้ rv.N
         // =====================================================================
-        const GAS_LOG_URL = 'https://script.google.com/macros/s/AKfycbzvsOGfCmK-iKT7rpZ-JnY-cyujUFRqLuSSFqPYUghbDx_G2i58lWqE6WXGOMhgdHdCXQ/exec';
-        // =====================================================================
-        // ▲▲▲ แก้ URL ด้านบนเท่านั้น — ไม่ต้องแก้ที่อื่น ▲▲▲
-        // =====================================================================
+        async function loadRevise() {
+            const input    = document.getElementById('reviseQuoteInput');
+            const quoteNo  = (input?.value || '').trim();
 
-        // ส่ง log ไปยัง Google Apps Script (fire-and-forget — ไม่กระทบการ export ถ้า internet ขาด)
-        function sendLog(exportType) {
-            // ใช้ URL ที่ฝังในไฟล์ก่อน ถ้าไม่มีค่อยดูจาก localStorage (ที่ user ตั้งเองผ่าน UI)
-            const gasUrl = (GAS_LOG_URL || localStorage.getItem('gasLogUrl') || '').trim();
-            if (!gasUrl) return; // ไม่มี URL → เงียบๆ ข้ามไป
-
-            const cards = document.querySelectorAll('.vehicle-card');
-            const totalPremium = calcTotalPremiumForLog();
-
-            const payload = {
-                exportType:   exportType,
-                issuerName:   (document.getElementById('issuerName').value || '-').trim(),
-                issuerBranch: (document.getElementById('issuerBranch').value || '-').trim(),
-                clientName:   (document.getElementById('clientName').value || '-').trim(),
-                vehicleCount: cards.length,
-                totalPremium: totalPremium,
-                timestamp:    new Date().toISOString()
-            };
-
-            // ส่งแบบ no-cors (fire-and-forget) — ไม่รอ response ไม่ block UI
-            fetch(gasUrl, {
-                method: 'POST',
-                mode: 'no-cors',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(payload)
-            }).catch(() => {}); // กลืน error ทั้งหมด ไม่ให้กระทบ user
-        }
-
-        // ===== Modal ตั้งค่า GAS URL =====
-        function openLogConfigModal() {
-            const pwd = prompt('กรุณากรอกรหัสผ่านเพื่อเข้าตั้งค่า Log:');
-            if (pwd === null) return; // กด Cancel
-            if (pwd !== '1111') {
-                alert('รหัสผ่านไม่ถูกต้อง');
+            if (!quoteNo) {
+                showReviseStatus('กรุณากรอกเลขที่ใบเสนอราคา', 'error');
                 return;
             }
-            const isHardcoded = GAS_LOG_URL && GAS_LOG_URL.trim() !== '';
-            const current = isHardcoded ? GAS_LOG_URL : (localStorage.getItem('gasLogUrl') || '');
 
-            const input = document.getElementById('gasUrlInput');
-            input.value = current;
+            showReviseStatus('กำลังโหลด...', 'loading');
 
-            // ถ้า URL ฝังในโค้ดอยู่แล้ว → ล็อค input และซ่อนปุ่มบันทึก/ทดสอบ
-            const lockedBanner = document.getElementById('gasUrlLockedBanner');
-            const saveBtn = document.getElementById('gasUrlSaveBtn');
-            const testBtn = document.getElementById('gasUrlTestBtn');
+            try {
+                // ค้นหาจาก base quote (ตัด rv.N ออก) และดึง quote_data ด้วย
+                const baseQuote = quoteNo.replace(/rv\.\d+$/, '');
+                const res = await fetch(
+                    `${SUPABASE_URL}/rest/v1/quotation_queue?quote_no=eq.${encodeURIComponent(baseQuote)}&select=issuer_name,issuer_branch,client_name,quote_data&limit=1`,
+                    {
+                        headers: {
+                            'apikey': SUPABASE_KEY,
+                            'Authorization': 'Bearer ' + SUPABASE_KEY
+                        }
+                    }
+                );
+                if (!res.ok) throw new Error('ไม่สามารถเชื่อมต่อ Supabase ได้');
+                const data = await res.json();
 
-            if (isHardcoded) {
-                input.disabled = true;
-                input.classList.add('bg-slate-100', 'cursor-not-allowed', 'text-slate-400');
-                if (lockedBanner) lockedBanner.classList.remove('hidden');
-                if (saveBtn) saveBtn.classList.add('hidden');
-                if (testBtn) testBtn.classList.add('hidden');
-            } else {
-                input.disabled = false;
-                input.classList.remove('bg-slate-100', 'cursor-not-allowed', 'text-slate-400');
-                if (lockedBanner) lockedBanner.classList.add('hidden');
-                if (saveBtn) saveBtn.classList.remove('hidden');
-                if (testBtn) testBtn.classList.remove('hidden');
-            }
+                if (!data || data.length === 0) {
+                    showReviseStatus(`ไม่พบเลขที่ใบเสนอราคา: ${baseQuote}`, 'error');
+                    return;
+                }
 
-            document.getElementById('logConfigModal').classList.remove('hidden');
-            document.body.classList.add('overflow-hidden');
-        }
-        function closeLogConfigModal() {
-            document.getElementById('logConfigModal').classList.add('hidden');
-            document.body.classList.remove('overflow-hidden');
-        }
-        function saveGasUrl() {
-            const url = document.getElementById('gasUrlInput').value.trim();
-            if (url && !url.startsWith('https://script.google.com/macros/s/')) {
-                alert('URL ไม่ถูกต้อง — ต้องขึ้นต้นด้วย https://script.google.com/macros/s/');
-                return;
+                const record = data[0];
+                const qd     = record.quote_data;
+
+                if (qd && qd.header && qd.vehicles && qd.vehicles.length > 0) {
+                    applyImportedData({
+                        clientName:   qd.header.clientName   || record.client_name   || '',
+                        issuerName:   qd.header.issuerName   || record.issuer_name   || '',
+                        issuerBranch: qd.header.issuerBranch || record.issuer_branch || '',
+                        vehicles:     qd.vehicles
+                    });
+                    // คำนวณ rv ถัดไปเพื่อแสดงใน status
+                    const rvMatch = quoteNo.match(/rv\.(\d+)$/);
+                    const nextRv  = rvMatch ? parseInt(rvMatch[1]) + 1 : 1;
+                    const nextNo  = baseQuote + 'rv.' + nextRv;
+                    showReviseStatus(
+                        `โหลดสำเร็จ ${qd.vehicles.length} คัน — กด export จะได้เลข ${nextNo}`,
+                        'success'
+                    );
+                } else {
+                    document.getElementById('clientName').value   = record.client_name   || '';
+                    document.getElementById('issuerName').value   = record.issuer_name   || '';
+                    document.getElementById('issuerBranch').value = record.issuer_branch || '';
+                    const rvMatch = quoteNo.match(/rv\.(\d+)$/);
+                    const nextRv  = rvMatch ? parseInt(rvMatch[1]) + 1 : 1;
+                    const nextNo  = baseQuote + 'rv.' + nextRv;
+                    showReviseStatus(
+                        `โหลด header สำเร็จ (ไม่มีข้อมูลรถ — กรอกรถใหม่แล้วกด export จะได้ ${nextNo})`,
+                        'success'
+                    );
+                }
+
+                // set currentQuoteNo = เลขที่กรอกมา (ไม่ใช่ base เสมอไป)
+                // ถ้ากรอก rv.1 มา → export ครั้งหน้าจะได้ rv.2
+                // ถ้ากรอก base มา → export ครั้งหน้าจะได้ rv.1
+                currentQuoteNo = quoteNo;  // ใช้เลขที่ user กรอก ไม่ตัด rv ออก
+                displayQuoteNo(quoteNo);
+                input.value = '';
+
+            } catch (err) {
+                console.error('loadRevise error:', err);
+                showReviseStatus('เกิดข้อผิดพลาด: ' + err.message, 'error');
             }
-            if (url) {
-                localStorage.setItem('gasLogUrl', url);
-                showLogConfigStatus('✅ บันทึก URL สำเร็จ');
-            } else {
-                localStorage.removeItem('gasLogUrl');
-                showLogConfigStatus('🗑️ ลบ URL แล้ว (ปิดการส่ง log)');
-            }
         }
-        function testGasLog() {
-            const url = document.getElementById('gasUrlInput').value.trim();
-            if (!url) { alert('กรุณากรอก URL ก่อน'); return; }
-            if (!url.startsWith('https://script.google.com/macros/s/')) {
-                alert('URL ไม่ถูกต้อง — ต้องขึ้นต้นด้วย https://script.google.com/macros/s/');
-                return;
-            }
-            const payload = {
-                exportType: 'TEST',
-                issuerName: 'ทดสอบระบบ',
-                issuerBranch: '-',
-                clientName: 'ทดสอบ',
-                vehicleCount: 0,
-                totalPremium: 0,
-                timestamp: new Date().toISOString()
-            };
-            fetch(url, {
-                method: 'POST', mode: 'no-cors',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(payload)
-            }).then(() => showLogConfigStatus('📨 ส่งข้อมูลทดสอบแล้ว — ตรวจสอบใน Google Sheet ได้เลย'))
-              .catch(() => showLogConfigStatus('❌ ไม่สามารถส่งได้ — ตรวจสอบ URL และการเชื่อมต่ออินเทอร์เน็ต'));
-        }
-        function showLogConfigStatus(msg) {
-            const el = document.getElementById('logConfigStatus');
+
+        function showReviseStatus(msg, type) {
+            const el = document.getElementById('reviseStatus');
+            if (!el) return;
             el.textContent = msg;
+            el.className = 'text-xs mt-2 ' + (
+                type === 'success' ? 'text-emerald-600' :
+                type === 'error'   ? 'text-rose-600' :
+                                     'text-amber-600'
+            );
             el.classList.remove('hidden');
-            setTimeout(() => el.classList.add('hidden'), 5000);
         }
+
+        // เริ่มใบใหม่ทั้งหมด — reset เลขคิวและซ่อน quote no box
+        function startNewQuote() {
+            if (!confirm('เริ่มใบเสนอราคาใหม่?\nเลขคิวปัจจุบัน (' + (currentQuoteNo || '-') + ') จะถูกยกเลิก\nและสร้างเลขใหม่เมื่อกด export ครั้งหน้า')) return;
+
+            // --- reset เลขคิว ---
+            currentQuoteNo = '';
+            const qbox = document.querySelector('.quote-no-box');
+            if (qbox) qbox.classList.add('hidden');
+            const summaryRow = document.getElementById('summaryQuoteNoRow');
+            if (summaryRow) summaryRow.classList.add('hidden');
+
+            // --- clear header fields ---
+            document.getElementById('clientName').value   = '';
+            document.getElementById('issuerName').value   = '';
+            document.getElementById('issuerBranch').value = '';
+
+            // --- reset วัน-เวลา ให้เป็นปัจจุบัน ---
+            let now = new Date();
+            now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
+            document.getElementById('currentDateTime').value = now.toISOString().slice(0, 16);
+
+            // --- เหลือ vehicle card แค่ 1 ใบ แล้ว reset ค่าทั้งหมด ---
+            const container = document.getElementById('vehicleContainer');
+            const cards = container.querySelectorAll('.vehicle-card');
+            // ลบการ์ดตั้งแต่คันที่ 2 เป็นต้นไป
+            for (let i = 1; i < cards.length; i++) cards[i].remove();
+            vehicleCount = 1;
+
+            // reset การ์ดคันที่ 1
+            const card1 = container.querySelector('.vehicle-card');
+            if (card1) {
+                card1.querySelector('.plateInput').value    = '';
+                card1.querySelector('.typeSelect').value    = '1';
+                onTypeChange(card1.querySelector('.typeSelect'));
+                resetCarSelects(card1);
+                lockCcInput(card1.querySelector('.ccInput'));
+                recalcCardPremium(card1);
+            }
+
+            // --- กลับไปหน้าฟอร์ม ---
+            document.getElementById('summaryView').classList.add('hidden');
+            document.getElementById('formView').classList.remove('hidden');
+            renderVehicleNav();
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        // Supabase — ระบบคิวใบเสนอราคา
+        // =====================================================================
+        const SUPABASE_URL = 'https://nwoqddeexkciftpzoexl.supabase.co';
+        const SUPABASE_KEY = 'sb_publishable_IYC4LnMdk2VFj1dMhJdJig_3LDZ4XF4';
+
+        // เลขคิวปัจจุบัน (set หลัง getNextQuoteNo() สำเร็จ)
+        let currentQuoteNo = '';
+
+        // ดึงเลขคิวจาก Supabase + INSERT record ทุกครั้ง
+        // - ยังไม่มีเลขคิว → สร้างใหม่ เช่น motorfleetquot_no_202608250001
+        // - มีเลขคิวอยู่แล้ว (กลับมาแก้ไข) → เพิ่ม rv.N เช่น motorfleetquot_no_202608250001rv.1
+        async function getNextQuoteNo() {
+            const today = new Date();
+            const dateStr = today.getFullYear().toString()
+                + String(today.getMonth() + 1).padStart(2, '0')
+                + String(today.getDate()).padStart(2, '0');
+
+            const cards        = document.querySelectorAll('.vehicle-card');
+            const totalPremium = Array.from(document.querySelectorAll('.vehicle-card')).reduce((sum, card) => {
+                const np = parseFloat(card.querySelector('.premiumInput')?.dataset?.netPremium || '0') || 0;
+                const st = Math.ceil(np * 0.004);
+                const vt = (np + st) * 0.07;
+                let prb = 0;
+                if ((card.querySelector('.prbSelect')?.value || '') === 'รวม') {
+                    const pc = card.querySelector('.prbCodeSelect')?.value || '';
+                    if (pc && prbNetPrices[pc]) { const pn=prbNetPrices[pc]; prb=pn+Math.ceil(pn*0.004)+(pn+Math.ceil(pn*0.004))*0.07; }
+                }
+                return sum + np + st + vt + prb;
+            }, 0);
+            const issuerName   = (document.getElementById('issuerName')?.value || '-').trim();
+            const issuerBranch = (document.getElementById('issuerBranch')?.value || '-').trim();
+            const clientName   = (document.getElementById('clientName')?.value || '-').trim();
+
+            try {
+                let quoteNo;
+                let daily_seq;
+
+                if (!currentQuoteNo) {
+                    // ---- ยังไม่มีเลขคิว: สร้างใหม่ ----
+                    const rpcRes = await fetch(`${SUPABASE_URL}/rest/v1/rpc/get_next_daily_seq`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'apikey': SUPABASE_KEY,
+                            'Authorization': 'Bearer ' + SUPABASE_KEY
+                        },
+                        body: JSON.stringify({ p_date: today.toISOString().slice(0, 10) })
+                    });
+                    if (!rpcRes.ok) throw new Error('rpc failed: ' + rpcRes.status);
+                    const seq = await rpcRes.json();
+                    daily_seq = seq;
+                    quoteNo   = `motorfleetquot_no_${dateStr}${String(seq).padStart(4, '0')}`;
+
+                } else {
+                    // ---- มีเลขคิวอยู่แล้ว: เพิ่ม rv.N ต่อท้าย ----
+                    // หา base quote (ตัดส่วน rv.X ออกก่อน)
+                    const baseMatch = currentQuoteNo.match(/^(motorfleetquot_no_\d{8})(\d{4})(rv\.\d+)?$/);
+                    const baseNo    = baseMatch ? baseMatch[1] + baseMatch[2] : currentQuoteNo.replace(/rv\.\d+$/, '');
+                    const prevRv    = baseMatch && baseMatch[3] ? parseInt(baseMatch[3].replace('rv.','')) : 0;
+                    const nextRv    = prevRv + 1;
+                    quoteNo   = `${baseNo}rv.${nextRv}`;
+                    // ดึง daily_seq จาก base quote (ใช้ค่าเดิม ไม่สร้างใหม่)
+                    const seqMatch = baseNo.match(/(\d{4})$/);
+                    daily_seq = seqMatch ? parseInt(seqMatch[1]) : 0;
+                }
+
+                // INSERT record ใหม่ทุกครั้ง (ทั้ง original และ revision)
+                await fetch(`${SUPABASE_URL}/rest/v1/quotation_queue`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'apikey': SUPABASE_KEY,
+                        'Authorization': 'Bearer ' + SUPABASE_KEY,
+                        'Prefer': 'return=minimal'
+                    },
+                    body: JSON.stringify({
+                        quote_no:      quoteNo,
+                        quote_date:    today.toISOString().slice(0, 10),
+                        daily_seq:     daily_seq,
+                        issuer_name:   issuerName,
+                        issuer_branch: issuerBranch,
+                        client_name:   clientName,
+                        vehicle_count: cards.length,
+                        total_premium: totalPremium,
+                        quote_data:    collectQuoteData()
+                    })
+                });
+
+                return quoteNo;
+
+            } catch (err) {
+                console.warn('getNextQuoteNo failed:', err);
+                return `motorfleetquot_no_${dateStr}XXXX`;
+            }
+        }
+
+        // แสดงเลขคิวทั้งใน form view และ summary view
+        function displayQuoteNo(quoteNo) {
+            // Form view — box ใต้ฟอร์มส่วนที่ 1
+            const el = document.getElementById('quoteNoDisplay');
+            if (el) {
+                el.textContent = quoteNo;
+                el.closest('.quote-no-box')?.classList.remove('hidden');
+            }
+            // Summary view — ใต้ชื่อผู้เอาประกัน
+            const summaryRow = document.getElementById('summaryQuoteNoRow');
+            const summaryNo  = document.getElementById('summaryQuoteNo');
+            if (summaryRow && summaryNo) {
+                summaryNo.textContent = quoteNo;
+                summaryRow.classList.remove('hidden');
+                summaryRow.style.display = 'flex';
+            }
+        }
+
     </script>
 
     <!-- ================= MODAL: คำแนะนำการออกงาน ================= -->
@@ -4138,138 +4421,6 @@
             document.querySelector('#guideModalOverlay .flex-1.overflow-y-auto').scrollTop = 0;
         }
     </script>
-
-    <!-- ================= MODAL: ตั้งค่า Log Google Sheet ================= -->
-    <div id="logConfigModal" class="hidden fixed inset-0 z-[70] bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4" onclick="if(event.target===this) closeLogConfigModal()">
-        <div class="bg-white w-full max-w-lg rounded-2xl shadow-2xl overflow-hidden" onclick="event.stopPropagation()">
-            <!-- Header -->
-            <div class="flex items-center justify-between px-6 py-4 border-b border-slate-200 bg-slate-50">
-                <div class="flex items-center gap-3">
-                    <span class="flex items-center justify-center w-9 h-9 rounded-full bg-indigo-50 text-indigo-600">
-                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"></path></svg>
-                    </span>
-                    <div>
-                        <h2 class="text-base font-bold text-slate-800">ตั้งค่า Log Google Sheet</h2>
-                        <p class="text-xs text-slate-400">บันทึกประวัติการออกงานลง Google Sheet ของคุณ</p>
-                    </div>
-                </div>
-                <button type="button" onclick="closeLogConfigModal()" class="w-9 h-9 flex items-center justify-center rounded-full text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-colors">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
-                </button>
-            </div>
-            <!-- Body -->
-            <div class="px-6 py-5 space-y-4">
-                <!-- ข้อมูลที่เก็บ -->
-                <div class="bg-indigo-50 rounded-xl p-4 text-sm text-indigo-800 space-y-1">
-                    <p class="font-semibold text-indigo-700 mb-2">📋 ข้อมูลที่จะส่งเก็บทุกครั้งที่ Export:</p>
-                    <div class="grid grid-cols-2 gap-x-4 gap-y-1 text-xs text-indigo-700">
-                        <span>• วันเวลาที่ออกงาน</span>
-                        <span>• ชื่อผู้ออกงาน</span>
-                        <span>• ฝ่าย/สาขา</span>
-                        <span>• ชื่อลูกค้า</span>
-                        <span>• จำนวนคัน</span>
-                        <span>• เบี้ยรวมทั้งหมด (บาท)</span>
-                        <span>• ประเภทไฟล์ที่ Export</span>
-                    </div>
-                </div>
-
-                <!-- URL Input -->
-                <div>
-                    <label class="block text-sm font-semibold text-slate-700 mb-1.5">
-                        Google Apps Script URL
-                        <span class="font-normal text-slate-400 ml-1">(ได้จากการ Deploy Web App)</span>
-                    </label>
-                    <input type="url" id="gasUrlInput" placeholder="https://script.google.com/macros/s/AKf.../exec"
-                        class="w-full border border-slate-300 rounded-xl px-3 py-2.5 text-sm focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 focus:outline-none transition-all font-mono">
-                    <p class="mt-1.5 text-xs text-slate-400">เว้นว่างแล้วกด "บันทึก" เพื่อปิดการส่ง log</p>
-                </div>
-
-                <!-- Status -->
-                <p id="logConfigStatus" class="hidden text-sm font-medium text-slate-700 bg-slate-50 rounded-lg px-3 py-2 border border-slate-200"></p>
-
-                <!-- Locked banner (แสดงเมื่อ URL ฝังในโค้ดแล้ว) -->
-                <div id="gasUrlLockedBanner" class="hidden bg-amber-50 border border-amber-200 rounded-xl px-4 py-3 flex items-start gap-2.5 text-sm text-amber-800">
-                    <svg class="w-4 h-4 mt-0.5 shrink-0 text-amber-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path></svg>
-                    <div>
-                        <p class="font-semibold">URL ถูกฝังในไฟล์โดยผู้ดูแลระบบแล้ว</p>
-                        <p class="text-xs mt-0.5 text-amber-700">ระบบจะส่ง log อัตโนมัติทุกครั้งที่ Export — ไม่สามารถเปลี่ยน URL ได้จากหน้านี้<br><code class="bg-amber-100 px-1 rounded font-mono"></code></p>
-                    </div>
-                </div>
-
-                <!-- วิธีตั้งค่า -->
-                <details class="text-sm text-slate-600">
-                    <summary class="cursor-pointer font-semibold text-slate-700 hover:text-indigo-600 transition-colors py-1">📖 วิธีสร้าง Google Apps Script (คลิกดู)</summary>
-                    <div class="mt-3 space-y-2 text-xs leading-relaxed bg-slate-50 rounded-xl p-4 border border-slate-200">
-                        <p class="font-semibold text-slate-700">1. สร้าง Google Sheet ใหม่</p>
-                        <p>เปิด Google Drive → New → Google Sheets → ตั้งชื่อ เช่น "Log ออกงาน"</p>
-                        <p class="font-semibold text-slate-700 mt-2">2. เปิด Apps Script</p>
-                        <p>ใน Google Sheet → เมนู Extensions → Apps Script</p>
-                        <p class="font-semibold text-slate-700 mt-2">3. วางโค้ดนี้ (แทนที่โค้ดเดิมทั้งหมด)</p>
-                        <pre class="bg-slate-800 text-green-300 rounded-lg p-3 text-[11px] overflow-x-auto whitespace-pre-wrap">// ใส่ Spreadsheet ID ของคุณที่นี่ (ดูจาก URL ของ Google Sheet)
-// URL ตัวอย่าง: https://docs.google.com/spreadsheets/d/[SPREADSHEET_ID]/edit
-const SPREADSHEET_ID = 'ใส่[SPREADSHEET_ID]';
-const SHEET_NAME = 'Log';
-
-function doPost(e) {
-  try {
-    const data = JSON.parse(e.postData.contents);
-    const ss = SpreadsheetApp.openById(SPREADSHEET_ID);
-    let sheet = ss.getSheetByName(SHEET_NAME);
-    if (!sheet) {
-      sheet = ss.insertSheet(SHEET_NAME);
-      sheet.appendRow(['วันเวลา','ผู้ออกงาน',
-        'ฝ่าย/สาขา','ชื่อลูกค้า',
-        'จำนวนคัน','เบี้ยรวม (บาท)',
-        'ประเภท Export']);
-    }
-    const dt = new Date(data.timestamp);
-    const dtStr = Utilities.formatDate(
-      dt, 'Asia/Bangkok',
-      'dd/MM/yyyy HH:mm:ss');
-    sheet.appendRow([
-      dtStr,
-      data.issuerName,
-      data.issuerBranch,
-      data.clientName,
-      data.vehicleCount,
-      data.totalPremium,
-      data.exportType
-    ]);
-    return ContentService
-      .createTextOutput(JSON.stringify({ok:true}))
-      .setMimeType(ContentService.MimeType.JSON);
-  } catch(err) {
-    return ContentService
-      .createTextOutput(JSON.stringify({ok:false,error:err.message}))
-      .setMimeType(ContentService.MimeType.JSON);
-  }
-}</pre>
-                        <p class="font-semibold text-slate-700 mt-2">4. หา Spreadsheet ID</p>
-                        <p>เปิด Google Sheet ที่ต้องการเก็บ log → ดูที่ URL เช่น<br><code class="bg-slate-200 px-1 rounded text-[10px]">https://docs.google.com/spreadsheets/d/<strong>1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs74OgVE2upms</strong>/edit</code><br>ส่วนที่อยู่ระหว่าง <code class="bg-slate-200 px-1 rounded">/d/</code> และ <code class="bg-slate-200 px-1 rounded">/edit</code> คือ ID — คัดลอกไปแทน <code class="bg-slate-200 px-1 rounded">วาง_ID_ของคุณที่นี่</code> ในโค้ด</p>
-                        <p class="font-semibold text-slate-700 mt-2">5. Deploy เป็น Web App</p>
-                        <p>คลิก <strong>Deploy</strong> → <strong>New deployment</strong> → ประเภท: <strong>Web app</strong> → Execute as: <strong>Me</strong> → Who has access: <strong>Anyone</strong> → คลิก <strong>Deploy</strong></p>
-                        <p class="font-semibold text-slate-700 mt-2">6. คัดลอก URL</p>
-                        <p>คัดลอก Web app URL (ขึ้นต้นด้วย <code class="bg-slate-200 px-1 rounded">https://script.google.com/macros/s/</code>) แล้ววางในช่องด้านบน</p>
-                        <p class="text-amber-700 font-medium mt-2">⚠️ ทุกครั้งที่แก้โค้ด Apps Script ต้อง Deploy ใหม่ (New deployment) เพื่อให้มีผล</p>
-                    </div>
-                </details>
-            </div>
-            <!-- Footer -->
-            <div class="flex items-center justify-between px-6 py-4 border-t border-slate-200 bg-slate-50 gap-3">
-                <button type="button" id="gasUrlTestBtn" onclick="testGasLog()" class="inline-flex items-center gap-2 bg-white hover:bg-slate-50 text-slate-600 font-medium py-2 px-4 rounded-xl text-sm border border-slate-300 transition-all">
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
-                    ทดสอบส่ง
-                </button>
-                <div class="flex gap-2 ml-auto">
-                    <button type="button" onclick="closeLogConfigModal()" class="py-2 px-4 rounded-xl text-sm font-medium text-slate-600 hover:bg-slate-100 transition-all border border-slate-200">ปิด</button>
-                    <button type="button" id="gasUrlSaveBtn" onclick="saveGasUrl()" class="inline-flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white font-medium py-2 px-5 rounded-xl text-sm transition-all shadow-sm">
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
-                        บันทึก
-                    </button>
-                </div>
-            </div>
-        </div>
-    </div>
 
 
     <!-- V12 Loading Overlay — แสดงขณะโหลด JSON -->
