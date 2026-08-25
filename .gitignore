@@ -1,0 +1,11 @@
+# ไม่ push ไฟล์ที่มี password หรือไม่จำเป็น
+password supabase.txt
+car_master.json.bak
+
+# โฟลเดอร์ไฟล์ที่ไม่เกี่ยวข้อง
+ไม่เกี่ยว/
+
+# Node / OS
+node_modules/
+.DS_Store
+Thumbs.db
