@@ -3132,13 +3132,31 @@
         // =====================================================================
         // runWithQueue — เรียกก่อน export ทุกครั้ง
         // - ยังไม่มีเลขคิว → สร้างใหม่จาก Supabase
-        // - มีเลขคิวอยู่แล้ว (กลับมาแก้ไข) → เพิ่ม rv.N ต่อท้าย + INSERT record ใหม่
+        // - มีเลขคิว + ข้อมูลไม่เปลี่ยน → ใช้เลขเดิม
+        // - มีเลขคิว + ข้อมูลเปลี่ยน → rv.N อัตโนมัติ
         // =====================================================================
+        let _lastExportSnapshot = '';  // snapshot JSON ของครั้งล่าสุดที่ export
+
         async function runWithQueue(exportFn) {
-            const quoteNo = await getNextQuoteNo();
-            currentQuoteNo = quoteNo;
-            displayQuoteNo(quoteNo);
-            await exportFn(quoteNo);
+            const snapshot = JSON.stringify(collectQuoteData());
+
+            if (!currentQuoteNo) {
+                // ---- ครั้งแรก: สร้างเลขคิวใหม่ ----
+                const quoteNo = await getNextQuoteNo();
+                currentQuoteNo = quoteNo;
+                _lastExportSnapshot = snapshot;
+                displayQuoteNo(quoteNo);
+
+            } else if (snapshot !== _lastExportSnapshot) {
+                // ---- ข้อมูลเปลี่ยนแปลง: สร้าง rv.N ----
+                const quoteNo = await getNextQuoteNo();   // getNextQuoteNo จะ rv เพราะ currentQuoteNo มีค่า
+                currentQuoteNo = quoteNo;
+                _lastExportSnapshot = snapshot;
+                displayQuoteNo(quoteNo);
+
+            }
+            // ---- ข้อมูลเดิม: ใช้เลขเดิม ไม่ทำอะไรเพิ่ม ----
+            await exportFn(currentQuoteNo);
         }
 
         async function exportQuoteToExcel() {
@@ -4016,6 +4034,7 @@
                 // ถ้ากรอก rv.1 มา → export ครั้งหน้าจะได้ rv.2
                 // ถ้ากรอก base มา → export ครั้งหน้าจะได้ rv.1
                 currentQuoteNo = quoteNo;  // ใช้เลขที่ user กรอก ไม่ตัด rv ออก
+                _lastExportSnapshot = '';  // reset snapshot เพื่อให้ export ครั้งแรกหลัง revise เสมอเป็น rv
                 displayQuoteNo(quoteNo);
                 input.value = '';
 
@@ -4043,6 +4062,7 @@
 
             // --- reset เลขคิว ---
             currentQuoteNo = '';
+            _lastExportSnapshot = '';
             const qbox = document.querySelector('.quote-no-box');
             if (qbox) qbox.classList.add('hidden');
             const summaryRow = document.getElementById('summaryQuoteNoRow');
