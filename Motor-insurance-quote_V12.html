@@ -4068,6 +4068,16 @@
             const summaryRow = document.getElementById('summaryQuoteNoRow');
             if (summaryRow) summaryRow.classList.add('hidden');
 
+            // --- clear revise section ---
+            const reviseInput = document.getElementById('reviseQuoteInput');
+            if (reviseInput) reviseInput.value = '';
+            const reviseStatus = document.getElementById('reviseStatus');
+            if (reviseStatus) {
+                reviseStatus.textContent = '';
+                reviseStatus.classList.add('hidden');
+                reviseStatus.classList.remove('text-emerald-600', 'text-rose-600', 'text-amber-600');
+            }
+
             // --- clear header fields ---
             document.getElementById('clientName').value   = '';
             document.getElementById('issuerName').value   = '';
@@ -4093,6 +4103,29 @@
                 onTypeChange(card1.querySelector('.typeSelect'));
                 resetCarSelects(card1);
                 lockCcInput(card1.querySelector('.ccInput'));
+
+                // reset ปี
+                const yearSel = card1.querySelector('.yearSelect');
+                if (yearSel) yearSel.selectedIndex = 0;
+
+                // reset น้ำหนัก / ที่นั่ง / ทุนประกัน
+                const weightInput = card1.querySelector('.weightInput');
+                if (weightInput) weightInput.value = '0';
+                const seatInput = card1.querySelector('.seatInput');
+                if (seatInput) seatInput.value = '';
+                const sumInsuredInput = card1.querySelector('.sumInsuredInput');
+                if (sumInsuredInput) {
+                    sumInsuredInput.value = '';
+                    delete sumInsuredInput.dataset.minSuminsured;
+                    delete sumInsuredInput.dataset.maxSuminsured;
+                }
+
+                // reset อุปกรณ์เสริม / กลุ่มรถ
+                const accessorySel = card1.querySelector('.accessorySelect');
+                if (accessorySel) accessorySel.value = 'NO';
+                const carGroupSel = card1.querySelector('.carGroupSelect');
+                if (carGroupSel) carGroupSel.value = '-';
+
                 recalcCardPremium(card1);
             }
 
