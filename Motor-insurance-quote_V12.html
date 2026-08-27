@@ -5536,6 +5536,81 @@
         document.getElementById('loginBtn').textContent = 'เข้าสู่ระบบ';
         document.getElementById('userBadge').classList.add('hidden');
         document.getElementById('userBadge').classList.remove('flex');
+        // ล้างข้อมูลในฟอร์มเพื่อกันข้อมูลของ user คนก่อนค้างอยู่
+        resetFormForNewUser();
+    }
+
+    // ล้าง form + vehicle cards ทั้งหมด — เรียกตอน logout และตอน login ใหม่
+    function resetFormForNewUser() {
+        // ใช้ startNewQuote logic แต่ไม่ confirm และไม่เช็ค DOM ที่ยังไม่พร้อม
+        if (typeof startNewQuote !== 'function') return;
+        // reset ตัวแปร queue โดยตรง (startNewQuote มี confirm dialog — bypass)
+        currentQuoteNo = '';
+        _lastExportSnapshot = '';
+
+        // ซ่อน quote-no-box
+        const qbox = document.querySelector('.quote-no-box');
+        if (qbox) qbox.classList.add('hidden');
+        const qboxText = document.getElementById('quoteNoDisplay');
+        if (qboxText) qboxText.textContent = '-';
+        const summaryRow = document.getElementById('summaryQuoteNoRow');
+        if (summaryRow) { summaryRow.classList.add('hidden'); summaryRow.style.display = ''; }
+        const summaryNo = document.getElementById('summaryQuoteNo');
+        if (summaryNo) summaryNo.textContent = '-';
+
+        // clear header fields
+        const clientNameEl = document.getElementById('clientName');
+        if (clientNameEl) clientNameEl.value = '';
+        const issuerNameEl = document.getElementById('issuerName');
+        if (issuerNameEl) issuerNameEl.value = '';
+        const issuerBranchEl = document.getElementById('issuerBranch');
+        if (issuerBranchEl) issuerBranchEl.value = '';
+
+        // reset วัน-เวลา
+        const dtEl = document.getElementById('currentDateTime');
+        if (dtEl) {
+            const now = new Date();
+            now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
+            dtEl.value = now.toISOString().slice(0, 16);
+        }
+
+        // reset vehicle cards — เหลือแค่ 1 ใบและ clear ค่า
+        const container = document.getElementById('vehicleContainer');
+        if (!container) return;
+        const cards = container.querySelectorAll('.vehicle-card');
+        for (let i = 1; i < cards.length; i++) cards[i].remove();
+        if (typeof vehicleCount !== 'undefined') vehicleCount = 1;
+        const card1 = container.querySelector('.vehicle-card');
+        if (card1) {
+            const plateEl = card1.querySelector('.plateInput');
+            if (plateEl) plateEl.value = '';
+            const typeEl = card1.querySelector('.typeSelect');
+            if (typeEl) { typeEl.value = '1'; if (typeof onTypeChange === 'function') onTypeChange(typeEl); }
+            const vcSel = card1.querySelector('.vehicleCodeSelect');
+            if (vcSel) { vcSel.value = ''; if (typeof onVehicleCodeChange === 'function') onVehicleCodeChange(vcSel); }
+            const yearEl = card1.querySelector('.yearSelect');
+            if (yearEl) yearEl.selectedIndex = 0;
+            const weightEl = card1.querySelector('.weightInput');
+            if (weightEl) weightEl.value = '';
+            const seatEl = card1.querySelector('.seatInput');
+            if (seatEl) seatEl.value = '';
+            const sumEl = card1.querySelector('.sumInsuredInput');
+            if (sumEl) { sumEl.value = ''; delete sumEl.dataset.minSuminsured; delete sumEl.dataset.maxSuminsured; }
+            const accAmtEl = card1.querySelector('.accessoryAmountInput');
+            if (accAmtEl) accAmtEl.value = '0';
+            const groupDiscEl = card1.querySelector('.groupDiscountSelect');
+            if (groupDiscEl) groupDiscEl.value = '0';
+            const claimDiscEl = card1.querySelector('.claimDiscountSelect');
+            if (claimDiscEl) claimDiscEl.value = '0';
+            if (typeof recalcCardPremium === 'function') recalcCardPremium(card1);
+        }
+
+        // กลับหน้า form (ถ้าอยู่ที่ summary)
+        const summaryView = document.getElementById('summaryView');
+        const formView    = document.getElementById('formView');
+        if (summaryView) summaryView.classList.add('hidden');
+        if (formView)    formView.classList.remove('hidden');
+        if (typeof renderVehicleNav === 'function') renderVehicleNav();
     }
 
     // --- Session Countdown Timer ---
@@ -5590,7 +5665,16 @@
     }
 
     // --- onLoginSuccess ---
+    // savedAt: มีค่าเมื่อ restore session (user คนเดิม) / undefined เมื่อ login ใหม่
     function onLoginSuccess(savedAt) {
+        // login ใหม่ (ไม่ใช่ restore) → ล้างข้อมูลค้างของ user คนก่อน
+        if (!savedAt) {
+            if (document.readyState === 'loading') {
+                document.addEventListener('DOMContentLoaded', resetFormForNewUser, { once: true });
+            } else {
+                resetFormForNewUser();
+            }
+        }
         // ตั้ง session timeout ก่อน (ไม่ต้องรอ DOM)
         const timeoutHours = parseInt(_appSettings.session_timeout_hours || '8', 10);
         let _countdownTarget = null;   // เก็บไว้ให้ applyDomUpdates ใช้
