@@ -6492,10 +6492,13 @@
         msgEl.className = 'text-xs text-amber-600'; msgEl.textContent = 'กำลังดึงข้อมูล...';
 
         try {
-            // quote_date เป็น date type — filter ตรงๆ ไม่ต้องใส่ timezone
-            const url = `/rest/v1/quotation_queue?quote_date=gte.${fromVal}&quote_date=lte.${toVal}`
-                      + `&select=quote_no,quote_date,client_name,issuer_name,issuer_branch,vehicle_count,total_premium,created_at,quote_data`
-                      + `&order=quote_date.asc,quote_no.asc`;
+            // ดึงจาก quotation_vehicles — structured data รายคัน
+            const url = `/rest/v1/quotation_vehicles?quote_date=gte.${fromVal}&quote_date=lte.${toVal}`
+                      + `&select=quote_no,quote_date,client_name,issuer_name,issuer_branch,vehicle_seq,`
+                      + `plate,brand,model,spec,car_year,type,repair,vehicle_code,sum_insured,`
+                      + `vol_net,vol_stamp,vol_vat,vol_total,prb,prb_total,grand_total,`
+                      + `group_discount,claim_discount,driver_behavior_filter,driver_behavior_discount`
+                      + `&order=quote_date.asc,quote_no.asc,vehicle_seq.asc`;
             const res  = await sbFetch(url);
             const rows = await res.json();
             console.log('[QuotationReport] status:', res.status, 'rows:', Array.isArray(rows) ? rows.length : rows);
@@ -6504,7 +6507,6 @@
                 msgEl.className = 'text-xs text-slate-500'; msgEl.textContent = 'ไม่พบข้อมูลในช่วงที่เลือก'; return;
             }
 
-            // สร้าง rows สำหรับ Excel — 1 vehicle = 1 แถว
             const headers = [
                 'เลขที่ใบเสนอราคา', 'วันที่ออก', 'ชื่อผู้เอาประกัน', 'ผู้ออกงาน', 'สาขา',
                 'คันที่', 'ทะเบียนรถ', 'ยี่ห้อ', 'รุ่น', 'สเปก', 'ปี',
@@ -6515,44 +6517,38 @@
             ];
             const data = [headers];
 
-            rows.forEach(q => {
-                const vehicles = q.quote_data?.vehicles || [];
-                if (vehicles.length === 0) {
-                    // ใบที่ไม่มีข้อมูลรถ — ใส่แถวเปล่า
-                    data.push([q.quote_no, q.quote_date, q.client_name, q.issuer_name, q.issuer_branch,
-                               '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '']);
-                } else {
-                    vehicles.forEach((v, i) => {
-                        data.push([
-                            i === 0 ? q.quote_no : '',
-                            i === 0 ? q.quote_date : '',
-                            i === 0 ? q.client_name : '',
-                            i === 0 ? q.issuer_name : '',
-                            i === 0 ? q.issuer_branch : '',
-                            i + 1,
-                            v.plate        || '',
-                            v.brand        || '',
-                            v.model        || '',
-                            v.spec         || '',
-                            v.year         || '',
-                            v.type         || '',
-                            v.repair       || '',
-                            v.vehicleCode  || '',
-                            v.sumInsured   || '',
-                            v.volNet       || 0,
-                            v.volStamp     || 0,
-                            v.volVat       || 0,
-                            v.volTotal     || 0,
-                            v.prb          || '',
-                            v.prbTotal     || 0,
-                            v.grandTotal   || 0,
-                            v.groupDiscount          || '',
-                            v.claimDiscount          || '',
-                            v.driverBehaviorFilter   || '',
-                            v.driverBehaviorDiscount || ''
-                        ]);
-                    });
-                }
+            let prevQuoteNo = null;
+            rows.forEach(v => {
+                const isFirst = v.quote_no !== prevQuoteNo;
+                prevQuoteNo = v.quote_no;
+                data.push([
+                    isFirst ? v.quote_no      : '',
+                    isFirst ? v.quote_date    : '',
+                    isFirst ? v.client_name   : '',
+                    isFirst ? v.issuer_name   : '',
+                    isFirst ? v.issuer_branch : '',
+                    v.vehicle_seq             || '',
+                    v.plate                   || '',
+                    v.brand                   || '',
+                    v.model                   || '',
+                    v.spec                    || '',
+                    v.car_year                || '',
+                    v.type                    || '',
+                    v.repair                  || '',
+                    v.vehicle_code            || '',
+                    v.sum_insured             || 0,
+                    v.vol_net                 || 0,
+                    v.vol_stamp               || 0,
+                    v.vol_vat                 || 0,
+                    v.vol_total               || 0,
+                    v.prb                     || '',
+                    v.prb_total               || 0,
+                    v.grand_total             || 0,
+                    v.group_discount          || '',
+                    v.claim_discount          || '',
+                    v.driver_behavior_filter  || '',
+                    v.driver_behavior_discount || ''
+                ]);
             });
 
             const ws = XLSX.utils.aoa_to_sheet(data);
@@ -6562,7 +6558,7 @@
             XLSX.writeFile(wb, `QuotationReport_${fromVal}_to_${toVal}.xlsx`);
 
             msgEl.className = 'text-xs text-emerald-600';
-            msgEl.textContent = `Export สำเร็จ ${rows.length} ใบเสนอราคา (${data.length - 1} แถวข้อมูล)`;
+            msgEl.textContent = `Export สำเร็จ ${data.length - 1} แถว`;
         } catch (e) {
             msgEl.className = 'text-xs text-rose-500'; msgEl.textContent = 'เกิดข้อผิดพลาด: ' + e.message;
         }
@@ -6587,7 +6583,7 @@
 
         try {
             const url = `/rest/v1/login_log?logged_in_at=gte.${fromVal}T00:00:00&logged_in_at=lte.${toVal}T23:59:59`
-                      + `&select=email,display_name,role,logged_in_at,user_agent`
+                      + `&select=email,display_name,role,issuer_name,issuer_branch,action,logged_in_at,session_id,user_agent`
                       + `&order=logged_in_at.asc`;
             const res  = await sbFetch(url);
             const rows = await res.json();
@@ -6597,16 +6593,27 @@
                 msgEl.className = 'text-xs text-slate-500'; msgEl.textContent = 'ไม่พบข้อมูลในช่วงที่เลือก'; return;
             }
 
-            const headers = ['อีเมล', 'ชื่อแสดง', 'Role', 'วันที่ Login', 'เวลา Login', 'User Agent'];
+            const headers = ['อีเมล', 'ชื่อแสดง', 'Role', 'ผู้ออกงาน', 'สาขา', 'Action', 'วันที่', 'เวลา', 'Session ID', 'User Agent'];
             const data    = [headers];
             rows.forEach(r => {
                 const dateStr = toThaiDate(r.logged_in_at);
                 const timeStr = toThaiTime(r.logged_in_at);
-                data.push([r.email, r.display_name || '', r.role || '', dateStr, timeStr, r.user_agent || '']);
+                data.push([
+                    r.email           || '',
+                    r.display_name    || '',
+                    r.role            || '',
+                    r.issuer_name     || '',
+                    r.issuer_branch   || '',
+                    r.action          || '',
+                    dateStr,
+                    timeStr,
+                    r.session_id      || '',
+                    r.user_agent      || ''
+                ]);
             });
 
             const ws = XLSX.utils.aoa_to_sheet(data);
-            ws['!cols'] = [{ wch: 30 }, { wch: 20 }, { wch: 8 }, { wch: 14 }, { wch: 12 }, { wch: 60 }];
+            ws['!cols'] = [{ wch: 30 }, { wch: 20 }, { wch: 8 }, { wch: 20 }, { wch: 20 }, { wch: 16 }, { wch: 14 }, { wch: 12 }, { wch: 36 }, { wch: 50 }];
             const wb = XLSX.utils.book_new();
             XLSX.utils.book_append_sheet(wb, ws, 'Login Log');
             XLSX.writeFile(wb, `LoginReport_${fromVal}_to_${toVal}.xlsx`);
