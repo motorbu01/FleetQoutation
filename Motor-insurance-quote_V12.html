@@ -5026,17 +5026,27 @@
 
                 if (rows.length === 0) return;
 
+                console.log('[QV] rows to insert:', rows.length, '| user:', _currentUser?.id, '| sbFetch available:', typeof sbFetch);
+
                 // Bulk INSERT ผ่าน sbFetch (มี auto token-refresh รองรับ token หมดอายุ)
-                sbFetch('/rest/v1/quotation_vehicles', {
+                // fallback เป็น fetch ปกติถ้า sbFetch ยังไม่พร้อม (ไม่ควรเกิด แต่ป้องกันไว้)
+                const _fetchFn = (typeof sbFetch === 'function') ? sbFetch : (path, opts) => fetch(
+                    'https://nwoqddeexkciftpzoexl.supabase.co' + path,
+                    { ...opts, headers: { 'Content-Type':'application/json', 'apikey':'sb_publishable_IYC4LnMdk2VFj1dMhJdJig_3LDZ4XF4', 'Authorization':'Bearer ' + (_currentUser?.access_token || 'sb_publishable_IYC4LnMdk2VFj1dMhJdJig_3LDZ4XF4'), ...(opts?.headers||{}) } }
+                );
+
+                _fetchFn('/rest/v1/quotation_vehicles', {
                     method: 'POST',
                     headers: { 'Prefer': 'return=minimal' },
                     body: JSON.stringify(rows)
                 }).then(async res => {
                     if (!res.ok) {
                         const body = await res.text().catch(() => '');
-                        console.warn('saveQuotationVehicles HTTP', res.status, body);
+                        console.error('[QV] INSERT failed', res.status, body);
+                    } else {
+                        console.log('[QV] INSERT ok', rows.length, 'rows');
                     }
-                }).catch(err => console.warn('saveQuotationVehicles failed:', err));
+                }).catch(err => console.error('[QV] INSERT error:', err));
 
             } catch (err) {
                 console.warn('saveQuotationVehicles error:', err);
