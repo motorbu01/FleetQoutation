@@ -5752,15 +5752,6 @@
         }
     }
 
-    // เรียกหลัง addVehicleCard() เพื่อให้ card ใหม่ก็ถูก limit ด้วย
-    const _origAddVehicleCard = window.addVehicleCard;
-    if (typeof _origAddVehicleCard === 'function') {
-        window.addVehicleCard = function(...args) {
-            _origAddVehicleCard.apply(this, args);
-            if (_currentProfile) applyPermissions();
-        };
-    }
-
     // =====================================================================
     // ADMIN PANEL
     // =====================================================================
