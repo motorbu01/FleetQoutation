@@ -128,7 +128,53 @@
         html.dark input, html.dark select, html.dark textarea { color: #e2e8f0; }
         html.dark input::placeholder, html.dark textarea::placeholder { color: #64748b; }
         html.dark select option { background-color: #1e293b; color: #e2e8f0; }
+
+        /* ===== SPEC-LOCKED: ทุก field ที่ถูกล็อค ===== */
+        /* Light mode — สีเทาอ่อน แยกจาก bg-white ที่กรอกได้ */
+        .spec-locked {
+            background-color: #f1f5f9 !important;
+            border-color: #cbd5e1 !important;
+            color: #94a3b8 !important;
+            cursor: not-allowed !important;
+        }
+        /* bg-slate-100 fields (accessorySelect ฯลฯ) ให้สีเดียวกับ spec-locked */
+        select[disabled].bg-slate-100, input[disabled].bg-slate-100 {
+            background-color: #f1f5f9 !important;
+            color: #94a3b8 !important;
+            border-color: #cbd5e1 !important;
+            cursor: not-allowed !important;
+        }
+        /* Dark mode */
+        html.dark .spec-locked {
+            background-color: #0f172a !important;
+            border-color: #1e293b !important;
+            color: #475569 !important;
+            cursor: not-allowed !important;
+        }
+        html.dark select[disabled].bg-slate-100, html.dark input[disabled].bg-slate-100 {
+            background-color: #0f172a !important;
+            color: #475569 !important;
+            border-color: #1e293b !important;
+            cursor: not-allowed !important;
+        }
+        /* SearchableSelect ที่ถูกล็อค — ย้ายไปอยู่หลัง searchable select block แล้ว */
         html.dark .shadow-sm, html.dark .shadow-lg { box-shadow: 0 1px 2px 0 rgba(0,0,0,.4) !important; }
+
+        /* Readonly / disabled fields — darker background so they're visually distinct */
+        html.dark input[readonly]:not(.hidden),
+        html.dark textarea[readonly] {
+            background-color: #0f172a !important;
+            color: #64748b !important;
+            border-color: #334155 !important;
+        }
+        html.dark input[disabled]:not(.spec-locked),
+        html.dark select[disabled]:not(.spec-locked),
+        html.dark textarea[disabled]:not(.spec-locked) {
+            background-color: #0f172a !important;
+            color: #475569 !important;
+            border-color: #1e293b !important;
+            opacity: 1 !important;
+        }
 
         /* Searchable select component */
         html.dark .searchable-select-wrapper .ss-display { background: #1e293b; border-color: #475569; color: #e2e8f0; }
@@ -143,6 +189,22 @@
         html.dark .searchable-select-wrapper .ss-option:hover,
         html.dark .searchable-select-wrapper .ss-option.ss-highlighted { background: rgba(99,102,241,0.2); color: #c7d2fe; }
         html.dark .searchable-select-wrapper .ss-option.ss-selected { background: rgba(99,102,241,0.3); }
+
+        /* spec-locked-ss override — ต้องอยู่หลัง searchable select rules เพื่อ specificity ชนะ */
+        html.dark .searchable-select-wrapper.spec-locked-ss .ss-display {
+            background: #0f172a !important;
+            border-color: #1e293b !important;
+            color: #475569 !important;
+            cursor: not-allowed !important;
+            pointer-events: none;
+        }
+        .searchable-select-wrapper.spec-locked-ss .ss-display {
+            background: #e2e8f0 !important;
+            border-color: #cbd5e1 !important;
+            color: #94a3b8 !important;
+            cursor: not-allowed !important;
+            pointer-events: none;
+        }
 
         /* Hover states */
         html.dark .hover\:bg-slate-100:hover { background-color: #334155 !important; }
@@ -459,10 +521,10 @@
                                         <div>
                                             <label class="block text-xs font-semibold text-amber-600 uppercase tracking-wide mb-1.5">ส่วนลดพฤติกรรมผู้ขับขี่</label>
                                             <div class="grid grid-cols-2 gap-2">
-                                                <select class="block w-full rounded-xl border border-slate-200 bg-slate-100 px-2 py-2.5 text-xs text-slate-500 focus:outline-none transition-all driverBehaviorFilter" onchange="onDriverBehaviorFilterChange(this)" disabled title="ประเภทผู้ขับขี่">
+                                                <select class="block w-full rounded-xl border px-2 py-2.5 text-xs focus:outline-none transition-all driverBehaviorFilter spec-locked" onchange="onDriverBehaviorFilterChange(this)" disabled title="ประเภทผู้ขับขี่">
                                                     <option value="ไม่ระบุ" selected>ไม่ระบุ</option><option value="ระบุ">ระบุ</option>
                                                 </select>
-                                                <select class="block w-full rounded-xl border border-slate-200 bg-slate-100 px-2 py-2.5 text-sm text-slate-400 focus:outline-none transition-all driverBehaviorDiscountSelect" disabled>
+                                                <select class="block w-full rounded-xl border px-2 py-2.5 text-sm focus:outline-none transition-all driverBehaviorDiscountSelect spec-locked" disabled>
                                                     <option value="-">-</option>
                                                 </select>
                                             </div>
@@ -479,18 +541,18 @@
                                 </h3>
                                 <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-[1fr_1fr_3fr] gap-3.5 mb-3.5">
                                     <div>
-                                        <label class="block text-xs font-semibold text-slate-700 uppercase tracking-wide mb-1.5">ทะเบียนรถ <span class="text-rose-500">*</span></label>
-                                        <input type="text" class="block w-full rounded-xl border border-slate-300 bg-white px-3 py-2.5 text-sm text-slate-800 shadow-sm focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 focus:outline-none transition-all plateInput" placeholder="กข1234" required>
+                                        <label class="block text-xs font-semibold text-slate-700 uppercase tracking-wide mb-1.5">ทะเบียนรถ <span class="plateReqLabel text-rose-500">*</span></label>
+                                        <input type="text" class="block w-full rounded-xl border border-slate-300 bg-white px-3 py-2.5 text-sm text-slate-800 shadow-sm focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 focus:outline-none transition-all plateInput" placeholder="ระบุทะเบียนรถ" required>
                                     </div>
                                     <div>
-                                        <label class="block text-xs font-semibold text-slate-700 uppercase tracking-wide mb-1.5">ปี (ค.ศ.) <span class="text-rose-500">*</span></label>
+                                        <label class="block text-xs font-semibold text-slate-700 uppercase tracking-wide mb-1.5">ปี (ค.ศ.) <span class="yearReqLabel text-rose-500">*</span></label>
                                         <select class="block w-full rounded-xl border border-slate-300 bg-white px-3 py-2.5 text-sm text-slate-800 shadow-sm focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 focus:outline-none transition-all yearSelect" required>
                                             <!-- Options generated by JS -->
                                         </select>
                                     </div>
                                     <div class="col-span-2 sm:col-span-1 lg:col-span-1">
                                         <div class="flex items-center justify-between mb-1.5 gap-2">
-                                            <label class="block text-xs font-semibold text-slate-700 uppercase tracking-wide">ยี่ห้อ - รุ่น - สเปกรถยนต์<span class="text-rose-500">*</span></label>
+                                            <label class="block text-xs font-semibold text-slate-700 uppercase tracking-wide">ยี่ห้อ รุ่น สเปกรถยนต์<span class="brandReqLabel text-rose-500">*</span></label>
                                             <label class="inline-flex items-center gap-1.5 cursor-pointer select-none shrink-0">
                                                 <input type="checkbox" class="carManualModeToggle w-3.5 h-3.5 rounded border-slate-300 text-indigo-600 focus:ring-indigo-400" onchange="toggleCarManualMode(this)">
                                                 <span class="text-[11px] font-medium text-slate-500">พิมพ์เอง (ไม่มีในฐานข้อมูล)</span>
@@ -515,8 +577,8 @@
                                 <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3.5 mt-3.5">
                                     <div>
                                         <label class="block text-xs font-semibold text-slate-700 uppercase tracking-wide mb-1.5">กลุ่มรถ <span class="carGroupReqLabel text-rose-500 hidden">*</span></label>
-                                        <select class="block w-full rounded-xl border border-slate-200 bg-slate-100 px-3 py-2.5 text-sm text-slate-500 focus:outline-none transition-all carGroupSelect" disabled>
-                                            <option value="-">-</option>
+                                        <select class="block w-full rounded-xl border px-3 py-2.5 text-sm focus:outline-none transition-all carGroupSelect spec-locked" disabled>
+                                            <option value="" selected>-</option>
                                             <!-- <option value="1">กลุ่ม 1</option> -->
                                             <option value="2">กลุ่ม 2</option>
                                             <option value="3">กลุ่ม 3</option>
@@ -526,20 +588,20 @@
                                     </div>
                                     <div>
                                         <label class="block text-xs font-semibold text-slate-700 uppercase tracking-wide mb-1.5">CC <span class="ccReqLabel text-rose-500 hidden">*</span></label>
-                                        <input type="number" class="block w-full rounded-xl border border-slate-200 bg-slate-100 px-3 py-2.5 text-sm text-slate-500 focus:outline-none transition-all ccInput" value="0" placeholder="2400">
+                                        <input type="number" class="block w-full rounded-xl border px-3 py-2.5 text-sm focus:outline-none transition-all ccInput spec-locked" placeholder="ระบุ CC">
                                     </div>
                                     <div>
                                         <label class="block text-xs font-semibold text-slate-700 uppercase tracking-wide mb-1.5">น้ำหนัก (KG) <span class="weightReqLabel text-rose-500 hidden">*</span></label>
-                                        <input type="number" class="block w-full rounded-xl border border-slate-200 bg-slate-100 px-3 py-2.5 text-sm text-slate-500 focus:outline-none transition-all weightInput" value="0" placeholder="1800" oninput="onWeightChange(this)">
+                                        <input type="number" class="block w-full rounded-xl border px-3 py-2.5 text-sm focus:outline-none transition-all weightInput spec-locked" placeholder="ระบุน้ำหนัก (KG)" oninput="onWeightChange(this)">
                                     </div>
                                     <div>
-                                        <label class="block text-xs font-semibold text-slate-700 uppercase tracking-wide mb-1.5">ที่นั่ง <span class="seatReqLabel text-rose-500">*</span></label>
+                                        <label class="block text-xs font-semibold text-slate-700 uppercase tracking-wide mb-1.5">ที่นั่ง <span class="seatReqLabel text-rose-500 hidden">*</span></label>
                                         <div class="seatContainer">
-                                            <input type="number" class="block w-full rounded-xl border border-slate-300 bg-white px-3 py-2.5 text-sm text-slate-800 shadow-sm focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 focus:outline-none transition-all seatInput" placeholder="4" required>
+                                            <input type="number" class="block w-full rounded-xl border border-slate-300 bg-white px-3 py-2.5 text-sm text-slate-800 shadow-sm focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 focus:outline-none transition-all seatInput" placeholder="" required>
                                         </div>
                                     </div>
                                     <div>
-                                        <label class="block text-xs font-semibold text-amber-700 uppercase tracking-wide mb-1.5">ทุนประกันตัวรถ <span class="sumInsuredReqLabel text-rose-500">*</span></label>
+                                        <label class="block text-xs font-semibold text-amber-700 uppercase tracking-wide mb-1.5">ทุนประกันตัวรถ <span class="sumInsuredReqLabel text-rose-500 hidden">*</span></label>
                                         <div class="sumInsuredContainer">
                                             <input type="text" inputmode="numeric" class="block w-full rounded-xl border border-amber-300 bg-amber-50/40 px-3 py-2.5 text-sm text-slate-800 shadow-sm focus:bg-white focus:border-amber-500 focus:ring-2 focus:ring-amber-200 focus:outline-none transition-all font-semibold sumInsuredInput" placeholder="ระบุจำนวนเงิน" required onblur="formatSumInsured(this)" onfocus="unformatSumInsured(this)">
                                         </div>
@@ -549,7 +611,7 @@
                                 <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3.5 mt-3.5">
                                     <div>
                                         <label class="block text-xs font-semibold text-slate-500 uppercase tracking-wide mb-1.5">อุปกรณ์เสริม</label>
-                                        <select class="block w-full rounded-xl border border-slate-200 bg-slate-100 px-3 py-2.5 text-sm text-slate-500 focus:outline-none transition-all accessorySelect" disabled>
+                                        <select class="block w-full rounded-xl border px-3 py-2.5 text-sm focus:outline-none transition-all accessorySelect spec-locked" disabled>
                                             <option value="NO">NO</option>
                                             <option value="YES">YES</option>
                                         </select>
@@ -682,34 +744,75 @@
                             </div>
 
                             <div class="coverage-content transition-all duration-300" style="display:none;">
-                                <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-4">
-                                    <div>
-                                        <label class="block text-xs font-semibold text-slate-500 uppercase tracking-wide mb-1.5">TPBI / PERSON</label>
-                                        <input type="text" class="block w-full rounded-xl border border-slate-200 bg-slate-100 px-4 py-2.5 text-sm text-slate-500 cursor-not-allowed tpbiPersonInput" value="-" readonly>
+                                <!-- 1.1 ความคุ้มครองตัวรถประกัน -->
+                                <div class="mb-4">
+                                    <p class="text-[11px] font-semibold text-slate-400 uppercase tracking-widest mb-2 flex items-center gap-1.5">
+                                        <span class="w-1.5 h-1.5 rounded-full bg-amber-400 inline-block"></span>
+                                        ความคุ้มครองตัวรถประกัน
+                                    </p>
+                                    <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
+                                        <div>
+                                            <label class="block text-xs font-semibold text-slate-500 uppercase tracking-wide mb-1.5">ทุนประกันรถ</label>
+                                            <input type="text" class="block w-full rounded-xl border border-slate-200 bg-slate-100 px-3 py-2.5 text-sm text-slate-600 cursor-not-allowed coverageSumInsuredDisplay" value="-" readonly>
+                                        </div>
+                                        <div>
+                                            <label class="block text-xs font-semibold text-slate-500 uppercase tracking-wide mb-1.5">สูญหาย / ไฟไหม้</label>
+                                            <input type="text" class="block w-full rounded-xl border border-slate-200 bg-slate-100 px-3 py-2.5 text-sm text-slate-600 cursor-not-allowed coverageLossFireDisplay" value="-" readonly>
+                                        </div>
+                                        <div>
+                                            <label class="block text-xs font-semibold text-slate-500 uppercase tracking-wide mb-1.5">ทุนอุปกรณ์ตกแต่ง</label>
+                                            <input type="text" class="block w-full rounded-xl border border-slate-200 bg-slate-100 px-3 py-2.5 text-sm text-slate-600 cursor-not-allowed coverageAccessoryDisplay" value="-" readonly>
+                                        </div>
+                                        <div>
+                                            <label class="block text-xs font-semibold text-amber-600 uppercase tracking-wide mb-1.5">ทุนรวม (รถ + อุปกรณ์)</label>
+                                            <input type="text" class="block w-full rounded-xl border border-amber-200 bg-amber-50/40 px-3 py-2.5 text-sm font-semibold text-slate-700 cursor-not-allowed coverageTotalDisplay" value="-" readonly>
+                                        </div>
                                     </div>
-                                    <div>
-                                        <label class="block text-xs font-semibold text-slate-500 uppercase tracking-wide mb-1.5">TPBI / ACC</label>
-                                        <input type="text" class="block w-full rounded-xl border border-slate-200 bg-slate-100 px-4 py-2.5 text-sm text-slate-500 cursor-not-allowed tpbiAccInput" value="-" readonly>
+                                </div>
+                                <!-- 1.2 ความคุ้มครองบุคคลภายนอก -->
+                                <div class="mb-4">
+                                    <p class="text-[11px] font-semibold text-slate-400 uppercase tracking-widest mb-2 flex items-center gap-1.5">
+                                        <span class="w-1.5 h-1.5 rounded-full bg-indigo-400 inline-block"></span>
+                                        ความคุ้มครองบุคคลภายนอก
+                                    </p>
+                                    <div class="grid grid-cols-2 md:grid-cols-3 gap-3">
+                                        <div>
+                                            <label class="block text-xs font-semibold text-slate-500 uppercase tracking-wide mb-1.5">TPBI / Person</label>
+                                            <input type="text" class="block w-full rounded-xl border border-slate-200 bg-slate-100 px-3 py-2.5 text-sm text-slate-500 cursor-not-allowed tpbiPersonInput" value="-" readonly>
+                                        </div>
+                                        <div>
+                                            <label class="block text-xs font-semibold text-slate-500 uppercase tracking-wide mb-1.5">TPBI / ACC</label>
+                                            <input type="text" class="block w-full rounded-xl border border-slate-200 bg-slate-100 px-3 py-2.5 text-sm text-slate-500 cursor-not-allowed tpbiAccInput" value="-" readonly>
+                                        </div>
+                                        <div>
+                                            <label class="block text-xs font-semibold text-slate-500 uppercase tracking-wide mb-1.5">TPPD / ACC</label>
+                                            <input type="text" class="block w-full rounded-xl border border-slate-200 bg-slate-100 px-3 py-2.5 text-sm text-slate-500 cursor-not-allowed tppdAccInput" value="-" readonly>
+                                        </div>
                                     </div>
-                                    <div>
-                                        <label class="block text-xs font-semibold text-slate-500 uppercase tracking-wide mb-1.5">TPPD / ACC</label>
-                                        <input type="text" class="block w-full rounded-xl border border-slate-200 bg-slate-100 px-4 py-2.5 text-sm text-slate-500 cursor-not-allowed tppdAccInput" value="-" readonly>
-                                    </div>
-                                    <div>
-                                        <label class="block text-xs font-semibold text-slate-500 uppercase tracking-wide mb-1.5">PA Driver</label>
-                                        <input type="text" class="block w-full rounded-xl border border-slate-200 bg-slate-100 px-4 py-2.5 text-sm text-slate-500 cursor-not-allowed paDriverInput" value="-" readonly>
-                                    </div>
-                                    <div>
-                                        <label class="block text-xs font-semibold text-slate-500 uppercase tracking-wide mb-1.5">PA Passenger</label>
-                                        <input type="text" class="block w-full rounded-xl border border-slate-200 bg-slate-100 px-4 py-2.5 text-sm text-slate-500 cursor-not-allowed paPassengerInput" value="-" readonly>
-                                    </div>
-                                    <div>
-                                        <label class="block text-xs font-semibold text-slate-500 uppercase tracking-wide mb-1.5">Medical</label>
-                                        <input type="text" class="block w-full rounded-xl border border-slate-200 bg-slate-100 px-4 py-2.5 text-sm text-slate-500 cursor-not-allowed medicalInput" value="-" readonly>
-                                    </div>
-                                    <div>
-                                        <label class="block text-xs font-semibold text-slate-500 uppercase tracking-wide mb-1.5">Bailbond</label>
-                                        <input type="text" class="block w-full rounded-xl border border-slate-200 bg-slate-100 px-4 py-2.5 text-sm text-slate-500 cursor-not-allowed bailbondInput" value="-" readonly>
+                                </div>
+                                <!-- 1.3 ความคุ้มครองตามเอกสารแนบท้าย -->
+                                <div>
+                                    <p class="text-[11px] font-semibold text-slate-400 uppercase tracking-widest mb-2 flex items-center gap-1.5">
+                                        <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 inline-block"></span>
+                                        ความคุ้มครองตามเอกสารแนบท้าย
+                                    </p>
+                                    <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
+                                        <div>
+                                            <label class="block text-xs font-semibold text-slate-500 uppercase tracking-wide mb-1.5">PA Driver</label>
+                                            <input type="text" class="block w-full rounded-xl border border-slate-200 bg-slate-100 px-3 py-2.5 text-sm text-slate-500 cursor-not-allowed paDriverInput" value="-" readonly>
+                                        </div>
+                                        <div>
+                                            <label class="block text-xs font-semibold text-slate-500 uppercase tracking-wide mb-1.5">PA Passenger</label>
+                                            <input type="text" class="block w-full rounded-xl border border-slate-200 bg-slate-100 px-3 py-2.5 text-sm text-slate-500 cursor-not-allowed paPassengerInput" value="-" readonly>
+                                        </div>
+                                        <div>
+                                            <label class="block text-xs font-semibold text-slate-500 uppercase tracking-wide mb-1.5">Medical</label>
+                                            <input type="text" class="block w-full rounded-xl border border-slate-200 bg-slate-100 px-3 py-2.5 text-sm text-slate-500 cursor-not-allowed medicalInput" value="-" readonly>
+                                        </div>
+                                        <div>
+                                            <label class="block text-xs font-semibold text-slate-500 uppercase tracking-wide mb-1.5">Bailbond</label>
+                                            <input type="text" class="block w-full rounded-xl border border-slate-200 bg-slate-100 px-3 py-2.5 text-sm text-slate-500 cursor-not-allowed bailbondInput" value="-" readonly>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
@@ -1038,6 +1141,9 @@
                     input.value = '';
                 }
             }
+            // อัปเดต coverage section ด้วย
+            const card = input.closest('.vehicle-card');
+            if (card) updateCoverageFields(card);
         }
 
         function unformatSumInsured(input) {
@@ -1052,6 +1158,9 @@
             if (num < 0) num = 0;
             if (num > 100000) num = 100000;
             input.value = num > 0 ? num.toLocaleString('th-TH') : '0';
+            // อัปเดต coverage section ด้วย
+            const card = input.closest('.vehicle-card');
+            if (card) updateCoverageFields(card);
         }
         function unformatAccessoryAmount(input) {
             const num = parseInt(String(input.value || '0').replace(/,/g, ''), 10) || 0;
@@ -1232,20 +1341,18 @@
         function lockCcInput(ccInput) {
             if (!ccInput) return;
             ccInput.disabled = true;
-            ccInput.classList.add('bg-slate-100', 'text-slate-500', 'cursor-not-allowed');
             ccInput.classList.remove('bg-white', 'border-slate-300', 'text-slate-800', 'shadow-sm',
-                'focus:border-indigo-500', 'focus:ring-2', 'focus:ring-indigo-200', 'border-slate-200');
-            ccInput.classList.add('border-slate-200');
+                'focus:border-indigo-500', 'focus:ring-2', 'focus:ring-indigo-200',
+                'bg-slate-100', 'text-slate-500', 'cursor-not-allowed', 'border-slate-200');
+            ccInput.classList.add('spec-locked');
         }
 
-        // ปลดล็อค ccInput: enabled + ปรับ style เป็น editable (เหมือน input ที่กรอกได้ทั่วไป)
         function unlockCcInput(ccInput) {
             if (!ccInput) return;
             ccInput.disabled = false;
-            ccInput.classList.remove('bg-slate-100', 'text-slate-500', 'cursor-not-allowed');
+            ccInput.classList.remove('spec-locked', 'bg-slate-100', 'text-slate-500', 'cursor-not-allowed', 'border-slate-200');
             ccInput.classList.add('bg-white', 'border-slate-300', 'text-slate-800', 'shadow-sm',
                 'focus:border-indigo-500', 'focus:ring-2', 'focus:ring-indigo-200');
-            ccInput.classList.remove('border-slate-200');
         }
 
         // ปรับ UI ของ card ตามว่ารหัสรถนั้นมีใน Master หรือไม่
@@ -1274,9 +1381,14 @@
                 if (dbContainer) dbContainer.classList.add('hidden');
                 if (manualInput) {
                     manualInput.classList.remove('hidden');
+                    manualInput.disabled = false;
                     manualInput.readOnly = false;
                     manualInput.required = true;
                     manualInput.value = '';
+                    // คืน style กรอกได้ (อาจถูก lockSpecSection ล็อคไว้)
+                    manualInput.classList.remove('bg-slate-100', 'border-slate-200', 'text-slate-400', 'cursor-not-allowed');
+                    manualInput.classList.add('bg-white', 'border-slate-300', 'text-slate-800', 'shadow-sm',
+                        'focus:border-indigo-500', 'focus:ring-2', 'focus:ring-indigo-200');
                 }
                 ['carBrandSelect', 'carModelSelect', 'carSpecSelect'].forEach(cls => {
                     const el = card.querySelector('.' + cls);
@@ -1583,15 +1695,18 @@
             card.dataset.savedSpec  = rSpec  || '';
 
             // เติมทุนประกัน (ค่าเฉลี่ยเริ่มต้น) และตั้ง min/max ให้ validate ตอน blur
+            // ไม่ set ถ้าประเภท 3/2 (ไม่ต้องใช้ทุนรถ)
+            const typeVal = card.querySelector('.typeSelect')?.value;
+            const isType3now = (typeVal === '3' || typeVal === '2');
             const sumInsuredInput = card.querySelector('.sumInsuredInput');
-            if (sumInsuredInput && !sumInsuredInput.disabled) {
+            if (sumInsuredInput && !sumInsuredInput.disabled && !isType3now) {
                 sumInsuredInput.value = Number(rSum).toLocaleString('th-TH');
                 sumInsuredInput.dataset.minSuminsured = rMin ?? '';
                 sumInsuredInput.dataset.maxSuminsured = rMax ?? '';
             }
             const hint = card.querySelector('.carSelectedRangeHint');
             if (hint) {
-                if (rMin != null && rMax != null) {
+                if (!isType3now && rMin != null && rMax != null) {
                     hint.textContent = `ทุนประกันตามฐานข้อมูล: ${Number(rMin).toLocaleString('th-TH')} - ${Number(rMax).toLocaleString('th-TH')} บาท (เฉลี่ย ${Number(rSum).toLocaleString('th-TH')} บาท) ปรับได้ในช่วงนี้`;
                     hint.classList.remove('hidden');
                 } else {
@@ -1605,23 +1720,26 @@
                 if (rGroup) {
                     carGroupSelect.value = rGroup;
                 } else {
-                    carGroupSelect.value = '-';
+                    carGroupSelect.value = '';
                 }
                 carGroupSelect.disabled = true;
+                carGroupSelect.classList.remove('spec-locked', 'bg-white', 'border-slate-300', 'shadow-sm',
+                    'focus:border-indigo-500', 'focus:ring-2', 'focus:ring-indigo-200', 'bg-slate-100', 'cursor-not-allowed');
                 carGroupSelect.classList.add('bg-slate-100', 'cursor-not-allowed');
-                carGroupSelect.classList.remove('bg-white', 'border-slate-300', 'shadow-sm', 'focus:border-indigo-500', 'focus:ring-2', 'focus:ring-indigo-200');
-                // ซ่อน * required label เพราะค่ามาจาก Master แล้ว ไม่ต้องให้ user เลือก
-                const carGroupReq = card.querySelector('.carGroupReqLabel');
-                if (carGroupReq) carGroupReq.classList.add('hidden');
+                // * carGroupReqLabel: ยังคงแสดงอยู่เสมอสำหรับ 110/120 — ไม่ซ่อน
             }
 
-            // CC: เติมค่าจากฐานข้อมูลและล็อคไว้ (ห้ามแก้ เพราะ Master กำหนดไว้แล้ว)
+            // CC: เฉพาะรหัส 110/120 ที่ CC ใช้คำนวณ → เติมค่าจาก Master แล้ว lock
+            // รหัสอื่น (210/220/320/340/520/540) CC=0+lock ถูก set ไว้แล้วใน onVehicleCodeChange
             const ccInput = card.querySelector('.ccInput');
-            if (ccInput && rCc != null) {
-                ccInput.value = rCc;
+            if (code === '110' || code === '120') {
+                if (ccInput && rCc != null) {
+                    ccInput.value = rCc;
+                }
+                lockCcInput(ccInput);
             }
-            lockCcInput(ccInput);
 
+            updateCoverageFields(card);
             recalcCardPremium(card);
         }
 
@@ -1636,6 +1754,7 @@
         function clearSumInsuredRange(card) {
             const sumInsuredInput = card.querySelector('.sumInsuredInput');
             if (sumInsuredInput) {
+                sumInsuredInput.value = '';
                 delete sumInsuredInput.dataset.minSuminsured;
                 delete sumInsuredInput.dataset.maxSuminsured;
             }
@@ -1679,23 +1798,35 @@
             const ccInput = card.querySelector('.ccInput');
 
             if (checkbox.checked) {
-                // โหมดกรอกเอง: ซ่อน dropdown ฐานข้อมูล เปิดให้พิมพ์เอง และปลดล็อก CC ให้กรอกได้
+                // โหมดกรอกเอง: ซ่อน dropdown ฐานข้อมูล เปิดให้พิมพ์เอง
                 dbContainer.classList.add('hidden');
                 manualInput.classList.remove('hidden');
+                manualInput.disabled = false;
                 manualInput.readOnly = false;
                 manualInput.required = true;
                 manualInput.value = '';
+                // คืน style กรอกได้
+                manualInput.classList.remove('bg-slate-100', 'border-slate-200', 'text-slate-400', 'cursor-not-allowed');
+                manualInput.classList.add('bg-white', 'border-slate-300', 'text-slate-800', 'shadow-sm',
+                    'focus:border-indigo-500', 'focus:ring-2', 'focus:ring-indigo-200');
                 manualInput.focus();
                 clearSumInsuredRange(card);
                 ['carBrandSelect', 'carModelSelect', 'carSpecSelect'].forEach(cls => {
                     const el = card.querySelector('.' + cls);
                     if (el) { el.required = false; el.value = ''; }
                 });
-                // ล้าง dataset savedBrand/Model/Spec เพื่อไม่ให้ collectQuoteData() ดึงค่าเก่าจาก DB mode
                 card.dataset.savedBrand = '';
                 card.dataset.savedModel = '';
                 card.dataset.savedSpec  = '';
-                unlockCcInput(ccInput);
+
+                // CC: unlock เฉพาะรหัสที่ CC จำเป็น (110/120)
+                // รหัสอื่น (210/220/320/340/520/540 ฯลฯ) CC ยังคง 0+lock
+                if (code === '110' || code === '120') {
+                    unlockCcInput(ccInput);
+                    ccInput.value = '';
+                    // * CC ยังคงแสดงอยู่แล้ว (ตั้งค่าตอน onVehicleCodeChange)
+                }
+                // weight: ไม่เปลี่ยน — รหัสที่ต้องกรอกน้ำหนัก (320/340/520/540) ก็ยังกรอกได้อยู่แล้ว
 
                 if (carGroupSelect && (code === '110' || code === '120')) {
                     setInputRequiredStyle(carGroupSelect, true);
@@ -1723,23 +1854,33 @@
                 resetCarSelect(card.querySelector('.carSpecSelect'), 'เลือกรุ่นก่อน');
                 card.querySelector('.carBrandSelect').value = '';
                 clearSumInsuredRange(card);
-                // ล็อค CC รอ spec ใหม่ (เฉพาะรหัสที่มีใน Master)
-                if (CODES_WITH_MASTER.has(code)) {
+                // กลับ DB mode: lock CC สำหรับรหัส 110/120 เท่านั้น
+                if (code === '110' || code === '120') {
                     lockCcInput(ccInput);
+                    ccInput.value = '';
+                    // * CC ยังคงแสดงอยู่แล้ว — ไม่ต้องซ่อน
+                }
+                // weight: กลับ lock+0 สำหรับรหัสที่ไม่ต้องใช้
+                if (['110', '120', '210', '220'].includes(code)) {
+                    const weightInput = card.querySelector('.weightInput');
+                    if (weightInput) {
+                        weightInput.value = '0';
+                        weightInput.disabled = true;
+                        weightInput.classList.add('spec-locked');
+                        weightInput.classList.remove('bg-white', 'border-slate-300', 'text-slate-800', 'shadow-sm',
+                            'focus:border-indigo-500', 'focus:ring-2', 'focus:ring-indigo-200');
+                    }
                 }
 
                 if (carGroupSelect && (code === '110' || code === '120')) {
-                    // คืน option แรกกลับเป็น "-" (ถ้าถูกเปลี่ยนเป็น placeholder ตอน manual mode)
-                    const firstOpt = carGroupSelect.options[0];
-                    if (firstOpt && firstOpt.value === '') {
-                        firstOpt.text  = '-';
-                        firstOpt.value = '-';
-                    }
-                    carGroupSelect.value = '-';
+                    // กลับ DB mode: คืนเป็น "ระบุกลุ่มรถ" รอ Master set ค่าเมื่อเลือก spec ใหม่
+                    if (carGroupSelect.options[0]) carGroupSelect.options[0].text = 'ระบุกลุ่มรถ';
+                    carGroupSelect.value = '';
                     carGroupSelect.disabled = true;
+                    carGroupSelect.classList.remove('spec-locked', 'bg-white', 'border-slate-300', 'shadow-sm',
+                        'focus:border-indigo-500', 'focus:ring-2', 'focus:ring-indigo-200');
                     carGroupSelect.classList.add('bg-slate-100', 'cursor-not-allowed');
-                    carGroupSelect.classList.remove('bg-white', 'border-slate-300', 'shadow-sm', 'focus:border-indigo-500', 'focus:ring-2', 'focus:ring-indigo-200');
-                    if (carGroupReq) carGroupReq.classList.add('hidden');
+                    if (carGroupReq) carGroupReq.classList.remove('hidden'); // * ยังคงแสดง
                 }
             }
             recalcCardPremium(card);
@@ -1945,6 +2086,12 @@
 
             // ผ่าน validation — ซ่อน error แล้วคำนวณ
             if (errEl) errEl.classList.add('hidden');
+            // format ทุนประกันก่อน (กรณี user ยังไม่ได้ blur) แล้วอัปเดต coverage
+            const sumInsuredInput = card.querySelector('.sumInsuredInput');
+            if (sumInsuredInput) formatSumInsured(sumInsuredInput);
+            const accAmtInput = card.querySelector('.accessoryAmountInput');
+            if (accAmtInput) formatAccessoryAmount(accAmtInput);
+            updateCoverageFields(card);
             recalcCardPremium(card);
             // showPremiumResult จะ handle การแสดง chip ผ่าน updateVehicleSummary แล้ว
             showPremiumResult(card);
@@ -2052,6 +2199,13 @@
                 const vc = card.querySelector('.vehicleCodeSelect');
                 if (vc && !vc.value) onVehicleCodeChange(vc);
                 initSearchableSelects(card);
+                // ถ้ายังไม่มีรหัส → ใส่ spec-locked-ss บน wrapper ที่เพิ่งสร้างโดย initSearchableSelects
+                if (vc && !vc.value) {
+                    ['carBrandSelect', 'carModelSelect', 'carSpecSelect'].forEach(cls => {
+                        const wrapper = card.querySelector('.' + cls)?.closest('.searchable-select-wrapper');
+                        if (wrapper) wrapper.classList.add('spec-locked-ss');
+                    });
+                }
             });
             renderVehicleNav();
         }
@@ -2087,6 +2241,8 @@
                 content.style.display = 'block';
                 chevron.classList.add('rotate-180');
                 textSpan.innerText = 'ซ่อนความคุ้มครอง';
+                // อัปเดตค่าทุกครั้งที่เปิด coverage section
+                updateCoverageFields(card);
             } else {
                 content.style.display = 'none';
                 chevron.classList.remove('rotate-180');
@@ -2167,6 +2323,15 @@
             }
         }
 
+        // คืนค่า sumInsured รวมกับ accessoryAmount (ใช้ทุกที่ที่ต้องการทุนรวม)
+        function getEffectiveSumInsured(card) {
+            const sumInsuredEl = card.querySelector('.sumInsuredInput');
+            const accAmtEl = card.querySelector('.accessoryAmountInput');
+            const sumVal = parseFloat(String(sumInsuredEl?.value || '0').replace(/,/g, '')) || 0;
+            const accVal = parseFloat(String(accAmtEl?.value || '0').replace(/,/g, '')) || 0;
+            return sumVal + accVal;
+        }
+
         function updateCoverageFields(card) {
             const vehicleCode = card.querySelector('.vehicleCodeSelect').value;
             const type = card.querySelector('.typeSelect').value;
@@ -2175,6 +2340,25 @@
 
             const rules = getCoverageRules(vehicleCode, type, repair, weight);
 
+            // 1.1 ความคุ้มครองตัวรถประกัน
+            // ประเภท 3/2 ไม่มีทุนรถ → แสดง "-" ทั้งหมด
+            const isType3 = (type === '3' || type === '2');
+            // query ทั้ง input และ select เพราะ sumInsuredContainer อาจ render เป็น select (ประเภท 2+/3+)
+            const sumInsuredEl = card.querySelector('.sumInsuredContainer input.sumInsuredInput, .sumInsuredContainer select.sumInsuredInput');
+            const sumInsuredRaw = isType3 ? 0 : (parseFloat(String(sumInsuredEl?.value || '0').replace(/,/g, '')) || 0);
+            const accessoryRaw  = parseFloat(String(card.querySelector('.accessoryAmountInput')?.value || '0').replace(/,/g, '')) || 0;
+
+            const sumFmt   = (!isType3 && sumInsuredRaw > 0) ? sumInsuredRaw.toLocaleString('th-TH') : '-';
+            const accFmt   = accessoryRaw > 0 ? accessoryRaw.toLocaleString('th-TH') : '-';
+            const totalRaw = isType3 ? accessoryRaw : (sumInsuredRaw + accessoryRaw);
+            const totalFmt = totalRaw > 0 ? totalRaw.toLocaleString('th-TH') : '-';
+
+            card.querySelector('.coverageSumInsuredDisplay').value = sumFmt;
+            card.querySelector('.coverageLossFireDisplay').value   = sumFmt;
+            card.querySelector('.coverageAccessoryDisplay').value  = accFmt;
+            card.querySelector('.coverageTotalDisplay').value      = totalFmt;
+
+            // 1.2 + 1.3 ความคุ้มครองบุคคลภายนอก + เอกสารแนบท้าย
             card.querySelector('.tpbiPersonInput').value = rules.tpbiPerson;
             card.querySelector('.tpbiAccInput').value = rules.tpbiAcc;
             card.querySelector('.tppdAccInput').value = rules.tppdAcc;
@@ -2211,9 +2395,11 @@
             }
 
             // toggle * sumInsured label ตามประเภท (ประเภท 3 ไม่บังคับกรอกทุน)
+            // แสดงเฉพาะเมื่อมีรหัสรถแล้ว (ยังไม่เลือกรหัสรถ → ซ่อนไว้ก่อน)
             const sumInsuredReq = card.querySelector('.sumInsuredReqLabel');
             const isType3 = (typeVal === '3' || typeVal === '2');
-            if (sumInsuredReq) sumInsuredReq.classList.toggle('hidden', isType3);
+            const hasCode = !!card.querySelector('.vehicleCodeSelect')?.value;
+            if (sumInsuredReq) sumInsuredReq.classList.toggle('hidden', isType3 || !hasCode);
 
             if (typeVal === '2+' || typeVal === '3+') {
                 sumInsuredContainer.innerHTML = `
@@ -2228,8 +2414,10 @@
                 `;
             } else if (typeVal === '3' || typeVal === '2') {
                 sumInsuredContainer.innerHTML = `
-                    <input type="text" class="block w-full rounded-xl border border-slate-200 bg-slate-100 px-3 py-2.5 text-sm text-slate-400 cursor-not-allowed sumInsuredInput" value="0" disabled>
+                    <input type="text" class="block w-full rounded-xl border border-slate-200 bg-slate-100 px-3 py-2.5 text-sm text-slate-400 cursor-not-allowed sumInsuredInput spec-locked" value="" placeholder="-" disabled>
                 `;
+                // ล้าง hint range
+                clearSumInsuredRange(card);
             } else {
                 sumInsuredContainer.innerHTML = `
                     <input type="text" inputmode="numeric" class="block w-full rounded-xl border border-amber-300 bg-amber-50/40 px-3 py-2.5 text-sm text-slate-800 shadow-sm focus:bg-white focus:border-amber-500 focus:ring-2 focus:ring-amber-200 focus:outline-none transition-all font-semibold sumInsuredInput" placeholder="ระบุทุน" required onblur="formatSumInsured(this)" onfocus="unformatSumInsured(this)">
@@ -2282,59 +2470,122 @@
             }
         }
 
+        // ล็อคกล่องข้อมูลจำเพาะรถยนต์ทั้งหมดเมื่อยังไม่ได้เลือกรหัสรถ
+        function lockSpecSection(card) {
+            const lockStyle = (el) => {
+                if (!el) return;
+                el.disabled = true;
+                el.classList.add('spec-locked');
+            };
+
+            // ล็อคทุก field ในกล่องข้อมูลจำเพาะ
+            ['plateInput', 'yearSelect', 'carBrandSelect', 'carModelSelect', 'carSpecSelect',
+             'ccInput', 'weightInput', 'sumInsuredInput', 'accessoryAmountInput'].forEach(cls => {
+                lockStyle(card.querySelector('.' + cls));
+            });
+            // seatInput อยู่ใน container
+            lockStyle(card.querySelector('.seatInput'));
+            // carGroupSelect: lock + reset เป็น "-" (ยังไม่มีรหัส)
+            const groupSel = card.querySelector('.carGroupSelect');
+            if (groupSel) {
+                groupSel.disabled = true;
+                groupSel.value = '';
+                if (groupSel.options[0]) groupSel.options[0].text = '-';
+                groupSel.classList.remove('bg-slate-100', 'bg-white', 'border-slate-200', 'border-slate-300',
+                    'text-slate-500', 'text-slate-800', 'cursor-not-allowed');
+                groupSel.classList.add('spec-locked');
+            }
+
+            // CC/weight: ล้างค่าให้โชว์ placeholder ตอนยังไม่มีรหัส
+            const ccEl = card.querySelector('.ccInput');
+            if (ccEl) ccEl.value = '';
+            const weightEl = card.querySelector('.weightInput');
+            if (weightEl) weightEl.value = '';
+
+            // SearchableSelect wrappers (carBrandSelect, carModelSelect, carSpecSelect)
+            ['carBrandSelect', 'carModelSelect', 'carSpecSelect'].forEach(cls => {
+                const el = card.querySelector('.' + cls);
+                const wrapper = el?.closest('.searchable-select-wrapper');
+                if (wrapper) wrapper.classList.add('spec-locked-ss');
+            });
+
+            // ล็อค checkbox พิมพ์เอง + ซ่อน brandModelInput กลับไป
+            const manualToggle = card.querySelector('.carManualModeToggle');
+            if (manualToggle) {
+                manualToggle.disabled = true;
+                manualToggle.checked = false;
+            }
+            const manualInput = card.querySelector('.brandModelInput');
+            if (manualInput) {
+                manualInput.classList.add('hidden');
+                manualInput.disabled = true;
+            }
+            // คืน DB mode container ให้โชว์ (แต่ fields ใน DB mode ยังถูก lock ไว้)
+            const dbContainer = card.querySelector('.carDbModeContainer');
+            if (dbContainer) dbContainer.classList.remove('hidden');
+
+            // ซ่อน * ทุกตัว
+            ['plateReqLabel', 'yearReqLabel', 'brandReqLabel',
+             'seatReqLabel', 'sumInsuredReqLabel', 'carGroupReqLabel', 'ccReqLabel', 'weightReqLabel'].forEach(cls => {
+                card.querySelector('.' + cls)?.classList.add('hidden');
+            });
+        }
+
+        // ปลดล็อคกล่องข้อมูลจำเพาะเมื่อเลือกรหัสรถแล้ว — คืน style ปกติ
+        function unlockSpecSection(card, code) {
+            // ถอด spec-locked ออกจากทุก field ในส่วนนี้
+            card.querySelectorAll('.spec-locked').forEach(el => {
+                el.classList.remove('spec-locked');
+                el.disabled = false;
+            });
+            // ถอด spec-locked-ss ออกจาก SearchableSelect wrappers
+            card.querySelectorAll('.spec-locked-ss').forEach(el => el.classList.remove('spec-locked-ss'));
+
+            // ปลดล็อค checkbox พิมพ์เอง
+            const manualToggle = card.querySelector('.carManualModeToggle');
+            if (manualToggle) manualToggle.disabled = false;
+
+            // คืน * ที่ควรแสดง
+            card.querySelector('.plateReqLabel')?.classList.remove('hidden');
+            card.querySelector('.yearReqLabel')?.classList.remove('hidden');
+            card.querySelector('.brandReqLabel')?.classList.remove('hidden');
+
+            // sumInsuredReqLabel: แสดงยกเว้นประเภท 2 หรือ 3
+            const typeVal = card.querySelector('.typeSelect')?.value;
+            const sumReq = card.querySelector('.sumInsuredReqLabel');
+            if (sumReq) sumReq.classList.toggle('hidden', typeVal === '3' || typeVal === '2');
+
+            // seatReqLabel: แสดงยกเว้นรหัส 520/540
+            const seatReq = card.querySelector('.seatReqLabel');
+            if (seatReq) seatReq.classList.toggle('hidden', ['520', '540'].includes(code));
+        }
+
         function onVehicleCodeChange(vehicleCodeSelect) {
             const card = vehicleCodeSelect.closest('.vehicle-card');
             const code = vehicleCodeSelect.value;
 
-            // ถ้ายังไม่เลือกรหัส → ล็อคฝั่งข้อมูลจำเพาะทั้งหมดและซ่อน *
-            // ถ้าเลือกแล้ว → unlock และคืน * ตามเงื่อนไขปกติ
-            const specFields = ['plateInput', 'yearSelect', 'brandModelInput', 'seatInput', 'ccInput', 'weightInput'];
-            const reqLabels  = ['seatReqLabel', 'ccReqLabel', 'weightReqLabel', 'sumInsuredReqLabel', 'carGroupReqLabel'];
-            const brandLabel = card.querySelector('.sm\\:col-span-2 .text-rose-500, .carDbModeContainer')
-                               ?.closest('.sm\\:col-span-2')?.querySelector('.text-rose-500');
-
             if (!code) {
-                // ล็อคทุก field ฝั่งขวา
-                specFields.forEach(cls => {
-                    const el = card.querySelector('.' + cls);
-                    if (el && el.tagName !== 'SELECT') {
-                        el.disabled = true;
-                        el.classList.add('opacity-40', 'cursor-not-allowed');
-                    }
-                });
-                ['carBrandSelect','carModelSelect','carSpecSelect','yearSelect','seatInput'].forEach(cls => {
-                    const el = card.querySelector('.' + cls);
-                    if (el) { el.disabled = true; el.classList.add('opacity-40'); }
-                });
-                // ซ่อน * ทุกตัวฝั่งขวา
-                reqLabels.forEach(cls => {
-                    const el = card.querySelector('.' + cls);
-                    if (el) el.classList.add('hidden');
-                });
-                // ซ่อน * ยี่ห้อ-รุ่น
-                const brandReq = card.querySelector('.sm\\:col-span-2 .text-rose-500');
-                if (brandReq) brandReq.classList.add('hidden');
+                lockSpecSection(card);
             } else {
-                // unlock fields ที่ถูกล็อคจากกรณี no-code
-                specFields.forEach(cls => {
-                    const el = card.querySelector('.' + cls);
-                    if (el) { el.disabled = false; el.classList.remove('opacity-40', 'cursor-not-allowed'); }
-                });
-                card.querySelector('.yearSelect')?.classList.remove('opacity-40');
-                // คืน * ยี่ห้อ-รุ่น
-                const brandReq = card.querySelector('.sm\\:col-span-2 .text-rose-500');
-                if (brandReq) brandReq.classList.remove('hidden');
-                // * ที่นั่งและทุนประกัน จะถูกจัดการโดย applyMasterModeToCard และ onTypeChange ตามปกติ
-                const typeVal = card.querySelector('.typeSelect')?.value;
-                const sumReq = card.querySelector('.sumInsuredReqLabel');
-                if (sumReq) sumReq.classList.toggle('hidden', typeVal === '3' || typeVal === '2');
-                const seatReq = card.querySelector('.seatReqLabel');
-                if (seatReq) seatReq.classList.toggle('hidden', ['520','540'].includes(code));
+                unlockSpecSection(card, code);
             }
             
             updatePrbCodeOptions(vehicleCodeSelect);
             resetCarSelects(card);
-            applyMasterModeToCard(card, code);
+            // ล้าง dataset brand/model/spec ทุกครั้งที่เปลี่ยนรหัสรถ
+            card.dataset.savedBrand = '';
+            card.dataset.savedModel = '';
+            card.dataset.savedSpec  = '';
+            const bmiClear = card.querySelector('.brandModelInput');
+            if (bmiClear) bmiClear.value = '';
+            // ล้างค่าที่ค้างจากรหัสรถเดิม
+            const plateInputReset = card.querySelector('.plateInput');
+            if (plateInputReset) plateInputReset.value = '';
+            const yearSelReset = card.querySelector('.yearSelect');
+            if (yearSelReset) { yearSelReset.disabled = false; yearSelReset.selectedIndex = 0; }
+            const accAmtReset = card.querySelector('.accessoryAmountInput');
+            if (accAmtReset) accAmtReset.value = '0';
+            if (code) applyMasterModeToCard(card, code);
 
             const accessorySelect = card.querySelector('.accessorySelect');
             const yesCodes = ["327", "340", "347", "420", "540"];
@@ -2343,6 +2594,10 @@
             } else {
                 accessorySelect.value = "NO";
             }
+            // accessorySelect เป็น display-only เสมอ — ใช้ style ปกติ (bg-slate-100) ไม่ใช่ spec-locked
+            accessorySelect.disabled = true;
+            accessorySelect.classList.remove('spec-locked');
+            accessorySelect.classList.add('bg-slate-100', 'cursor-not-allowed', 'text-slate-500');
 
             const carGroupSelect = card.querySelector('.carGroupSelect');
             const ccInput = card.querySelector('.ccInput');
@@ -2353,102 +2608,145 @@
             const ccReq = card.querySelector('.ccReqLabel');
             const weightReq = card.querySelector('.weightReqLabel');
 
-            carGroupSelect.value = "-";
+            // reset กลุ่มรถ: รหัสที่ไม่ใช้กลุ่มรถ → แสดง "-", รหัส 110/120 → "ระบุกลุ่มรถ" (จัดการต่อใน if block ด้านล่าง)
+            // reset กลุ่มรถ: รหัสอื่นๆ → "-" + lock ด้วย style ปกติ
+            carGroupSelect.classList.remove('spec-locked');
+            if (carGroupSelect.options[0]) carGroupSelect.options[0].text = '-';
+            carGroupSelect.value = "";
             setInputRequiredStyle(carGroupSelect, false);
             carGroupReq.classList.add('hidden');
             
-            ccInput.value = "0";
+            ccInput.value = "";
             setInputRequiredStyle(ccInput, false);
             ccReq.classList.add('hidden');
 
-            weightInput.value = "0";
+            weightInput.value = "";
             setInputRequiredStyle(weightInput, false);
             weightReq.classList.add('hidden');
 
             seatContainer.innerHTML = `
-                <input type="number" class="block w-full rounded-xl border border-slate-300 bg-white px-3 py-2.5 text-sm text-slate-800 shadow-sm focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 focus:outline-none transition-all seatInput" placeholder="4" required>
+                <input type="number" class="block w-full rounded-xl border border-slate-300 bg-white px-3 py-2.5 text-sm text-slate-800 shadow-sm focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 focus:outline-none transition-all seatInput" placeholder="" required>
             `;
             let seatInput = card.querySelector('.seatInput');
+            // ถ้าไม่มีรหัสรถ → lock seatInput ที่เพิ่งสร้างใหม่ด้วย (สร้างหลัง lockSpecSection)
+            if (!code) {
+                seatInput.disabled = true;
+                seatInput.classList.add('spec-locked');
+            }
 
             const driverBehaviorFilter = card.querySelector('.driverBehaviorFilter');
             const driverBehaviorDiscountSelect = card.querySelector('.driverBehaviorDiscountSelect');
 
             if (code === "110" || code === "210") {
-                driverBehaviorFilter.value = "ไม่ระบุ"; // reset เป็น default ทุกครั้งที่เปลี่ยนรหัส
+                driverBehaviorFilter.value = "ไม่ระบุ";
                 driverBehaviorFilter.disabled = false;
-                driverBehaviorFilter.classList.remove('bg-slate-100', 'cursor-not-allowed', 'text-slate-500');
+                driverBehaviorFilter.classList.remove('spec-locked', 'bg-slate-100', 'cursor-not-allowed', 'text-slate-500');
                 driverBehaviorFilter.classList.add('bg-amber-50/50', 'text-amber-700', 'border-amber-200');
                 
                 onDriverBehaviorFilterChange(driverBehaviorFilter);
+            // driverBehaviorFilter — locked: ใช้ spec-locked
             } else {
                 driverBehaviorFilter.value = "ไม่ระบุ";
                 driverBehaviorFilter.disabled = true;
-                driverBehaviorFilter.classList.add('bg-slate-100', 'cursor-not-allowed', 'text-slate-500');
-                driverBehaviorFilter.classList.remove('bg-amber-50/50', 'text-amber-700', 'border-amber-200');
+                driverBehaviorFilter.classList.remove('bg-amber-50/50', 'text-amber-700', 'border-amber-200',
+                    'bg-slate-100', 'cursor-not-allowed', 'text-slate-500');
+                driverBehaviorFilter.classList.add('spec-locked');
 
                 driverBehaviorDiscountSelect.innerHTML = '<option value="-">-</option>';
                 driverBehaviorDiscountSelect.value = "-";
                 driverBehaviorDiscountSelect.disabled = true;
-                driverBehaviorDiscountSelect.classList.add('bg-slate-100', 'cursor-not-allowed', 'text-slate-400');
-                driverBehaviorDiscountSelect.classList.remove('bg-amber-50/50', 'text-amber-700', 'border-amber-200');
+                driverBehaviorDiscountSelect.classList.remove('bg-amber-50/50', 'text-amber-700', 'border-amber-200',
+                    'bg-slate-100', 'cursor-not-allowed', 'text-slate-400');
+                driverBehaviorDiscountSelect.classList.add('spec-locked');
             }
 
             if (code === "110" || code === "120") {
-                // กลุ่มรถ: ล็อคไว้ใน SearchBox mode — จะถูก set + ล็อคอีกครั้งเมื่อ user เลือก spec
-                // (ใน manual mode จะปลดล็อคใน toggleCarManualMode)
-                carGroupSelect.value = "-";
+                // กลุ่มรถ: แสดง "ระบุกลุ่มรถ" + * (จำเป็นต้องใช้คำนวณ)
+                if (carGroupSelect.options[0]) carGroupSelect.options[0].text = 'ระบุกลุ่มรถ';
+                carGroupSelect.value = '';
                 carGroupSelect.disabled = true;
-                carGroupSelect.classList.add('bg-slate-100', 'cursor-not-allowed');
-                carGroupSelect.classList.remove('bg-white', 'border-slate-300', 'shadow-sm',
+                carGroupSelect.classList.remove('spec-locked', 'bg-white', 'border-slate-300', 'shadow-sm',
                     'focus:border-indigo-500', 'focus:ring-2', 'focus:ring-indigo-200');
-                carGroupReq.classList.add('hidden');
-                
-                // CC: ล็อคไว้ใน SearchBox mode — ค่าจะถูก set จาก Master เมื่อเลือก spec เสร็จ
-                ccInput.value = "0";
+                carGroupSelect.classList.add('bg-slate-100', 'cursor-not-allowed');
+                carGroupReq.classList.remove('hidden');
+
+                // CC: ล็อค รอค่าจาก Master — แสดง * เพราะจำเป็นต้องใช้คำนวณ
+                ccInput.value = "";
                 lockCcInput(ccInput);
-                ccReq.classList.add('hidden');
-                
-                weightInput.value = "0"; 
+                ccReq.classList.remove('hidden'); // * CC: แสดงเสมอ
+
+                // น้ำหนัก: ไม่ใช้คำนวณ → 0 + lock, ไม่แสดง *
+                weightInput.value = "0";
+                setInputRequiredStyle(weightInput, false);
+                weightInput.disabled = true;
+                weightInput.classList.add('spec-locked');
+                weightReq.classList.add('hidden');
 
                 seatInput.value = '7';
                 setInputRequiredStyle(seatInput, false);
             } 
             else if (code === "210") {
-                // CC: ล็อคไว้ใน SearchBox mode — ค่าจะถูก set จาก Master เมื่อเลือก spec เสร็จ
-                lockCcInput(ccInput);
+                // CC: ไม่ใช้คำนวณ → 0 + lock (เหมือน 220)
                 ccInput.value = "0";
+                lockCcInput(ccInput);
                 ccReq.classList.add('hidden');
+
+                // น้ำหนัก: ไม่ใช้ → 0 + lock
                 weightInput.value = "0";
+                setInputRequiredStyle(weightInput, false);
+                weightInput.disabled = true;
+                weightInput.classList.add('spec-locked');
 
                 seatInput.value = '12';
                 setInputRequiredStyle(seatInput, false);
             } 
             else if (code === "220") {
+                // CC: ไม่ใช้ → 0 + lock
                 ccInput.value = "0";
+                lockCcInput(ccInput);
+
+                // น้ำหนัก: ไม่ใช้ → 0 + lock
                 weightInput.value = "0";
+                setInputRequiredStyle(weightInput, false);
+                weightInput.disabled = true;
+                weightInput.classList.add('spec-locked');
 
                 seatContainer.innerHTML = `
                     <select class="block w-full rounded-xl border border-slate-300 bg-white px-3 py-2.5 text-sm text-slate-800 shadow-sm focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 focus:outline-none transition-all seatInput" required>
-                        <option value="12">12 ที่นั่ง</option>
-                        <option value="15">15 ที่นั่ง</option>
+                        <option value="12">12</option>
+                        <option value="15">15</option>
                     </select>
                 `;
             }
             else if (["320", "327", "340", "347", "420"].includes(code)) {
+                // CC: ไม่ใช้ → 0 + lock
                 ccInput.value = "0";
+                lockCcInput(ccInput);
 
+                // น้ำหนัก: จำเป็นต้องกรอก → unlock
+                weightInput.value = "";
+                weightInput.disabled = false;
+                weightInput.classList.remove('spec-locked', 'bg-slate-100', 'cursor-not-allowed');
+                weightInput.classList.add('bg-white', 'border-slate-300', 'text-slate-800', 'shadow-sm',
+                    'focus:border-indigo-500', 'focus:ring-2', 'focus:ring-indigo-200');
                 setInputRequiredStyle(weightInput, true);
-                weightInput.value = ""; 
                 weightReq.classList.remove('hidden');
                 
                 seatInput.value = '3';
                 setInputRequiredStyle(seatInput, false);
             } 
             else if (code === "520" || code === "540") {
+                // CC: ไม่ใช้ → 0 + lock
                 ccInput.value = "0";
+                lockCcInput(ccInput);
 
+                // น้ำหนัก: จำเป็นต้องกรอก → unlock
+                weightInput.value = "";
+                weightInput.disabled = false;
+                weightInput.classList.remove('spec-locked', 'bg-slate-100', 'cursor-not-allowed');
+                weightInput.classList.add('bg-white', 'border-slate-300', 'text-slate-800', 'shadow-sm',
+                    'focus:border-indigo-500', 'focus:ring-2', 'focus:ring-indigo-200');
                 setInputRequiredStyle(weightInput, true);
-                weightInput.value = ""; 
                 weightReq.classList.remove('hidden');
                 
                 seatInput.value = '0';
@@ -2470,8 +2768,9 @@
                 discountSelect.innerHTML = '<option value="-">-</option>';
                 discountSelect.value = "-";
                 discountSelect.disabled = true;
-                discountSelect.classList.add('bg-slate-100', 'cursor-not-allowed', 'text-slate-400');
-                discountSelect.classList.remove('bg-amber-50/50', 'text-amber-700', 'border-amber-200');
+                discountSelect.classList.remove('bg-amber-50/50', 'text-amber-700', 'border-amber-200',
+                    'bg-slate-100', 'cursor-not-allowed', 'text-slate-400');
+                discountSelect.classList.add('spec-locked');
             } else {
                 discountSelect.innerHTML = `
                     <option value="LV1">LV. 1</option>
@@ -2481,7 +2780,7 @@
                     <option value="LV5">LV. 5</option>
                 `;
                 discountSelect.disabled = false;
-                discountSelect.classList.remove('bg-slate-100', 'cursor-not-allowed', 'text-slate-400');
+                discountSelect.classList.remove('spec-locked', 'bg-slate-100', 'cursor-not-allowed', 'text-slate-400');
                 discountSelect.classList.add('bg-amber-50/50', 'text-amber-700', 'border-amber-200');
             }
             hidePremiumResult(card);
@@ -2706,8 +3005,9 @@
             
             newCard.querySelectorAll('input').forEach(input => {
                 if(input.classList.contains('premiumInput')) input.value = '0.00';
-                else if(input.classList.contains('ccInput') || input.classList.contains('weightInput')) input.value = '0';
+                else if(input.classList.contains('ccInput') || input.classList.contains('weightInput')) input.value = '';
                 else if(input.classList.contains('tpbiPersonInput') || input.classList.contains('tpbiAccInput') || input.classList.contains('tppdAccInput') || input.classList.contains('paDriverInput') || input.classList.contains('paPassengerInput') || input.classList.contains('medicalInput') || input.classList.contains('bailbondInput')) input.value = '-';
+                else if(input.classList.contains('coverageSumInsuredDisplay') || input.classList.contains('coverageLossFireDisplay') || input.classList.contains('coverageAccessoryDisplay') || input.classList.contains('coverageTotalDisplay')) input.value = '-';
                 else if(input.classList.contains('plateInput') || input.classList.contains('brandModelInput') || input.classList.contains('sumInsuredInput')) input.value = '';
                 else if(input.classList.contains('accessoryAmountInput')) input.value = '0';
                 else if(!input.value) input.value = '';
@@ -2721,24 +3021,28 @@
             
             newCard.querySelectorAll('select').forEach(select => {
                 if(select.classList.contains('carGroupSelect')) {
-                    select.value = '-';
+                    select.value = '';
                     select.disabled = true;
+                    select.classList.remove('bg-white', 'border-slate-300', 'text-slate-800', 'shadow-sm');
                     select.classList.add('bg-slate-100', 'cursor-not-allowed');
                 } else if(select.classList.contains('accessorySelect')) {
                     select.value = 'NO';
                     select.disabled = true;
+                    select.classList.remove('bg-white', 'border-slate-300', 'text-slate-800', 'shadow-sm');
                     select.classList.add('bg-slate-100', 'cursor-not-allowed');
                 } else if(select.classList.contains('driverBehaviorFilter')) {
                     select.value = 'ไม่ระบุ';
                     select.disabled = true;
-                    select.classList.add('bg-slate-100', 'cursor-not-allowed', 'text-slate-500');
-                    select.classList.remove('bg-amber-50/50', 'text-amber-700', 'border-amber-200');
+                    select.classList.remove('bg-amber-50/50', 'text-amber-700', 'border-amber-200',
+                        'bg-white', 'border-slate-300', 'text-slate-800', 'shadow-sm');
+                    select.classList.add('spec-locked');
                 } else if(select.classList.contains('driverBehaviorDiscountSelect')) {
                     select.innerHTML = '<option value="-">-</option>';
                     select.value = '-';
                     select.disabled = true;
-                    select.classList.add('bg-slate-100', 'cursor-not-allowed', 'text-slate-400');
-                    select.classList.remove('bg-amber-50/50', 'text-amber-700', 'border-amber-200');
+                    select.classList.remove('bg-amber-50/50', 'text-amber-700', 'border-amber-200',
+                        'bg-white', 'border-slate-300', 'text-slate-800', 'shadow-sm');
+                    select.classList.add('spec-locked');
                 } else if(!select.classList.contains('groupDiscountSelect') && !select.classList.contains('claimDiscountSelect')) {
                     select.selectedIndex = 0;
                 }
@@ -2751,7 +3055,7 @@
             });
 
             newCard.querySelector('.seatContainer').innerHTML = `
-                <input type="number" class="block w-full rounded-xl border border-slate-300 bg-white px-3 py-2.5 text-sm text-slate-800 shadow-sm focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 focus:outline-none transition-all seatInput" placeholder="4" required>
+                <input type="number" class="block w-full rounded-xl border border-slate-300 bg-white px-3 py-2.5 text-sm text-slate-800 shadow-sm focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 focus:outline-none transition-all seatInput" placeholder="" required>
             `;
 
             bindPremiumRecalcEvents(newCard);
@@ -2780,9 +3084,14 @@
             if (newPrbPriceContainer) newPrbPriceContainer.classList.add('hidden');
             newCard.querySelector('.prbCodeSelect').innerHTML = '<option value="">เลือกรหัสรถก่อน</option>';
             newCard.querySelector('.prbCodeSelect').required = false;
-            newCard.querySelector('.carGroupReqLabel').classList.add('hidden');
-            newCard.querySelector('.ccReqLabel').classList.add('hidden');
-            newCard.querySelector('.weightReqLabel').classList.add('hidden');
+
+            // ล็อค spec section ทั้งหมดก่อนเลือกรหัสรถ
+            lockSpecSection(newCard);
+            // ใส่ spec-locked-ss บน wrapper ที่เพิ่งสร้างโดย initSearchableSelects
+            ['carBrandSelect', 'carModelSelect', 'carSpecSelect'].forEach(cls => {
+                const wrapper = newCard.querySelector('.' + cls)?.closest('.searchable-select-wrapper');
+                if (wrapper) wrapper.classList.add('spec-locked-ss');
+            });
 
             // ล้าง flag premium + ซ่อน chip บน card ใหม่
             delete newCard.dataset.premiumCalculated;
@@ -2851,10 +3160,10 @@
             card1.querySelector('.repairSelect').value = "ซ่อมห้าง";
             onRepairChange(card1.querySelector('.repairSelect'));
 
-            // ต้อง set ปีก่อน แล้วค่อย set รหัสรถ เพื่อให้ updateCarBrandOptions ดึงข้อมูลได้ถูก
-            card1.querySelector('.yearSelect').value = "2024";
+            // set รหัสรถก่อน (จะ reset yearSelect) แล้วค่อย set ปีทีหลัง
             card1.querySelector('.vehicleCodeSelect').value = "110";
             onVehicleCodeChange(card1.querySelector('.vehicleCodeSelect'));
+            card1.querySelector('.yearSelect').value = "2024";
 
             // populate และเลือก ยี่ห้อ → รุ่น → สเปก จาก Car Master
             updateCarBrandOptions(card1);
@@ -2892,9 +3201,9 @@
             card2.querySelector('.typeSelect').value = "3";
             onTypeChange(card2.querySelector('.typeSelect'));
 
-            card2.querySelector('.yearSelect').value = "2023";
             card2.querySelector('.vehicleCodeSelect').value = "320";
             onVehicleCodeChange(card2.querySelector('.vehicleCodeSelect'));
+            card2.querySelector('.yearSelect').value = "2023";
 
             // populate และเลือก ยี่ห้อ → รุ่น → สเปก จาก Car Master
             updateCarBrandOptions(card2);
@@ -3539,7 +3848,7 @@
                 const seat = num(card.querySelector('.seatInput') ? card.querySelector('.seatInput').value : 0);
                 const type = card.querySelector('.typeSelect') ? card.querySelector('.typeSelect').value : '1';
                 const repair = (card.querySelector('.repairSelect') ? card.querySelector('.repairSelect').value : '') || '-';
-                const sumInsured = num(card.querySelector('.sumInsuredInput') ? card.querySelector('.sumInsuredInput').value : 0);
+                const sumInsured = getEffectiveSumInsured(card);
 
                 const premiumInputEl = card.querySelector('.premiumInput');
                 const netPremium = num(premiumInputEl ? premiumInputEl.dataset.netPremium : 0);
@@ -3596,7 +3905,7 @@
             let sumK=0,sumN=0,sumO=0,sumP=0,sumQ=0,sumR=0,sumS=0,sumT=0,sumU=0;
             Array.from(cards).slice(0, MAX_ROWS).forEach(card => {
                 recalcCardPremium(card);
-                sumK += num(card.querySelector('.sumInsuredInput')?.value || 0);
+                sumK += getEffectiveSumInsured(card);
                 const np = num(card.querySelector('.premiumInput')?.dataset.netPremium || 0);
                 const vs = Math.ceil(np * 0.004);
                 const vv = (np + vs) * 0.07;
@@ -3771,7 +4080,7 @@
                     const weight = num(weightInput ? weightInput.value : 0);
                     const group = carGroupSelect ? carGroupSelect.value : '-';
                     const year = parseInt(yearSelect ? yearSelect.value : '', 10) || 0;
-                    const sumInsured = num(sumInsuredInput ? sumInsuredInput.value : 0);
+                    const sumInsured = getEffectiveSumInsured(card);
                     const accessoryFlag = accessorySelect ? accessorySelect.value : 'N';
                     const driverBehaviorFilterEl = card.querySelector('.driverBehaviorFilter');
                     const driverBehaviorFilterVal = driverBehaviorFilterEl ? driverBehaviorFilterEl.value : 'ไม่ระบุ';
@@ -3978,7 +4287,7 @@
                 const seat = num(card.querySelector('.seatInput') ? card.querySelector('.seatInput').value : 0);
                 const type = card.querySelector('.typeSelect') ? card.querySelector('.typeSelect').value : '1';
                 const repair = (card.querySelector('.repairSelect') ? card.querySelector('.repairSelect').value : '') || '-';
-                const sumInsured = num(card.querySelector('.sumInsuredInput') ? card.querySelector('.sumInsuredInput').value : 0);
+                const sumInsured = getEffectiveSumInsured(card);
 
                 const premiumInputEl = card.querySelector('.premiumInput');
                 const netPremium = num(premiumInputEl ? premiumInputEl.dataset.netPremium : 0);
@@ -4267,7 +4576,7 @@
                     weight:                 card.querySelector('.weightInput')?.value       || '0',
                     seat:                   seatInput?.value                               || '',
                     carGroup:               card.querySelector('.carGroupSelect')?.value    || '',
-                    sumInsured:             sumInsuredEl?.value                             || '0',
+                    sumInsured:             String(getEffectiveSumInsured(card)),
                     accessory:              card.querySelector('.accessorySelect')?.value   || 'NO',
                     accessoryAmount:        (() => {
                         const v = card.querySelector('.accessoryAmountInput')?.value || '0';
@@ -4488,9 +4797,16 @@
                 const yearSel = card1.querySelector('.yearSelect');
                 if (yearSel) yearSel.selectedIndex = 0;
 
+                // reset รหัสรถ → trigger lockSpecSection ผ่าน onVehicleCodeChange
+                const vcSel1 = card1.querySelector('.vehicleCodeSelect');
+                if (vcSel1) {
+                    vcSel1.value = '';
+                    onVehicleCodeChange(vcSel1);
+                }
+
                 // reset น้ำหนัก / ที่นั่ง / ทุนประกัน
                 const weightInput = card1.querySelector('.weightInput');
-                if (weightInput) weightInput.value = '0';
+                if (weightInput) weightInput.value = '';
                 const seatInput = card1.querySelector('.seatInput');
                 if (seatInput) seatInput.value = '';
                 const sumInsuredInput = card1.querySelector('.sumInsuredInput');
@@ -4508,6 +4824,7 @@
                 const carGroupSel = card1.querySelector('.carGroupSelect');
                 if (carGroupSel) carGroupSel.value = '-';
 
+                updateCoverageFields(card1);
                 recalcCardPremium(card1);
             }
 
@@ -5222,15 +5539,18 @@
         document.getElementById('adminTabUsers').classList.toggle('hidden', tab !== 'users');
         document.getElementById('adminTabSettings').classList.toggle('hidden', tab !== 'settings');
         document.getElementById('adminTabReports').classList.toggle('hidden', tab !== 'reports');
+        document.getElementById('adminTabRates').classList.toggle('hidden', tab !== 'rates');
 
         const activeClass   = 'admin-tab py-3 px-4 text-sm font-semibold border-b-2 border-indigo-500 text-indigo-600 transition-all';
         const inactiveClass = 'admin-tab py-3 px-4 text-sm font-semibold border-b-2 border-transparent text-slate-500 hover:text-slate-700 transition-all';
         document.getElementById('tabUsers').className    = tab === 'users'    ? activeClass : inactiveClass;
         document.getElementById('tabSettings').className = tab === 'settings' ? activeClass : inactiveClass;
         document.getElementById('tabReports').className  = tab === 'reports'  ? activeClass : inactiveClass;
+        document.getElementById('tabRates').className    = tab === 'rates'    ? activeClass : inactiveClass;
 
         if (tab === 'settings') loadAdminSettings();
         if (tab === 'reports')  initReportDates();
+        if (tab === 'rates')    loadAdminRates();
     }
 
     function initReportDates() {
@@ -5393,6 +5713,233 @@
 
     function escHtml(str) {
         return String(str ?? '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+    }
+
+    // =====================================================================
+    // ADMIN RATE MANAGEMENT
+    // =====================================================================
+
+    function loadAdminRates() {
+        // render ทุก sub-tab จาก global variables ที่โหลดไว้แล้ว
+        renderBasePremiumTable();
+        renderUsageRateTable();
+        renderCapacityRateTable();
+        renderAgeRateTable();
+        // เริ่มที่ sub-tab แรก
+        switchRateSubTab('base');
+    }
+
+    function switchRateSubTab(sub) {
+        ['base','usage','capacity','age'].forEach(s => {
+            document.getElementById('rateTab' + s.charAt(0).toUpperCase() + s.slice(1))
+                ?.classList.toggle('hidden', s !== sub);
+            const btn = document.getElementById('rateSubTab' + s.charAt(0).toUpperCase() + s.slice(1));
+            if (btn) {
+                btn.className = s === sub
+                    ? 'rate-subtab px-4 py-2 text-xs font-semibold border-b-2 border-indigo-500 text-indigo-600 -mb-px transition-all'
+                    : 'rate-subtab px-4 py-2 text-xs font-semibold border-b-2 border-transparent text-slate-500 hover:text-slate-700 -mb-px transition-all';
+            }
+        });
+    }
+
+    // --- เบี้ยพื้นฐาน ---
+    function renderBasePremiumTable() {
+        const tbody = document.getElementById('basePremiumEditorBody');
+        if (!tbody || !basePremiumTable) return;
+        const inputCls = 'w-24 rounded-lg border border-slate-200 bg-white px-2 py-1 text-right text-xs focus:border-indigo-400 focus:ring-1 focus:ring-indigo-200 focus:outline-none';
+        tbody.innerHTML = basePremiumTable.map((row, i) => {
+            const groups = row.groups ? row.groups.join(', ') : '-';
+            const cond   = row.weightMax != null
+                ? (row.weightMax >= 999999 ? '> prev' : `≤ ${row.weightMax.toLocaleString()} kg`)
+                : row.seatMax != null ? `≤ ${row.seatMax} ที่นั่ง` : '-';
+            return `
+            <tr class="hover:bg-slate-50 transition-colors" data-idx="${i}">
+                <td class="px-3 py-2 font-semibold text-slate-700">${escHtml(row.code)}</td>
+                <td class="px-3 py-2 text-slate-600">${escHtml(row.cls)}</td>
+                <td class="px-3 py-2 text-slate-600">${escHtml(row.repair || '-')}</td>
+                <td class="px-3 py-2 text-slate-500">${escHtml(groups)}</td>
+                <td class="px-3 py-2 text-slate-500 text-[11px]">${escHtml(cond)}</td>
+                <td class="px-3 py-2 text-right">
+                    <input type="number" class="${inputCls} rate-base-input" data-field="base" data-idx="${i}" value="${row.base}">
+                </td>
+                <td class="px-3 py-2 text-right">
+                    <input type="number" class="${inputCls} rate-base-input" data-field="attach" data-idx="${i}" value="${row.attach}">
+                </td>
+                <td class="px-3 py-2 text-right">
+                    <input type="number" class="${inputCls} rate-base-input" data-field="ry31" data-idx="${i}" value="${row.ry31}">
+                </td>
+                <td class="px-3 py-2 text-center">
+                    <button onclick="saveBaseRow(${i})"
+                        class="px-3 py-1 bg-indigo-50 hover:bg-indigo-100 text-indigo-600 text-xs font-semibold rounded-lg transition-all">
+                        Save
+                    </button>
+                </td>
+            </tr>`;
+        }).join('');
+    }
+
+    function saveBaseRow(idx) {
+        const row = basePremiumTable[idx];
+        if (!row) return;
+        const inputs = document.querySelectorAll(`[data-idx="${idx}"].rate-base-input`);
+        inputs.forEach(inp => {
+            const val = parseFloat(inp.value);
+            if (!isNaN(val)) row[inp.dataset.field] = val;
+        });
+        const msgEl = document.getElementById('rateBaseMsg');
+        msgEl.className = 'text-xs mt-2 text-right text-emerald-600';
+        msgEl.textContent = `บันทึกแถว ${idx + 1} (${row.code} ชั้น${row.cls}) แล้ว — กด Download JSON เพื่อ save ไฟล์`;
+        setTimeout(() => { if (msgEl) msgEl.textContent = ''; }, 4000);
+    }
+
+    // --- Usage Rate ---
+    function renderUsageRateTable() {
+        const tbody = document.getElementById('usageRateEditorBody');
+        if (!tbody || !usageRateTable) return;
+        const inputCls = 'w-20 rounded-lg border border-slate-200 bg-white px-2 py-1 text-center text-xs focus:border-indigo-400 focus:ring-1 focus:ring-indigo-200 focus:outline-none';
+        tbody.innerHTML = Object.entries(usageRateTable).map(([code, rates]) => `
+            <tr class="hover:bg-slate-50 transition-colors" data-ucode="${escHtml(code)}">
+                <td class="px-3 py-2 font-semibold text-slate-700">${escHtml(code)}</td>
+                <td class="px-3 py-2 text-center">
+                    <input type="number" step="0.01" class="${inputCls} usage-input" data-code="${escHtml(code)}" data-cls="1" value="${rates['1'] ?? ''}">
+                </td>
+                <td class="px-3 py-2 text-center">
+                    <input type="number" step="0.01" class="${inputCls} usage-input" data-code="${escHtml(code)}" data-cls="3" value="${rates['3'] ?? ''}">
+                </td>
+                <td class="px-3 py-2 text-center">
+                    <button onclick="saveUsageRow('${escHtml(code)}')"
+                        class="px-3 py-1 bg-indigo-50 hover:bg-indigo-100 text-indigo-600 text-xs font-semibold rounded-lg transition-all">
+                        Save
+                    </button>
+                </td>
+            </tr>`).join('');
+    }
+
+    function saveUsageRow(code) {
+        document.querySelectorAll(`.usage-input[data-code="${code}"]`).forEach(inp => {
+            const val = parseFloat(inp.value);
+            if (!isNaN(val)) usageRateTable[code][inp.dataset.cls] = val;
+        });
+        const msgEl = document.getElementById('rateUsageMsg');
+        msgEl.className = 'text-xs mt-2 text-right text-emerald-600';
+        msgEl.textContent = `บันทึก Usage Rate รหัส ${code} แล้ว — กด Download JSON เพื่อ save ไฟล์`;
+        setTimeout(() => { if (msgEl) msgEl.textContent = ''; }, 4000);
+    }
+
+    // --- Capacity Rate ---
+    function renderCapacityRateTable() {
+        const container = document.getElementById('capacityRateEditor');
+        if (!container || !capacityRateTable) return;
+        const inputCls = 'w-20 rounded-lg border border-slate-200 bg-white px-2 py-1 text-center text-xs focus:border-indigo-400 focus:ring-1 focus:ring-indigo-200 focus:outline-none';
+        container.innerHTML = Object.entries(capacityRateTable).map(([code, def]) => {
+            const typeLabel = def.type === 'cc' ? 'CC' : def.type === 'seat' ? 'ที่นั่ง' : 'น้ำหนัก (kg)';
+            const renderBrackets = (cls) => (def[cls] || []).map((br, bi) => `
+                <div class="flex items-center gap-2">
+                    <span class="text-[11px] text-slate-500 w-28">≤ ${br[0] >= 999999 ? '∞' : br[0].toLocaleString()} ${typeLabel}</span>
+                    <input type="number" step="0.001" class="${inputCls} capacity-input"
+                        data-code="${escHtml(code)}" data-cls="${cls}" data-bi="${bi}" value="${br[1]}">
+                </div>`).join('');
+            return `
+            <div class="bg-slate-50 rounded-xl p-4 border border-slate-200">
+                <div class="flex items-center justify-between mb-3">
+                    <span class="text-xs font-semibold text-slate-700">รหัส ${escHtml(code)} — ${escHtml(typeLabel)}</span>
+                    <button onclick="saveCapacityRow('${escHtml(code)}')"
+                        class="px-3 py-1 bg-indigo-50 hover:bg-indigo-100 text-indigo-600 text-xs font-semibold rounded-lg transition-all">
+                        Save
+                    </button>
+                </div>
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <p class="text-[11px] font-semibold text-slate-500 mb-2">ชั้น 1</p>
+                        <div class="space-y-1.5">${renderBrackets('1')}</div>
+                    </div>
+                    <div>
+                        <p class="text-[11px] font-semibold text-slate-500 mb-2">ชั้น 3</p>
+                        <div class="space-y-1.5">${renderBrackets('3')}</div>
+                    </div>
+                </div>
+            </div>`;
+        }).join('');
+    }
+
+    function saveCapacityRow(code) {
+        document.querySelectorAll(`.capacity-input[data-code="${code}"]`).forEach(inp => {
+            const val = parseFloat(inp.value);
+            const bi  = parseInt(inp.dataset.bi);
+            const cls = inp.dataset.cls;
+            if (!isNaN(val) && capacityRateTable[code]?.[cls]?.[bi]) {
+                capacityRateTable[code][cls][bi][1] = val;
+            }
+        });
+        const msgEl = document.getElementById('rateCapacityMsg');
+        msgEl.className = 'text-xs mt-2 text-right text-emerald-600';
+        msgEl.textContent = `บันทึก Capacity Rate รหัส ${code} แล้ว — กด Download JSON เพื่อ save ไฟล์`;
+        setTimeout(() => { if (msgEl) msgEl.textContent = ''; }, 4000);
+    }
+
+    // --- Vehicle Age Rate ---
+    function renderAgeRateTable() {
+        const container = document.getElementById('ageRateEditor');
+        if (!container || !vehicleAgeRateTable) return;
+        const inputCls = 'w-16 rounded-lg border border-slate-200 bg-white px-2 py-1 text-center text-xs focus:border-indigo-400 focus:ring-1 focus:ring-indigo-200 focus:outline-none';
+        container.innerHTML = Object.entries(vehicleAgeRateTable).map(([code, rates]) => {
+            // rates เป็น array flat: index 0 = อายุ 1 ปี, index 1 = อายุ 2 ปี, ...
+            const cells = rates.map((val, i) => `
+                <div class="flex flex-col items-center gap-1">
+                    <span class="text-[10px] text-slate-400">ปี ${i + 1}</span>
+                    <input type="number" step="0.001" class="${inputCls} age-input"
+                        data-code="${escHtml(code)}" data-idx="${i}" value="${val}">
+                </div>`).join('');
+            return `
+            <div class="bg-slate-50 rounded-xl p-4 border border-slate-200">
+                <div class="flex items-center justify-between mb-3">
+                    <span class="text-xs font-semibold text-slate-700">รหัส ${escHtml(code)}</span>
+                    <button onclick="saveAgeRow('${escHtml(code)}')"
+                        class="px-3 py-1 bg-indigo-50 hover:bg-indigo-100 text-indigo-600 text-xs font-semibold rounded-lg transition-all">
+                        Save
+                    </button>
+                </div>
+                <div class="flex flex-wrap gap-2">${cells}</div>
+            </div>`;
+        }).join('');
+    }
+
+    function saveAgeRow(code) {
+        document.querySelectorAll(`.age-input[data-code="${code}"]`).forEach(inp => {
+            const val = parseFloat(inp.value);
+            const idx = parseInt(inp.dataset.idx);
+            if (!isNaN(val) && Array.isArray(vehicleAgeRateTable[code])) {
+                vehicleAgeRateTable[code][idx] = val;
+            }
+        });
+        const msgEl = document.getElementById('rateAgeMsg');
+        msgEl.className = 'text-xs mt-2 text-right text-emerald-600';
+        msgEl.textContent = `บันทึก Age Rate รหัส ${code} แล้ว — กด Download JSON เพื่อ save ไฟล์`;
+        setTimeout(() => { if (msgEl) msgEl.textContent = ''; }, 4000);
+    }
+
+    // --- Download JSON ---
+    function downloadRatesJson() {
+        const data = {
+            basePremiumTable,
+            usageRateTable,
+            capacityRateTable,
+            behaviorLevelRateTable,
+            vehicleAgeRateTable,
+            vehicleGroupRateTable,
+            extraAccessoryRateTable,
+            sumInsuredRateTable,
+            tpbiPersonRateTable,
+            tpbiAccRateTable,
+            tppdAccRateTable
+        };
+        const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+        const url  = URL.createObjectURL(blob);
+        const a    = document.createElement('a');
+        a.href     = url;
+        a.download = 'premium_rates.json';
+        a.click();
+        URL.revokeObjectURL(url);
     }
 
     // =====================================================================
@@ -5629,7 +6176,7 @@
 
     <!-- ===== ADMIN MODAL ===== -->
     <div id="adminModal" class="hidden fixed inset-0 z-[9998] flex items-center justify-center p-4" style="background:rgba(0,0,0,0.5)">
-        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-3xl max-h-[90vh] flex flex-col">
+        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-5xl max-h-[90vh] flex flex-col">
             <!-- Header -->
             <div class="flex items-center justify-between px-6 py-4 border-b border-slate-200 shrink-0">
                 <div class="flex items-center gap-2">
@@ -5656,6 +6203,10 @@
                 <button onclick="switchAdminTab('reports')" id="tabReports"
                     class="admin-tab py-3 px-4 text-sm font-semibold border-b-2 border-transparent text-slate-500 hover:text-slate-700 transition-all">
                     Reports
+                </button>
+                <button onclick="switchAdminTab('rates')" id="tabRates"
+                    class="admin-tab py-3 px-4 text-sm font-semibold border-b-2 border-transparent text-slate-500 hover:text-slate-700 transition-all">
+                    เรท/ทาริฟ
                 </button>
             </div>
             <!-- Content -->
@@ -5760,6 +6311,117 @@
                         </div>
                     </div>
 
+                </div>
+
+                <!-- TAB: Rates -->
+                <div id="adminTabRates" class="hidden">
+                    <!-- Sub-tabs -->
+                    <div class="flex gap-2 mb-4 border-b border-slate-200 pb-0">
+                        <button onclick="switchRateSubTab('base')" id="rateSubTabBase"
+                            class="rate-subtab px-4 py-2 text-xs font-semibold border-b-2 border-indigo-500 text-indigo-600 -mb-px transition-all">
+                            เบี้ยพื้นฐาน
+                        </button>
+                        <button onclick="switchRateSubTab('usage')" id="rateSubTabUsage"
+                            class="rate-subtab px-4 py-2 text-xs font-semibold border-b-2 border-transparent text-slate-500 hover:text-slate-700 -mb-px transition-all">
+                            Usage Rate
+                        </button>
+                        <button onclick="switchRateSubTab('capacity')" id="rateSubTabCapacity"
+                            class="rate-subtab px-4 py-2 text-xs font-semibold border-b-2 border-transparent text-slate-500 hover:text-slate-700 -mb-px transition-all">
+                            Capacity Rate
+                        </button>
+                        <button onclick="switchRateSubTab('age')" id="rateSubTabAge"
+                            class="rate-subtab px-4 py-2 text-xs font-semibold border-b-2 border-transparent text-slate-500 hover:text-slate-700 -mb-px transition-all">
+                            Vehicle Age
+                        </button>
+                    </div>
+
+                    <!-- Sub-tab: เบี้ยพื้นฐาน -->
+                    <div id="rateTabBase">
+                        <div class="flex items-center justify-between mb-3">
+                            <p class="text-xs text-slate-500">แก้ไขค่าได้โดยตรงในตาราง แล้วกด Save หรือ Download JSON</p>
+                            <div class="flex gap-2">
+                                <button onclick="downloadRatesJson()"
+                                    class="inline-flex items-center gap-1.5 text-xs font-semibold bg-slate-100 hover:bg-slate-200 text-slate-700 px-3 py-1.5 rounded-lg transition-all">
+                                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+                                    Download JSON
+                                </button>
+                            </div>
+                        </div>
+                        <div class="overflow-x-auto rounded-xl border border-slate-200">
+                            <table class="w-full text-xs" id="basePremiumEditorTable">
+                                <thead class="bg-slate-50 border-b border-slate-200">
+                                    <tr>
+                                        <th class="px-3 py-2.5 text-left font-semibold text-slate-600">รหัส</th>
+                                        <th class="px-3 py-2.5 text-left font-semibold text-slate-600">ชั้น</th>
+                                        <th class="px-3 py-2.5 text-left font-semibold text-slate-600">การซ่อม</th>
+                                        <th class="px-3 py-2.5 text-left font-semibold text-slate-600">กลุ่ม</th>
+                                        <th class="px-3 py-2.5 text-left font-semibold text-slate-600">เงื่อนไข</th>
+                                        <th class="px-3 py-2.5 text-right font-semibold text-slate-600">เบี้ยพื้นฐาน</th>
+                                        <th class="px-3 py-2.5 text-right font-semibold text-slate-600">เบี้ยแนบ</th>
+                                        <th class="px-3 py-2.5 text-right font-semibold text-slate-600">รย.31</th>
+                                        <th class="px-3 py-2.5 text-center font-semibold text-slate-600">บันทึก</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="basePremiumEditorBody" class="divide-y divide-slate-100">
+                                    <tr><td colspan="9" class="text-center text-slate-400 py-6">กำลังโหลด...</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                        <p id="rateBaseMsg" class="text-xs mt-2 min-h-[1rem] text-right"></p>
+                    </div>
+
+                    <!-- Sub-tab: Usage Rate -->
+                    <div id="rateTabUsage" class="hidden">
+                        <div class="flex items-center justify-between mb-3">
+                            <p class="text-xs text-slate-500">Usage Rate coefficient ต่อรหัสรถ (คูณกับเบี้ยพื้นฐาน)</p>
+                            <button onclick="downloadRatesJson()" class="inline-flex items-center gap-1.5 text-xs font-semibold bg-slate-100 hover:bg-slate-200 text-slate-700 px-3 py-1.5 rounded-lg transition-all">
+                                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+                                Download JSON
+                            </button>
+                        </div>
+                        <div class="overflow-x-auto rounded-xl border border-slate-200">
+                            <table class="w-full text-xs">
+                                <thead class="bg-slate-50 border-b border-slate-200">
+                                    <tr>
+                                        <th class="px-3 py-2.5 text-left font-semibold text-slate-600">รหัสรถ</th>
+                                        <th class="px-3 py-2.5 text-center font-semibold text-slate-600">ชั้น 1</th>
+                                        <th class="px-3 py-2.5 text-center font-semibold text-slate-600">ชั้น 3</th>
+                                        <th class="px-3 py-2.5 text-center font-semibold text-slate-600">บันทึก</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="usageRateEditorBody" class="divide-y divide-slate-100">
+                                    <tr><td colspan="4" class="text-center text-slate-400 py-6">กำลังโหลด...</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                        <p id="rateUsageMsg" class="text-xs mt-2 min-h-[1rem] text-right"></p>
+                    </div>
+
+                    <!-- Sub-tab: Capacity Rate -->
+                    <div id="rateTabCapacity" class="hidden">
+                        <div class="flex items-center justify-between mb-3">
+                            <p class="text-xs text-slate-500">Capacity Rate — แสดงค่า coefficient ตาม bracket</p>
+                            <button onclick="downloadRatesJson()" class="inline-flex items-center gap-1.5 text-xs font-semibold bg-slate-100 hover:bg-slate-200 text-slate-700 px-3 py-1.5 rounded-lg transition-all">
+                                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+                                Download JSON
+                            </button>
+                        </div>
+                        <div id="capacityRateEditor" class="space-y-3"></div>
+                        <p id="rateCapacityMsg" class="text-xs mt-2 min-h-[1rem] text-right"></p>
+                    </div>
+
+                    <!-- Sub-tab: Vehicle Age -->
+                    <div id="rateTabAge" class="hidden">
+                        <div class="flex items-center justify-between mb-3">
+                            <p class="text-xs text-slate-500">Vehicle Age Rate — coefficient ตามอายุรถ</p>
+                            <button onclick="downloadRatesJson()" class="inline-flex items-center gap-1.5 text-xs font-semibold bg-slate-100 hover:bg-slate-200 text-slate-700 px-3 py-1.5 rounded-lg transition-all">
+                                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+                                Download JSON
+                            </button>
+                        </div>
+                        <div id="ageRateEditor" class="space-y-3"></div>
+                        <p id="rateAgeMsg" class="text-xs mt-2 min-h-[1rem] text-right"></p>
+                    </div>
                 </div>
 
             </div>
