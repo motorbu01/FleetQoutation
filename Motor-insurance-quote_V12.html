@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="th">
 <head>
     <meta charset="UTF-8">
@@ -4747,10 +4747,21 @@
             // --- reset เลขคิว ---
             currentQuoteNo = '';
             _lastExportSnapshot = '';
+
+            // form view — ซ่อน quote-no-box และล้างข้อความ
             const qbox = document.querySelector('.quote-no-box');
             if (qbox) qbox.classList.add('hidden');
+            const qboxText = document.getElementById('quoteNoDisplay');
+            if (qboxText) qboxText.textContent = '-';
+
+            // summary view — ซ่อนและล้างข้อความ (ต้อง remove inline style ด้วย เพราะ displayQuoteNo ใช้ style.display)
             const summaryRow = document.getElementById('summaryQuoteNoRow');
-            if (summaryRow) summaryRow.classList.add('hidden');
+            if (summaryRow) {
+                summaryRow.classList.add('hidden');
+                summaryRow.style.display = '';   // ล้าง inline style ที่ displayQuoteNo() set ไว้
+            }
+            const summaryNo = document.getElementById('summaryQuoteNo');
+            if (summaryNo) summaryNo.textContent = '-';
 
             // --- clear revise section ---
             const reviseInput = document.getElementById('reviseQuoteInput');
@@ -4902,7 +4913,7 @@
                     headers: {
                         'Content-Type': 'application/json',
                         'apikey': SUPABASE_KEY,
-                        'Authorization': 'Bearer ' + SUPABASE_KEY,
+                        'Authorization': 'Bearer ' + (_currentUser?.access_token || SUPABASE_KEY),
                         'Prefer': 'return=minimal'
                     },
                     body: JSON.stringify({
@@ -4914,9 +4925,13 @@
                         client_name:   clientName,
                         vehicle_count: cards.length,
                         total_premium: totalPremium,
-                        quote_data:    collectQuoteData()
+                        quote_data:    collectQuoteData(),
+                        created_by:    _currentUser?.id || null
                     })
                 });
+
+                // บันทึก vehicle rows ลง quotation_vehicles (fire-and-forget)
+                saveQuotationVehicles(quoteNo, todayStr, clientName, issuerName, issuerBranch);
 
                 return quoteNo;
 
@@ -4931,6 +4946,114 @@
                 const testBody = await testRes.text();
                 console.error('RPC test status:', testRes.status, 'body:', testBody);
                 return `FQ${dateStr}XXXX`;
+            }
+        }
+
+        // =====================================================================
+        // saveQuotationVehicles() — บันทึกรถแต่ละคันลง quotation_vehicles
+        // เรียกหลัง INSERT quotation_queue สำเร็จ (fire-and-forget)
+        // =====================================================================
+        function saveQuotationVehicles(quoteNo, quoteDate, clientName, issuerName, issuerBranch) {
+            try {
+                const num = (s) => parseFloat(String(s || '0').replace(/,/g, '')) || 0;
+                const rows = [];
+
+                document.querySelectorAll('.vehicle-card').forEach((card, idx) => {
+                    recalcCardPremium(card);
+
+                    const prbSelect     = card.querySelector('.prbSelect');
+                    const prbCodeSelect = card.querySelector('.prbCodeSelect');
+                    const premiumInputEl = card.querySelector('.premiumInput');
+
+                    const prbStatus = prbSelect?.value || 'ไม่รวม';
+                    const prbCode   = (prbStatus === 'รวม') ? (prbCodeSelect?.value || '') : '';
+
+                    const volNet   = num(premiumInputEl?.dataset?.netPremium);
+                    const volStamp = Math.ceil(volNet * 0.004);
+                    const volVat   = Math.round((volNet + volStamp) * 0.07 * 100) / 100;
+                    const volTotal = Math.round((volNet + volStamp + volVat) * 100) / 100;
+
+                    let prbNet = 0;
+                    if (prbStatus === 'รวม' && prbCode && prbNetPrices[prbCode]) {
+                        prbNet = prbNetPrices[prbCode];
+                    }
+                    const prbStamp = Math.ceil(prbNet * 0.004);
+                    const prbVat   = Math.round((prbNet + prbStamp) * 0.07 * 100) / 100;
+                    const prbTotal = Math.round((prbNet + prbStamp + prbVat) * 100) / 100;
+
+                    const brandSel  = card.querySelector('.carBrandSelect');
+                    const modelSel  = card.querySelector('.carModelSelect');
+                    const specSel   = card.querySelector('.carSpecSelect');
+                    const isManual  = card.querySelector('.carManualModeToggle')?.checked === true;
+                    const bmiVal    = (card.querySelector('.brandModelInput')?.value || '').trim();
+                    const bmiParts  = bmiVal.split(/\s+/).filter(Boolean);
+                    const brand     = (!isManual && brandSel?.value) || card.dataset.savedBrand || bmiParts[0] || '';
+                    const model     = (!isManual && modelSel?.value) || card.dataset.savedModel || bmiParts.slice(1).join(' ') || '';
+                    const spec      = (!isManual && specSel?.value)  || card.dataset.savedSpec  || '';
+
+                    rows.push({
+                        quote_no:                quoteNo,
+                        vehicle_seq:             idx + 1,
+                        quote_date:              quoteDate,
+                        client_name:             clientName,
+                        issuer_name:             issuerName,
+                        issuer_branch:           issuerBranch,
+                        created_by:              _currentUser?.id || null,
+                        // ข้อมูลรถ
+                        plate:                   (card.querySelector('.plateInput')?.value || '').trim() || null,
+                        brand:                   brand || null,
+                        model:                   model || null,
+                        spec:                    spec  || null,
+                        vehicle_code:            card.querySelector('.vehicleCodeSelect')?.value || null,
+                        car_year:                parseInt(card.querySelector('.yearSelect')?.value || '0') || null,
+                        cc:                      num(card.querySelector('.ccInput')?.value),
+                        weight_kg:               num(card.querySelector('.weightInput')?.value),
+                        seat:                    parseInt(card.querySelector('.seatInput')?.value || '0') || null,
+                        car_group:               parseInt(card.querySelector('.carGroupSelect')?.value || '0') || null,
+                        // รูปแบบประกัน
+                        type:                    card.querySelector('.typeSelect')?.value       || '1',
+                        repair:                  card.querySelector('.repairSelect')?.value     || null,
+                        sum_insured:             num(getEffectiveSumInsured(card)),
+                        accessory:               card.querySelector('.accessorySelect')?.value  || 'NO',
+                        accessory_amount:        num(card.querySelector('.accessoryAmountInput')?.value),
+                        // เบี้ยสมัครใจ
+                        vol_net:                 volNet,
+                        vol_stamp:               volStamp,
+                        vol_vat:                 volVat,
+                        vol_total:               volTotal,
+                        // พ.ร.บ.
+                        prb:                     prbStatus,
+                        prb_code:                prbCode || null,
+                        prb_net:                 prbNet,
+                        prb_stamp:               prbStamp,
+                        prb_vat:                 prbVat,
+                        prb_total:               prbTotal,
+                        // ส่วนลด
+                        group_discount:          card.querySelector('.groupDiscountSelect')?.value         || '0%',
+                        claim_discount:          card.querySelector('.claimDiscountSelect')?.value         || '0%',
+                        driver_behavior_filter:  card.querySelector('.driverBehaviorFilter')?.value        || 'ไม่ระบุ',
+                        driver_behavior_discount: card.querySelector('.driverBehaviorDiscountSelect')?.value || '-',
+                        // รวม
+                        grand_total:             Math.round((volTotal + prbTotal) * 100) / 100
+                    });
+                });
+
+                if (rows.length === 0) return;
+
+                // Bulk INSERT ผ่าน Supabase REST (Prefer: resolution=merge-duplicates ไม่ได้ใช้ — INSERT ใหม่ทุกครั้ง)
+                fetch(`${SUPABASE_URL}/rest/v1/quotation_vehicles`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'apikey': SUPABASE_KEY,
+                        'Authorization': 'Bearer ' + (_currentUser?.access_token || SUPABASE_KEY),
+                        'Prefer': 'return=minimal'
+                    },
+                    body: JSON.stringify(rows)
+                }).catch(err => console.warn('saveQuotationVehicles failed:', err));
+
+            } catch (err) {
+                console.warn('saveQuotationVehicles error:', err);
             }
         }
 
@@ -5194,9 +5317,10 @@
         { key: 'max_claim_discount_lv2',  label: 'ส่วนลดประวัติดี สูงสุด LV2 (%)',   hint: '',               type: 'number', min: 0, max: 100 },
     ];
 
-    let _currentUser    = null;   // { id, email, access_token, refresh_token, expires_at }
-    let _currentProfile = null;   // { display_name, role, is_active, issuer_name, issuer_branch }
-    let _appSettings    = {};     // { session_timeout_hours, max_group_discount_lv1, ... }
+    let _currentUser      = null;   // { id, email, access_token, refresh_token, expires_at }
+    let _currentProfile   = null;   // { display_name, role, is_active, issuer_name, issuer_branch }
+    let _appSettings      = {};     // { session_timeout_hours, max_group_discount_lv1, ... }
+    let _currentSessionId = null;   // UUID สุ่มต่อ 1 session — ใช้จับคู่ login_log login↔logout
     let _sessionTimer      = null;
     let _countdownInterval = null;
     let _sessionExpiresAt  = null;   // timestamp (ms) ที่ session จะหมดอายุ
@@ -5270,6 +5394,7 @@
             }
             // refresh ล้มเหลว → force logout
             alert('Session หมดอายุ กรุณาเข้าสู่ระบบใหม่');
+            writeLogoutLog('session_expired');
             clearAuth();
         }
         return res;
@@ -5321,6 +5446,9 @@
             // บันทึก session (savedAt ใช้ตรวจ timeout ตอน restore)
             localStorage.setItem('_authSession', JSON.stringify({ user: _currentUser, profile: _currentProfile, settings: _appSettings, savedAt: Date.now() }));
 
+            // สร้าง session_id ใหม่ต่อ 1 login session — ใช้จับคู่กับ logout log
+            _currentSessionId = crypto.randomUUID();
+
             // บันทึก login log (fire-and-forget — ไม่กระทบ flow ถ้าล้มเหลว)
             sbFetch('/rest/v1/login_log', {
                 method: 'POST',
@@ -5330,7 +5458,9 @@
                     email:        _currentUser.email,
                     display_name: _currentProfile.display_name,
                     role:         _currentProfile.role,
-                    user_agent:   navigator.userAgent
+                    user_agent:   navigator.userAgent,
+                    action:       'login',
+                    session_id:   _currentSessionId
                 })
             }).catch(() => {}); // เงียบๆ ถ้า table ยังไม่ถูกสร้าง
 
@@ -5377,11 +5507,33 @@
     // --- Logout ---
     function doLogout() {
         if (!confirm('ต้องการออกจากระบบ?')) return;
+        writeLogoutLog('logout');
         clearAuth();
+    }
+
+    // เขียน logout log (fire-and-forget)
+    // action: 'logout' | 'session_expired'
+    function writeLogoutLog(action) {
+        if (!_currentUser?.id || !_currentSessionId) return;
+        sbFetch('/rest/v1/login_log', {
+            method: 'POST',
+            headers: { 'Prefer': 'return=minimal' },
+            body: JSON.stringify({
+                user_id:        _currentUser.id,
+                email:          _currentUser.email,
+                display_name:   _currentProfile?.display_name || null,
+                role:           _currentProfile?.role         || null,
+                user_agent:     navigator.userAgent,
+                action:         action,
+                session_id:     _currentSessionId,
+                logged_out_at:  new Date().toISOString()
+            })
+        }).catch(() => {});
     }
 
     function clearAuth() {
         _currentUser = null; _currentProfile = null; _appSettings = {};
+        _currentSessionId = null;
         localStorage.removeItem('_authSession');
         clearTimeout(_sessionTimer);
         stopCountdown();
@@ -5458,6 +5610,7 @@
             const remaining = Math.max(totalMs - elapsed, 0);
             _sessionTimer = setTimeout(() => {
                 alert('Session หมดอายุ กรุณาเข้าสู่ระบบใหม่');
+                writeLogoutLog('session_expired');
                 clearAuth();
             }, remaining);
             _countdownTarget = Date.now() + remaining;
@@ -5848,6 +6001,7 @@
                 const newMs = newTimeout * 60 * 60 * 1000;
                 _sessionTimer = setTimeout(() => {
                     alert('Session หมดอายุ กรุณาเข้าสู่ระบบใหม่');
+                    writeLogoutLog('session_expired');
                     clearAuth();
                 }, newMs);
                 startCountdown(Date.now() + newMs);
