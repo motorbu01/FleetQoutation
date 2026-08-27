@@ -1,9 +1,14 @@
 # ไม่ push ไฟล์ที่มี password หรือไม่จำเป็น
 password supabase.txt
+supabase/password supabase.txt
 car_master.json.bak
 
 # โฟลเดอร์ไฟล์ที่ไม่เกี่ยวข้อง
 ไม่เกี่ยว/
+สำรอง/
+
+# Kiro IDE
+.kiro/
 
 # Node / OS
 node_modules/
