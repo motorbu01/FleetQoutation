@@ -6492,12 +6492,9 @@
         msgEl.className = 'text-xs text-amber-600'; msgEl.textContent = 'กำลังดึงข้อมูล...';
 
         try {
-            // ดึงจาก quotation_vehicles — structured data รายคัน
+            // ดึงจาก quotation_vehicles — ทุก column
             const url = `/rest/v1/quotation_vehicles?quote_date=gte.${fromVal}&quote_date=lte.${toVal}`
-                      + `&select=quote_no,quote_date,client_name,issuer_name,issuer_branch,vehicle_seq,`
-                      + `plate,brand,model,spec,car_year,type,repair,vehicle_code,sum_insured,`
-                      + `vol_net,vol_stamp,vol_vat,vol_total,prb,prb_total,grand_total,`
-                      + `group_discount,claim_discount,driver_behavior_filter,driver_behavior_discount`
+                      + `&select=*`
                       + `&order=quote_date.asc,quote_no.asc,vehicle_seq.asc`;
             const res  = await sbFetch(url);
             const rows = await res.json();
@@ -6509,11 +6506,14 @@
 
             const headers = [
                 'เลขที่ใบเสนอราคา', 'วันที่ออก', 'ชื่อผู้เอาประกัน', 'ผู้ออกงาน', 'สาขา',
-                'คันที่', 'ทะเบียนรถ', 'ยี่ห้อ', 'รุ่น', 'สเปก', 'ปี',
-                'ประเภท', 'การซ่อม', 'รหัสรถ', 'ทุนประกัน',
+                'คันที่', 'ทะเบียนรถ', 'ยี่ห้อ', 'รุ่น', 'สเปก', 'ปี', 'กลุ่มรถ',
+                'ประเภท', 'การซ่อม', 'รหัสรถ', 'CC', 'น้ำหนัก(kg)', 'ที่นั่ง',
+                'ทุนประกัน', 'อุปกรณ์พิเศษ', 'มูลค่าอุปกรณ์',
                 'เบี้ยสุทธิ', 'อากร', 'VAT', 'เบี้ยรวม',
-                'พ.ร.บ.', 'เบี้ย พ.ร.บ.', 'รวมทั้งสิ้น',
-                'ส่วนลดกลุ่ม', 'ส่วนลดประวัติดี', 'ประเภทผู้ขับ', 'ระดับพฤติกรรม'
+                'พ.ร.บ.', 'รหัส พ.ร.บ.', 'เบี้ยสุทธิ พ.ร.บ.', 'อากร พ.ร.บ.', 'VAT พ.ร.บ.', 'เบี้ยรวม พ.ร.บ.',
+                'รวมทั้งสิ้น',
+                'ส่วนลดกลุ่ม', 'ส่วนลดประวัติดี', 'ประเภทผู้ขับ', 'ระดับพฤติกรรม',
+                'วันเวลาที่บันทึก'
             ];
             const data = [headers];
 
@@ -6533,26 +6533,43 @@
                     v.model                   || '',
                     v.spec                    || '',
                     v.car_year                || '',
+                    v.car_group               || '',
                     v.type                    || '',
                     v.repair                  || '',
                     v.vehicle_code            || '',
+                    v.cc                      || 0,
+                    v.weight_kg               || 0,
+                    v.seat                    || '',
                     v.sum_insured             || 0,
+                    v.accessory               || '',
+                    v.accessory_amount        || 0,
                     v.vol_net                 || 0,
                     v.vol_stamp               || 0,
                     v.vol_vat                 || 0,
                     v.vol_total               || 0,
                     v.prb                     || '',
+                    v.prb_code                || '',
+                    v.prb_net                 || 0,
+                    v.prb_stamp               || 0,
+                    v.prb_vat                 || 0,
                     v.prb_total               || 0,
                     v.grand_total             || 0,
                     v.group_discount          || '',
                     v.claim_discount          || '',
                     v.driver_behavior_filter  || '',
-                    v.driver_behavior_discount || ''
+                    v.driver_behavior_discount || '',
+                    toThaiDateTime(v.created_at)
                 ]);
             });
 
             const ws = XLSX.utils.aoa_to_sheet(data);
-            ws['!cols'] = headers.map((h, i) => ({ wch: [20,12,24,16,16,6,14,14,16,14,6,8,10,8,14,12,8,8,12,8,12,12,14,16,12,16][i] || 14 }));
+            ws['!cols'] = headers.map(() => ({ wch: 14 }));
+            ws['!cols'][0].wch = 20; // เลขที่ใบ
+            ws['!cols'][2].wch = 24; // ชื่อผู้เอาประกัน
+            ws['!cols'][3].wch = 18; // ผู้ออกงาน
+            ws['!cols'][4].wch = 18; // สาขา
+            ws['!cols'][8].wch = 16; // รุ่น
+            ws['!cols'][36].wch = 20; // วันเวลาที่บันทึก
             const wb = XLSX.utils.book_new();
             XLSX.utils.book_append_sheet(wb, ws, 'Quotation Vehicles');
             XLSX.writeFile(wb, `QuotationReport_${fromVal}_to_${toVal}.xlsx`);
