@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="th">
 <head>
     <meta charset="UTF-8">
@@ -4644,9 +4644,8 @@
                 const baseQuote = quoteNo.replace(/_V\d+$/, '');
 
                 // --- ขั้นที่ 1: หา rv ทั้งหมดที่มีใน Supabase ---
-                const allRvRes = await fetch(
-                    `${SUPABASE_URL}/rest/v1/quotation_queue?quote_no=like.${encodeURIComponent(baseQuote)}*&select=quote_no,issuer_name,issuer_branch,client_name,quote_data&order=created_at.desc`,
-                    { headers: { 'apikey': SUPABASE_KEY, 'Authorization': 'Bearer ' + SUPABASE_KEY } }
+                const allRvRes = await sbFetch(
+                    `/rest/v1/quotation_queue?quote_no=like.${encodeURIComponent(baseQuote)}*&select=quote_no,issuer_name,issuer_branch,client_name,quote_data&order=created_at.desc`
                 );
                 if (!allRvRes.ok) throw new Error('ไม่สามารถเชื่อมต่อ Supabase ได้');
                 const allRvData = await allRvRes.json();
@@ -4880,42 +4879,33 @@
 
                 if (!currentQuoteNo) {
                     // ---- ยังไม่มีเลขคิว: สร้างใหม่ ----
-                    const rpcRes = await fetch(`${SUPABASE_URL}/rest/v1/rpc/get_next_daily_seq`, {
+                    const rpcRes = await sbFetch('/rest/v1/rpc/get_next_daily_seq', {
                         method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                            'apikey': SUPABASE_KEY,
-                            'Authorization': 'Bearer ' + SUPABASE_KEY
-                        },
                         body: JSON.stringify({ p_date: todayStr })
                     });
-                    if (!rpcRes.ok) throw new Error('rpc failed: ' + rpcRes.status);
+                    if (!rpcRes.ok) {
+                        const errBody = await rpcRes.text().catch(() => '');
+                        throw new Error('rpc failed: ' + rpcRes.status + ' ' + errBody);
+                    }
                     const seq = await rpcRes.json();
                     daily_seq = seq;
                     quoteNo   = `FQ${dateStr}${String(seq).padStart(4, '0')}`;
 
                 } else {
                     // ---- มีเลขคิวอยู่แล้ว: เพิ่ม _VN ต่อท้าย ----
-                    // หา base quote (ตัดส่วน _VX ออกก่อน)
                     const baseMatch = currentQuoteNo.match(/^(FQ\d{6})(\d{4})(_V\d+)?$/);
                     const baseNo    = baseMatch ? baseMatch[1] + baseMatch[2] : currentQuoteNo.replace(/_V\d+$/, '');
                     const prevRv    = baseMatch && baseMatch[3] ? parseInt(baseMatch[3].replace('_V','')) : 0;
                     const nextRv    = prevRv + 1;
                     quoteNo   = `${baseNo}_V${nextRv}`;
-                    // ดึง daily_seq จาก base quote (ใช้ค่าเดิม ไม่สร้างใหม่)
                     const seqMatch = baseNo.match(/(\d{4})$/);
                     daily_seq = seqMatch ? parseInt(seqMatch[1]) : 0;
                 }
 
                 // INSERT record ใหม่ทุกครั้ง (ทั้ง original และ revision)
-                await fetch(`${SUPABASE_URL}/rest/v1/quotation_queue`, {
+                const qqRes = await sbFetch('/rest/v1/quotation_queue', {
                     method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'apikey': SUPABASE_KEY,
-                        'Authorization': 'Bearer ' + (_currentUser?.access_token || SUPABASE_KEY),
-                        'Prefer': 'return=minimal'
-                    },
+                    headers: { 'Prefer': 'return=minimal' },
                     body: JSON.stringify({
                         quote_no:      quoteNo,
                         quote_date:    todayStr,
@@ -4929,6 +4919,10 @@
                         created_by:    _currentUser?.id || null
                     })
                 });
+                if (!qqRes.ok) {
+                    const errBody = await qqRes.text().catch(() => '');
+                    throw new Error('quotation_queue insert failed: ' + qqRes.status + ' ' + errBody);
+                }
 
                 // บันทึก vehicle rows ลง quotation_vehicles (fire-and-forget)
                 saveQuotationVehicles(quoteNo, todayStr, clientName, issuerName, issuerBranch);
@@ -4936,15 +4930,7 @@
                 return quoteNo;
 
             } catch (err) {
-                console.error('getNextQuoteNo failed:', err);
-                // ทดสอบ RPC โดยตรง
-                const testRes = await fetch(`${SUPABASE_URL}/rest/v1/rpc/get_next_daily_seq`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json', 'apikey': SUPABASE_KEY, 'Authorization': 'Bearer ' + (_currentUser?.access_token || SUPABASE_KEY) },
-                    body: JSON.stringify({ p_date: new Date().toLocaleDateString('sv-SE', { timeZone: 'Asia/Bangkok' }) })
-                });
-                const testBody = await testRes.text();
-                console.error('RPC test status:', testRes.status, 'body:', testBody);
+                console.error('getNextQuoteNo failed:', err.message || err);
                 return `FQ${dateStr}XXXX`;
             }
         }
@@ -5040,16 +5026,16 @@
 
                 if (rows.length === 0) return;
 
-                // Bulk INSERT ผ่าน Supabase REST (Prefer: resolution=merge-duplicates ไม่ได้ใช้ — INSERT ใหม่ทุกครั้ง)
-                fetch(`${SUPABASE_URL}/rest/v1/quotation_vehicles`, {
+                // Bulk INSERT ผ่าน sbFetch (มี auto token-refresh รองรับ token หมดอายุ)
+                sbFetch('/rest/v1/quotation_vehicles', {
                     method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'apikey': SUPABASE_KEY,
-                        'Authorization': 'Bearer ' + (_currentUser?.access_token || SUPABASE_KEY),
-                        'Prefer': 'return=minimal'
-                    },
+                    headers: { 'Prefer': 'return=minimal' },
                     body: JSON.stringify(rows)
+                }).then(async res => {
+                    if (!res.ok) {
+                        const body = await res.text().catch(() => '');
+                        console.warn('saveQuotationVehicles HTTP', res.status, body);
+                    }
                 }).catch(err => console.warn('saveQuotationVehicles failed:', err));
 
             } catch (err) {
