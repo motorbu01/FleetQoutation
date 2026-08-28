@@ -498,7 +498,7 @@
                                         <span class="w-1.5 h-1.5 rounded-full bg-amber-400"></span>
                                         ส่วนลด
                                     </h4>
-                                    <div class="grid grid-cols-2 sm:grid-cols-3 gap-3.5">
+                                    <div class="grid grid-cols-2 sm:grid-cols-4 gap-3.5">
                                         <div>
                                             <label class="block text-xs font-semibold text-amber-600 uppercase tracking-wide mb-1.5">ส่วนลดงานกลุ่ม</label>
                                             <select class="block w-full rounded-xl border border-amber-200 bg-amber-50/50 px-3 py-2.5 text-sm text-amber-700 focus:bg-white focus:border-amber-400 focus:ring-2 focus:ring-amber-100 focus:outline-none transition-all groupDiscountSelect">
@@ -514,16 +514,17 @@
                                                 <option value="30">30%</option>
                                             </select>
                                         </div>
-                                        <div>
-                                            <label class="block text-xs font-semibold text-amber-600 uppercase tracking-wide mb-1.5">ส่วนลดพฤติกรรมผู้ขับขี่</label>
-                                            <div class="grid grid-cols-2 gap-2">
-                                                <select class="block w-full rounded-xl border px-2 py-2.5 text-xs focus:outline-none transition-all driverBehaviorFilter spec-locked" onchange="onDriverBehaviorFilterChange(this)" disabled title="ประเภทผู้ขับขี่">
-                                                    <option value="ไม่ระบุ" selected>ไม่ระบุ</option><option value="ระบุ">ระบุ</option>
-                                                </select>
-                                                <select class="block w-full rounded-xl border px-2 py-2.5 text-sm focus:outline-none transition-all driverBehaviorDiscountSelect spec-locked" disabled>
-                                                    <option value="-">-</option>
-                                                </select>
-                                            </div>
+                                        <div class="driver-name-col">
+                                            <label class="block text-xs font-semibold text-amber-600 uppercase tracking-wide mb-1.5">ระบุชื่อผู้ขับขี่</label>
+                                            <select class="block w-full rounded-xl border px-2 py-2.5 text-sm focus:outline-none transition-all driverBehaviorFilter spec-locked" onchange="onDriverBehaviorFilterChange(this)" disabled title="ระบุชื่อผู้ขับขี่">
+                                                <option value="ไม่ระบุ" selected>ไม่ระบุ</option><option value="ระบุ">ระบุ</option>
+                                            </select>
+                                        </div>
+                                        <div class="driver-name-col">
+                                            <label class="block text-xs font-semibold text-amber-600 uppercase tracking-wide mb-1.5">ระดับพฤติกรรม</label>
+                                            <select class="block w-full rounded-xl border px-2 py-2.5 text-sm focus:outline-none transition-all driverBehaviorDiscountSelect spec-locked" disabled title="ระดับพฤติกรรม">
+                                                <option value="-">-</option>
+                                            </select>
                                         </div>
                                     </div>
                                 </div>
@@ -621,25 +622,21 @@
                                         <p class="text-[10px] text-slate-400 mt-0.5">สูงสุด 100,000 บาท</p>
                                     </div>
                                 </div>
-
-                                <!-- เบี้ยประกันภัย -->
-                                <div class="mt-5 pt-4 border-t border-slate-200/70">
-                                    <div class="flex items-center justify-between">
-                                        <h4 class="text-xs font-semibold text-indigo-700 uppercase tracking-wide flex items-center gap-2">
-                                            <span class="w-1.5 h-1.5 rounded-full bg-indigo-400"></span>
-                                            กดเพื่อคำนวณเบี้ยประกันภัย >>>
-                                        </h4>
-                                        <button type="button" onclick="calcPremiumForCard(this)"
-                                            class="calcPremiumBtn inline-flex items-center gap-1.5 bg-indigo-600 hover:bg-indigo-700 active:scale-95 text-white text-xs font-semibold px-3.5 py-1.5 rounded-lg shadow-sm transition-all">
-                                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 13h.01M13 13h.01M17 13h.01M17 17h.01M13 17h.01M3 7a2 2 0 012-2h14a2 2 0 012 2v10a2 2 0 01-2 2H5a2 2 0 01-2-2V7z"/></svg>
-                                            คำนวณเบี้ย
-                                        </button>
-                                    </div>
-                                    <p class="calcPremiumError hidden text-xs font-medium text-rose-500 mt-2"></p>
-                                    <!-- hidden inputs เก็บค่าเบี้ยเพื่อให้ JS/export ดึงได้ — ไม่แสดงผล -->
-                                    <input type="text" class="premiumInput hidden" value="0.00" readonly required>
-                                    <input type="text" class="prbPriceInput hidden" readonly>
+                                <!-- แถวปุ่มคำนวณ — ชิดขวา -->
+                                <div class="flex items-center justify-end gap-3 mt-3.5">
+                                    <p class="text-xs font-semibold text-indigo-700 uppercase tracking-wide whitespace-nowrap">
+                                        กดเพื่อคำนวณเบี้ยประกันภัย >>>
+                                    </p>
+                                    <button type="button" onclick="calcPremiumForCard(this)"
+                                        class="calcPremiumBtn shrink-0 inline-flex items-center gap-1.5 bg-indigo-600 hover:bg-indigo-700 active:scale-95 text-white text-xs font-semibold px-4 py-2.5 rounded-xl shadow-sm transition-all">
+                                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 13h.01M13 13h.01M17 13h.01M17 17h.01M13 17h.01M3 7a2 2 0 012-2h14a2 2 0 012 2v10a2 2 0 01-2 2H5a2 2 0 01-2-2V7z"/></svg>
+                                        คำนวณเบี้ย
+                                    </button>
                                 </div>
+                                <p class="calcPremiumError hidden text-xs font-medium text-rose-500 mt-2"></p>
+                                <!-- hidden inputs เก็บค่าเบี้ยเพื่อให้ JS/export ดึงได้ — ไม่แสดงผล -->
+                                <input type="text" class="premiumInput hidden" value="0.00" readonly required>
+                                <input type="text" class="prbPriceInput hidden" readonly>
                             </div>
 
                         </div>
@@ -1228,6 +1225,11 @@
 
 
                function getBehaviorRate(code, filterVal, levelVal) {
+           // 0. ถ้าปิดฟีเจอร์ระบุชื่อ → force ไม่ระบุ เสมอ
+           if (_appSettings['driver_name_feature_enabled'] !== 'true') {
+               if (code === '110' || code === '210' || code === 110 || code === 210) return 1.05;
+               return 1.00;
+           }
            // 1. เช็กก่อนว่า "ไม่ระบุ" หรือเปล่า
            if (filterVal !== 'ระบุ') {
                 // ถ้ารหัสเป็น 110 หรือ 210 และ "ไม่ระบุ" -> ได้ 1.05
@@ -2635,10 +2637,12 @@
 
             if (code === "110" || code === "210") {
                 driverBehaviorFilter.value = "ไม่ระบุ";
-                driverBehaviorFilter.disabled = false;
-                driverBehaviorFilter.classList.remove('spec-locked', 'bg-slate-100', 'cursor-not-allowed', 'text-slate-500');
-                driverBehaviorFilter.classList.add('bg-amber-50/50', 'text-amber-700', 'border-amber-200');
-                
+                // ปลด lock เฉพาะเมื่อ feature เปิดอยู่เท่านั้น — ถ้าปิด column ซ่อนอยู่แล้ว
+                if (_appSettings['driver_name_feature_enabled'] === 'true') {
+                    driverBehaviorFilter.disabled = false;
+                    driverBehaviorFilter.classList.remove('spec-locked', 'bg-slate-100', 'cursor-not-allowed', 'text-slate-500');
+                    driverBehaviorFilter.classList.add('bg-amber-50/50', 'text-amber-700', 'border-amber-200');
+                }
                 onDriverBehaviorFilterChange(driverBehaviorFilter);
             // driverBehaviorFilter — locked: ใช้ spec-locked
             } else {
@@ -3376,8 +3380,9 @@
                         prbCode: String(r[15] || '').trim(),
                         groupDiscount: String(r[16] || '').trim(),
                         claimDiscount: String(r[17] || '').trim(),
-                        driverBehaviorFilter: String(r[18] || '').trim(),
-                        driverBehaviorDiscount: String(r[19] || '').trim(),
+                        // ถ้าฟีเจอร์ระบุชื่อปิดอยู่ → ignore column r[18], r[19] เงียบๆ
+                        driverBehaviorFilter:   _appSettings['driver_name_feature_enabled'] === 'true' ? String(r[18] || '').trim() : 'ไม่ระบุ',
+                        driverBehaviorDiscount: _appSettings['driver_name_feature_enabled'] === 'true' ? String(r[19] || '').trim() : '-',
                         accessoryAmount: String(r[20] || '').trim(),
                     }));
 
@@ -5304,12 +5309,15 @@
     const SB_KEY  = 'sb_publishable_IYC4LnMdk2VFj1dMhJdJig_3LDZ4XF4';
 
     // ต้องประกาศก่อน loadAdminSettings() ใช้
+    // zone: 'general' = Zone 1 ทั่วไป, 'lv1'/'lv2' = Zone 2 Permission per Role
+    // type: 'number' | 'toggle'
     const SETTINGS_META = [
-        { key: 'session_timeout_hours',   label: 'Session Timeout (ชั่วโมง)',         hint: '0 = ไม่หมดอายุ', type: 'number', min: 0, max: 720 },
-        { key: 'max_group_discount_lv1',  label: 'ส่วนลดงานกลุ่ม สูงสุด LV1 (%)',    hint: '',               type: 'number', min: 0, max: 100 },
-        { key: 'max_group_discount_lv2',  label: 'ส่วนลดงานกลุ่ม สูงสุด LV2 (%)',    hint: '',               type: 'number', min: 0, max: 100 },
-        { key: 'max_claim_discount_lv1',  label: 'ส่วนลดประวัติดี สูงสุด LV1 (%)',   hint: '',               type: 'number', min: 0, max: 100 },
-        { key: 'max_claim_discount_lv2',  label: 'ส่วนลดประวัติดี สูงสุด LV2 (%)',   hint: '',               type: 'number', min: 0, max: 100 },
+        { key: 'session_timeout_hours',        label: 'Session Timeout (ชั่วโมง)', hint: '0 = ไม่หมดอายุ', type: 'number',  min: 0, max: 720, zone: 'general' },
+        { key: 'driver_name_feature_enabled',  label: 'เปิดใช้ฟีเจอร์ระบุชื่อผู้ขับขี่', hint: 'ปิดไว้จนกว่า OIC จะบังคับใช้', type: 'toggle', zone: 'general' },
+        { key: 'max_group_discount_lv1',       label: 'ส่วนลดงานกลุ่ม สูงสุด (%)',  hint: '', type: 'number', min: 0, max: 100, zone: 'lv1' },
+        { key: 'max_claim_discount_lv1',       label: 'ส่วนลดประวัติดี สูงสุด (%)', hint: '', type: 'number', min: 0, max: 100, zone: 'lv1' },
+        { key: 'max_group_discount_lv2',       label: 'ส่วนลดงานกลุ่ม สูงสุด (%)',  hint: '', type: 'number', min: 0, max: 100, zone: 'lv2' },
+        { key: 'max_claim_discount_lv2',       label: 'ส่วนลดประวัติดี สูงสุด (%)', hint: '', type: 'number', min: 0, max: 100, zone: 'lv2' },
     ];
 
     let _currentUser      = null;   // { id, email, access_token, refresh_token, expires_at }
@@ -5781,6 +5789,7 @@
 
             // apply permission
             applyPermissions();
+            applyDriverNameFeature();
         }
 
         if (document.readyState === 'loading') {
@@ -5831,6 +5840,55 @@
             document.addEventListener('DOMContentLoaded', setupObserver);
         } else {
             setupObserver();
+        }
+    }
+
+    // เรียกทุกครั้งที่ login / restore session — ควบคุม driver name feature ทั้งระบบ
+    function applyDriverNameFeature() {
+        const enabled = _appSettings['driver_name_feature_enabled'] === 'true';
+
+        function doLock() {
+            document.querySelectorAll('.vehicle-card').forEach(card => lockDriverNameOnCard(card, enabled));
+        }
+
+        // Observer — lock card ใหม่ที่ถูก add เข้ามาด้วย
+        function setupDriverObserver() {
+            if (window._driverFeatureObserver) return;
+            const container = document.getElementById('vehicleContainer');
+            if (!container) return;
+            window._driverFeatureObserver = new MutationObserver(() => {
+                const isEnabled = _appSettings['driver_name_feature_enabled'] === 'true';
+                document.querySelectorAll('.vehicle-card').forEach(card => lockDriverNameOnCard(card, isEnabled));
+            });
+            window._driverFeatureObserver.observe(container, { childList: true });
+        }
+
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', () => { doLock(); setupDriverObserver(); });
+        } else {
+            doLock();
+            setupDriverObserver();
+        }
+    }
+
+    function lockDriverNameOnCard(card, enabled) {
+        const filterSel  = card.querySelector('.driverBehaviorFilter');
+        const levelSel   = card.querySelector('.driverBehaviorDiscountSelect');
+        const cols       = card.querySelectorAll('.driver-name-col');
+        if (!filterSel || !levelSel) return;
+
+        if (!enabled) {
+            // ปิดฟีเจอร์ — ซ่อน column + force ค่าเป็นไม่ระบุ
+            cols.forEach(c => c.classList.add('hidden'));
+            filterSel.value    = 'ไม่ระบุ';
+            filterSel.disabled = true;
+            levelSel.innerHTML = '<option value="-">-</option>';
+            levelSel.value     = '-';
+            levelSel.disabled  = true;
+            recalcCardPremium(card);
+        } else {
+            // เปิดฟีเจอร์ — โชว์ column กลับมา
+            cols.forEach(c => c.classList.remove('hidden'));
         }
     }
 
@@ -6057,23 +6115,103 @@
 
     async function loadAdminSettings() {
         const form = document.getElementById('settingsForm');
-        form.innerHTML = '<p class="text-slate-400 text-sm text-center py-4 col-span-2">กำลังโหลด...</p>';
+        form.innerHTML = '<p class="text-slate-400 text-sm text-center py-4">กำลังโหลด...</p>';
         try {
             const res  = await sbFetch('/rest/v1/system_settings?select=key,value');
             const data = await res.json();
             const map  = Object.fromEntries((data || []).map(r => [r.key, r.value]));
-            form.innerHTML = SETTINGS_META.map(s => `
-                <div>
-                    <label class="block text-xs font-semibold text-slate-600 uppercase tracking-wide mb-1.5">${s.label}</label>
-                    <input type="${s.type}" id="setting_${s.key}" value="${escHtml(map[s.key] ?? '')}"
-                        min="${s.min}" max="${s.max}"
-                        class="block w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 focus:outline-none">
-                    ${s.hint ? `<p class="text-[11px] text-slate-400 mt-1">${s.hint}</p>` : ''}
+
+            const generalItems = SETTINGS_META.filter(s => s.zone === 'general');
+            const lv1Items     = SETTINGS_META.filter(s => s.zone === 'lv1');
+            const lv2Items     = SETTINGS_META.filter(s => s.zone === 'lv2');
+
+            function renderField(s, map) {
+                if (s.type === 'toggle') {
+                    const checked = (map[s.key] === 'true') ? 'checked' : '';
+                    return `
+                    <div class="flex items-center justify-between py-2.5 px-3 rounded-xl bg-white border border-slate-200 hover:border-indigo-300 transition-all">
+                        <div>
+                            <p class="text-sm font-medium text-slate-700">${s.label}</p>
+                            ${s.hint ? `<p class="text-[11px] text-slate-400 mt-0.5">${s.hint}</p>` : ''}
+                        </div>
+                        <label class="relative inline-flex items-center cursor-pointer shrink-0 ml-4">
+                            <input type="checkbox" id="setting_${s.key}" class="sr-only peer" ${checked}
+                                onchange="document.getElementById('toggle_label_${s.key}').textContent = this.checked ? 'เปิด' : 'ปิด'">
+                            <div class="w-11 h-6 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:bg-indigo-500 transition-all after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:after:translate-x-5"></div>
+                            <span id="toggle_label_${s.key}" class="ml-2 text-xs font-semibold text-slate-500 w-6">${checked ? 'เปิด' : 'ปิด'}</span>
+                        </label>
+                    </div>`;
+                }
+                return `
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-600 uppercase tracking-wide mb-1.5">${s.label}</label>
+                        <input type="number" id="setting_${s.key}" value="${escHtml(map[s.key] ?? '')}"
+                            min="${s.min}" max="${s.max}"
+                            class="block w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 focus:outline-none">
+                        ${s.hint ? `<p class="text-[11px] text-slate-400 mt-1">${s.hint}</p>` : ''}
+                    </div>`;
+            }
+
+            form.innerHTML = `
+                <!-- Zone 1: ทั่วไป -->
+                <div class="mb-6">
+                    <div class="flex items-center gap-2 mb-3">
+                        <div class="w-7 h-7 rounded-lg bg-slate-100 flex items-center justify-center shrink-0">
+                            <svg class="w-4 h-4 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/><circle cx="12" cy="12" r="3"/></svg>
+                        </div>
+                        <h3 class="text-sm font-bold text-slate-700">ทั่วไป</h3>
+                    </div>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        ${generalItems.map(s => renderField(s, map)).join('')}
+                    </div>
                 </div>
-            `).join('');
+
+                <!-- Zone 2: Permission per Role -->
+                <div>
+                    <div class="flex items-center gap-2 mb-3">
+                        <div class="w-7 h-7 rounded-lg bg-indigo-50 flex items-center justify-center shrink-0">
+                            <svg class="w-4 h-4 text-indigo-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg>
+                        </div>
+                        <h3 class="text-sm font-bold text-slate-700">Permission per Role</h3>
+                    </div>
+                    <!-- Role pills -->
+                    <div class="flex gap-2 mb-4" id="roleSettingPills">
+                        <button onclick="switchRoleSettingTab('lv1')" id="roleSettingPill_lv1"
+                            class="px-4 py-1.5 rounded-full text-xs font-semibold bg-indigo-500 text-white transition-all">
+                            LV1
+                        </button>
+                        <button onclick="switchRoleSettingTab('lv2')" id="roleSettingPill_lv2"
+                            class="px-4 py-1.5 rounded-full text-xs font-semibold bg-slate-100 text-slate-500 hover:bg-slate-200 transition-all">
+                            LV2
+                        </button>
+                    </div>
+                    <!-- LV1 fields -->
+                    <div id="roleSettingPanel_lv1" class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        ${lv1Items.map(s => renderField(s, map)).join('')}
+                    </div>
+                    <!-- LV2 fields -->
+                    <div id="roleSettingPanel_lv2" class="hidden grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        ${lv2Items.map(s => renderField(s, map)).join('')}
+                    </div>
+                </div>
+            `;
         } catch (e) {
-            form.innerHTML = `<p class="text-rose-500 text-sm text-center py-4 col-span-2">โหลดไม่สำเร็จ: ${e.message}</p>`;
+            form.innerHTML = `<p class="text-rose-500 text-sm text-center py-4">โหลดไม่สำเร็จ: ${e.message}</p>`;
         }
+    }
+
+    function switchRoleSettingTab(role) {
+        ['lv1','lv2'].forEach(r => {
+            const panel = document.getElementById('roleSettingPanel_' + r);
+            const pill  = document.getElementById('roleSettingPill_' + r);
+            if (r === role) {
+                panel.classList.remove('hidden');
+                pill.className = 'px-4 py-1.5 rounded-full text-xs font-semibold bg-indigo-500 text-white transition-all';
+            } else {
+                panel.classList.add('hidden');
+                pill.className = 'px-4 py-1.5 rounded-full text-xs font-semibold bg-slate-100 text-slate-500 hover:bg-slate-200 transition-all';
+            }
+        });
     }
 
     async function adminSaveSettings() {
@@ -6083,7 +6221,8 @@
             for (const s of SETTINGS_META) {
                 const el  = document.getElementById('setting_' + s.key);
                 if (!el) continue;
-                const val = el.value.trim();
+                // toggle = checkbox → ค่าเป็น 'true'/'false', number = text value
+                const val = s.type === 'toggle' ? String(el.checked) : el.value.trim();
                 const res = await sbFetch(`/rest/v1/system_settings?key=eq.${s.key}`, {
                     method: 'PATCH',
                     headers: { 'Prefer': 'return=minimal' },
@@ -6843,6 +6982,8 @@
             let reqHtml = '';
             if (reqStatus === 'pending') {
                 reqHtml = `<span class="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-amber-100 text-amber-600">⏳ รอดำเนินการ</span>`;
+            } else if (reqStatus === 'rejected') {
+                reqHtml = `<span class="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-rose-100 text-rose-600">❌ ถูกปฏิเสธ</span>`;
             } else if (reqStatus !== 'resolved') {
                 reqHtml = `<button onclick="fuRequestReset('${fu.id}','${row.quote_no}',this)"
                     class="text-[10px] text-slate-400 hover:text-rose-500 underline transition-colors">ขอแก้ไข</button>`;
@@ -6997,9 +7138,50 @@
     }
 
     // ===== ขอ reset จาก user =====
-    async function fuRequestReset(followupId, quoteNo, btnEl) {
-        if (!confirm(`ต้องการขอแก้ไขผลใบ ${quoteNo}?\nระบบจะแจ้ง Admin และดำเนินการภายใน 15-20 นาที`)) return;
-        btnEl.disabled = true;
+    // ===== ขอ reset จาก user — เปิด modal กรอกเหตุผลก่อน =====
+    function fuRequestReset(followupId, quoteNo, btnEl) {
+        // เก็บ context ไว้ใน modal เพื่อให้ submit ใช้
+        const modal = document.getElementById('fuRequestNoteModal');
+        modal.dataset.followupId = followupId;
+        modal.dataset.quoteNo    = quoteNo;
+        modal.dataset.btnRef     = ''; // ไม่เก็บ ref โดยตรง ใช้ disable ผ่าน data แทน
+        document.getElementById('fuRequestNoteInput').value = '';
+        document.getElementById('fuRequestNoteError').classList.add('hidden');
+        document.getElementById('fuRequestNoteQuote').textContent = quoteNo;
+        // reset submit button เสมอตอนเปิด modal ใหม่
+        const submitBtn = document.getElementById('fuRequestNoteSubmit');
+        submitBtn.disabled = false;
+        submitBtn.textContent = 'ส่งคำขอ';
+        // เก็บ button element ไว้ชั่วคราว
+        window._fuRequestBtnEl = btnEl;
+        modal.style.display = 'flex';
+        setTimeout(() => document.getElementById('fuRequestNoteInput').focus(), 50);
+    }
+
+    function closeFuRequestNoteModal() {
+        document.getElementById('fuRequestNoteModal').style.display = 'none';
+        window._fuRequestBtnEl = null;
+    }
+
+    async function submitFuRequestNote() {
+        const modal      = document.getElementById('fuRequestNoteModal');
+        const note       = document.getElementById('fuRequestNoteInput').value.trim();
+        const errEl      = document.getElementById('fuRequestNoteError');
+        const submitBtn  = document.getElementById('fuRequestNoteSubmit');
+        const followupId = modal.dataset.followupId;
+        const quoteNo    = modal.dataset.quoteNo;
+        const btnEl      = window._fuRequestBtnEl;
+
+        if (!note) {
+            errEl.textContent = 'กรุณากรอกเหตุผลก่อนส่งคำขอ';
+            errEl.classList.remove('hidden');
+            return;
+        }
+
+        submitBtn.disabled = true;
+        submitBtn.textContent = 'กำลังส่ง...';
+        if (btnEl) btnEl.disabled = true;
+
         try {
             const res = await sbFetch('/rest/v1/followup_requests', {
                 method: 'POST',
@@ -7009,15 +7191,22 @@
                     quote_no:       quoteNo,
                     requested_by:   _currentUser.id,
                     requester_name: _currentProfile?.display_name || '',
+                    request_note:   note,
                     status:         'pending'
                 })
             });
             if (!res.ok) throw new Error(await res.text().catch(() => res.status));
-            // แจ้ง user
-            btnEl.outerHTML = `<span class="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-amber-100 text-amber-600">⏳ รอดำเนินการ</span>`;
+            // reset ปุ่ม submit ก่อนปิด เผื่อเปิดใหม่
+            submitBtn.disabled = false;
+            submitBtn.textContent = 'ส่งคำขอ';
+            closeFuRequestNoteModal();
+            if (btnEl) btnEl.outerHTML = `<span class="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-amber-100 text-amber-600">⏳ รอดำเนินการ</span>`;
         } catch (e) {
-            alert('ส่งคำขอไม่สำเร็จ: ' + e.message);
-            btnEl.disabled = false;
+            errEl.textContent = 'ส่งคำขอไม่สำเร็จ: ' + e.message;
+            errEl.classList.remove('hidden');
+            submitBtn.disabled = false;
+            submitBtn.textContent = 'ส่งคำขอ';
+            if (btnEl) btnEl.disabled = false;
         }
     }
 
@@ -7286,6 +7475,14 @@
         if (type === 'followup_reset' && refId) {
             closeNotifModal();
             openFollowUpModal(); // เปิด follow-up modal เพื่อดูใบที่ถูก reset
+        } else if (type === 'followup_reject') {
+            closeNotifModal(); // แค่ปิด modal — user รับทราบว่าถูก reject
+        } else if (type === 'followup_request' && _currentProfile?.role === 'admin') {
+            closeNotifModal();
+            // เปิด Admin Panel แล้วไปที่ tab คำขอแก้ไข
+            document.getElementById('adminModal').classList.remove('hidden');
+            switchAdminTab('followupRequests');
+            loadFollowupRequestsAdmin();
         }
     }
 
@@ -7340,75 +7537,157 @@
     }
 
     // ----- โหลดรายการ requests ทั้งหมด -----
+    let _adminReqData = []; // cache ไว้ใช้กับ search + render
+
     async function loadFollowupRequestsAdmin() {
         const tbody  = document.getElementById('followupRequestsBody');
         const msgEl  = document.getElementById('adminReqMsg');
-        tbody.innerHTML = '<tr><td colspan="6" class="text-center text-slate-400 py-6">กำลังโหลด...</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="8" class="text-center text-slate-400 py-6">กำลังโหลด...</td></tr>';
         msgEl.textContent = '';
         try {
-            // ดึง followup_requests ก่อน แล้วดึง quote_followup แยก
+            // ดึง followup_requests ทั้งหมด
             const res = await sbFetch(
-                `/rest/v1/followup_requests?select=id,quote_no,requester_name,status,created_at,followup_id&order=created_at.desc&limit=100`
+                `/rest/v1/followup_requests?select=id,quote_no,requester_name,status,created_at,followup_id,resolved_by,resolved_at,request_note,admin_note&order=created_at.desc&limit=200`
             );
             if (!res.ok) throw new Error('โหลดคำขอล้มเหลว: ' + res.status);
             const data = await res.json();
 
-            if (data.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="6" class="text-center text-slate-400 py-6">ไม่มีคำขอ</td></tr>';
-                return;
+            // ดึงชื่อ admin ที่ approve/reject
+            const resolverIds = [...new Set(data.map(r => r.resolved_by).filter(Boolean))];
+            let resolverMap = {};
+            if (resolverIds.length > 0) {
+                const rpRes = await sbFetch(`/rest/v1/user_profiles?id=in.(${resolverIds.join(',')})&select=id,display_name`);
+                if (rpRes.ok) { const d = await rpRes.json(); d.forEach(u => { resolverMap[u.id] = u.display_name; }); }
             }
 
-            // ดึง quote_followup ที่เกี่ยวข้องทั้งหมดในครั้งเดียว
+            // ดึง quote_followup + followup_reasons เพื่อได้เหตุผล ไม่ทำ
             const fuIds = [...new Set(data.map(r => r.followup_id).filter(Boolean))];
             let fuMap = {};
             if (fuIds.length > 0) {
                 const fuRes = await sbFetch(
-                    `/rest/v1/quote_followup?id=in.(${fuIds.join(',')})&select=id,outcome,reason_other,created_by`
+                    `/rest/v1/quote_followup?id=in.(${fuIds.join(',')})&select=id,outcome,reason_id,reason_other,created_by`
                 );
-                if (fuRes.ok) {
-                    const fuData = await fuRes.json();
-                    fuData.forEach(f => { fuMap[f.id] = f; });
+                if (fuRes.ok) { const d = await fuRes.json(); d.forEach(f => { fuMap[f.id] = f; }); }
+
+                // ดึง followup_reasons
+                const reasonIds = [...new Set(Object.values(fuMap).map(f => f.reason_id).filter(Boolean))];
+                if (reasonIds.length > 0) {
+                    const rrRes = await sbFetch(`/rest/v1/followup_reasons?id=in.(${reasonIds.join(',')})&select=id,reason_text`);
+                    if (rrRes.ok) {
+                        const rrData = await rrRes.json();
+                        const rrMap = Object.fromEntries(rrData.map(r => [r.id, r.reason_text]));
+                        Object.values(fuMap).forEach(f => { f._reasonText = rrMap[f.reason_id] || null; });
+                    }
                 }
             }
 
-            tbody.innerHTML = '';
-            data.forEach(r => {
-                const fu = fuMap[r.followup_id] || null;
-                const isAccepted = fu?.outcome === 'accepted';
-                const outcomeLabel = fu
-                    ? (isAccepted
-                        ? '<span class="text-emerald-600 font-semibold">✓ ตกลง</span>'
-                        : '<span class="text-rose-500 font-semibold">✗ ไม่ทำ</span>')
-                    : '<span class="text-slate-300">-</span>';
-                const dateStr = new Date(r.created_at).toLocaleString('th-TH', {
-                    day: '2-digit', month: 'short', year: '2-digit', hour: '2-digit', minute: '2-digit'
-                });
-                const isPending = r.status === 'pending';
-                const statusBadge = isPending
-                    ? '<span class="text-xs font-semibold px-2 py-0.5 rounded-full bg-amber-100 text-amber-600">⏳ รอดำเนินการ</span>'
-                    : '<span class="text-xs font-semibold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-600">✓ แก้ไขแล้ว</span>';
-
-                const tr = document.createElement('tr');
-                tr.className = 'hover:bg-slate-50 transition-colors' + (isPending ? '' : ' opacity-50');
-                tr.innerHTML = `
-                    <td class="px-4 py-3 text-sm text-slate-700">${r.requester_name || '-'}</td>
-                    <td class="px-4 py-3 text-sm font-semibold text-slate-800">${r.quote_no}</td>
-                    <td class="px-4 py-3 text-center text-sm">${outcomeLabel}</td>
-                    <td class="px-4 py-3 text-center text-xs text-slate-400">${dateStr}</td>
-                    <td class="px-4 py-3 text-center">${statusBadge}</td>
-                    <td class="px-4 py-3 text-center">
-                        ${isPending ? `
-                        <button onclick="adminResetFollowup(${r.id}, ${r.followup_id}, '${r.quote_no}', '${fu?.created_by || ''}', this)"
-                            class="inline-flex items-center gap-1 text-xs font-semibold px-3 py-1.5 rounded-lg bg-indigo-50 hover:bg-indigo-100 text-indigo-600 border border-indigo-200 transition-all">
-                            🔄 Reset
-                        </button>` : '<span class="text-xs text-slate-300">-</span>'}
-                    </td>`;
-                tbody.appendChild(tr);
-            });
+            // เก็บ cache พร้อม enriched data
+            _adminReqData = data.map(r => ({ ...r, _fu: fuMap[r.followup_id] || null, _resolverName: resolverMap[r.resolved_by] || null }));
+            renderFollowupRequestsTable();
             pollAdminReqCount();
         } catch (e) {
-            tbody.innerHTML = `<tr><td colspan="6" class="text-center text-rose-400 py-6">${e.message}</td></tr>`;
+            tbody.innerHTML = `<tr><td colspan="8" class="text-center text-rose-400 py-6">${e.message}</td></tr>`;
         }
+    }
+
+    function renderFollowupRequestsTable() {
+        const tbody      = document.getElementById('followupRequestsBody');
+        const histBody   = document.getElementById('adminReqHistoryBody');
+        const histCount  = document.getElementById('adminReqHistoryCount');
+        const q          = (document.getElementById('adminReqSearchInput')?.value || '').trim().toLowerCase();
+
+        const filtered = q
+            ? _adminReqData.filter(r =>
+                r.quote_no.toLowerCase().includes(q) ||
+                (r.requester_name || '').toLowerCase().includes(q))
+            : _adminReqData;
+
+        const pending  = filtered.filter(r => r.status === 'pending');
+        const history  = filtered.filter(r => r.status !== 'pending');
+
+        // helper สร้าง row
+        function buildRow(r, isHistory) {
+            const fu = r._fu;
+            const isAccepted = fu?.outcome === 'accepted';
+            const reasonText = fu?._reasonText || fu?.reason_other || null;
+            const outcomeLabel = fu
+                ? (isAccepted
+                    ? '<span class="text-emerald-600 font-semibold">✓ ตกลง</span>'
+                    : `<div><span class="text-rose-500 font-semibold">✗ ไม่ทำ</span>${reasonText ? `<br><span class="text-[11px] text-slate-400">"${escHtml(reasonText)}"</span>` : ''}</div>`)
+                : '<span class="text-slate-300">-</span>';
+            const dateStr = new Date(r.created_at).toLocaleString('th-TH', {
+                day: '2-digit', month: 'short', year: '2-digit', hour: '2-digit', minute: '2-digit'
+            });
+            const isPending = r.status === 'pending';
+            const statusBadge = isPending
+                ? '<span class="text-xs font-semibold px-2 py-0.5 rounded-full bg-amber-100 text-amber-600">⏳ รอดำเนินการ</span>'
+                : r.status === 'rejected'
+                    ? '<span class="text-xs font-semibold px-2 py-0.5 rounded-full bg-rose-100 text-rose-600">❌ ปฏิเสธ</span>'
+                    : '<span class="text-xs font-semibold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-600">✅ อนุมัติ</span>';
+
+            let resolvedInfo = '<span class="text-xs text-slate-300">-</span>';
+            if (!isPending && r._resolverName) {
+                const resolvedDate = r.resolved_at ? new Date(r.resolved_at).toLocaleString('th-TH', { day: '2-digit', month: 'short', year: '2-digit', hour: '2-digit', minute: '2-digit' }) : '-';
+                resolvedInfo = `<div class="text-xs leading-tight">
+                    <span class="font-semibold ${r.status === 'rejected' ? 'text-rose-500' : 'text-emerald-600'}">${escHtml(r._resolverName)}</span><br>
+                    <span class="text-slate-400">${resolvedDate}</span>
+                </div>`;
+            }
+
+            const tr = document.createElement('tr');
+            tr.className = 'hover:bg-slate-50 transition-colors' + (isPending ? '' : ' opacity-70');
+            tr.innerHTML = `
+                <td class="px-4 py-3 text-sm text-slate-700">${escHtml(r.requester_name || '-')}</td>
+                <td class="px-4 py-3 text-sm font-semibold text-slate-800 whitespace-nowrap">${r.quote_no}</td>
+                <td class="px-4 py-3 text-sm">${outcomeLabel}</td>
+                <td class="px-4 py-3 text-xs text-slate-600 max-w-[180px]">
+                    <span class="line-clamp-2" title="${escHtml(r.request_note || '')}">${escHtml(r.request_note || '-')}</span>
+                </td>
+                <td class="px-4 py-3 text-center text-xs text-slate-400 whitespace-nowrap">${dateStr}</td>
+                <td class="px-4 py-3 text-center">${statusBadge}</td>
+                <td class="px-4 py-3 text-xs text-slate-500 max-w-[150px]">
+                    ${r.admin_note ? `<span class="line-clamp-2" title="${escHtml(r.admin_note)}">${escHtml(r.admin_note)}</span>` : (isPending ? '-' : resolvedInfo)}
+                </td>
+                <td class="px-4 py-3 text-center">
+                    ${isPending ? `
+                    <div class="flex items-center justify-center gap-1.5">
+                        <button onclick="adminApproveFollowup(${r.id}, ${r.followup_id}, '${r.quote_no}', '${fu?.created_by || ''}', this)"
+                            class="inline-flex items-center gap-1 text-xs font-semibold px-2.5 py-1.5 rounded-lg bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border border-emerald-200 transition-all">
+                            ✅ Approve
+                        </button>
+                        <button onclick="adminRejectFollowup(${r.id}, '${r.quote_no}', '${fu?.created_by || ''}', this)"
+                            class="inline-flex items-center gap-1 text-xs font-semibold px-2.5 py-1.5 rounded-lg bg-rose-50 hover:bg-rose-100 text-rose-600 border border-rose-200 transition-all">
+                            ❌ Reject
+                        </button>
+                    </div>` : resolvedInfo}
+                </td>`;
+            return tr;
+        }
+
+        // render pending
+        tbody.innerHTML = '';
+        if (pending.length === 0) {
+            tbody.innerHTML = `<tr><td colspan="8" class="text-center text-slate-400 py-6">${q ? 'ไม่พบผลลัพธ์' : 'ไม่มีคำขอที่รอดำเนินการ'}</td></tr>`;
+        } else {
+            pending.forEach(r => tbody.appendChild(buildRow(r, false)));
+        }
+
+        // render history
+        if (histBody) {
+            histBody.innerHTML = '';
+            history.forEach(r => histBody.appendChild(buildRow(r, true)));
+            if (histCount) histCount.textContent = history.length > 0 ? `${history.length} รายการ` : '';
+        }
+    }
+
+    function toggleAdminReqHistory(btnEl) {
+        const hist    = document.getElementById('adminReqHistoryList');
+        const chevron = btnEl.querySelector('.admin-req-history-chevron');
+        const label   = btnEl.querySelector('.admin-req-history-toggle-text');
+        const isHidden = hist.classList.contains('hidden');
+        hist.classList.toggle('hidden', !isHidden);
+        if (chevron) chevron.style.transform = isHidden ? 'rotate(180deg)' : '';
+        if (label) label.textContent = isHidden ? 'ซ่อนประวัติ' : 'แสดงประวัติ';
     }
 
     // ----- admin กด Reset -----
@@ -7418,15 +7697,26 @@
         const msgEl = document.getElementById('adminReqMsg');
         msgEl.className = 'text-xs mt-2 text-slate-400 text-right'; msgEl.textContent = 'กำลังดำเนินการ...';
         try {
-            // 1. ลบ followup_requests ที่อ้างอิง followup_id นี้ก่อน (เพราะมี FK)
-            const delReqRes = await sbFetch(`/rest/v1/followup_requests?followup_id=eq.${followupId}`, { method: 'DELETE' });
-            if (!delReqRes.ok) throw new Error('ลบคำขอล้มเหลว: ' + delReqRes.status);
+            const now = new Date().toISOString();
+            const adminId = _currentUser.id;
 
-            // 2. ลบ quote_followup
+            // 1. PATCH followup_requests → resolved + log ว่า admin คนไหน approve เมื่อไหร่
+            const patchReqRes = await sbFetch(`/rest/v1/followup_requests?id=eq.${reqId}`, {
+                method: 'PATCH',
+                headers: { 'Prefer': 'return=minimal' },
+                body: JSON.stringify({
+                    status:      'resolved',
+                    resolved_by: adminId,
+                    resolved_at: now
+                })
+            });
+            if (!patchReqRes.ok) throw new Error('อัปเดตคำขอล้มเหลว: ' + patchReqRes.status);
+
+            // 2. ลบ quote_followup (reset ผลจริง)
             const delFuRes = await sbFetch(`/rest/v1/quote_followup?id=eq.${followupId}`, { method: 'DELETE' });
             if (!delFuRes.ok) throw new Error('ลบ follow-up ล้มเหลว: ' + delFuRes.status);
 
-            // 3. ส่ง notification กลับหา user (ถ้ามี userId)
+            // 3. ส่ง notification กลับหา user
             if (targetUserId) {
                 await sbFetch('/rest/v1/notifications', {
                     method: 'POST',
@@ -7434,7 +7724,7 @@
                     body: JSON.stringify({
                         user_id:  targetUserId,
                         title:    `ผลใบ ${quoteNo} ถูก Reset แล้ว`,
-                        body:     'Admin ได้ดำเนินการแก้ไขคำขอของคุณ กรุณากลับไปบันทึกผลใหม่',
+                        body:     `${_currentProfile?.display_name || 'Admin'} ได้ดำเนินการแก้ไขคำขอของคุณแล้ว กรุณากลับไปบันทึกผลใหม่`,
                         type:     'followup_reset',
                         ref_id:   quoteNo,
                         is_read:  false
@@ -7445,7 +7735,6 @@
             msgEl.className = 'text-xs mt-2 text-emerald-600 text-right';
             msgEl.textContent = `Reset ใบ ${quoteNo} สำเร็จ — แจ้ง User แล้ว`;
             await loadFollowupRequestsAdmin();
-            // รอสั้นๆ ให้ Supabase flush แล้วนับใหม่
             setTimeout(() => pollAdminReqCount(), 800);
         } catch (e) {
             msgEl.className = 'text-xs mt-2 text-rose-500 text-right';
@@ -7454,8 +7743,197 @@
         }
     }
 
+    // ===== ADMIN APPROVE / REJECT =========================================
+
+    // เปิด modal admin note แล้ว execute action
+    function openAdminNoteModal(action, reqId, followupId, quoteNo, targetUserId) {
+        const modal = document.getElementById('adminNoteModal');
+        modal.dataset.action       = action; // 'approve' | 'reject'
+        modal.dataset.reqId        = reqId;
+        modal.dataset.followupId   = followupId;
+        modal.dataset.quoteNo      = quoteNo;
+        modal.dataset.targetUserId = targetUserId;
+        document.getElementById('adminNoteInput').value = '';
+        document.getElementById('adminNoteError').classList.add('hidden');
+        document.getElementById('adminNoteModalTitle').textContent =
+            action === 'approve' ? '✅ Approve คำขอแก้ไข' : '❌ Reject คำขอแก้ไข';
+        document.getElementById('adminNoteQuoteNo').textContent = quoteNo;
+        // reset submit button เสมอตอนเปิด modal ใหม่
+        const submitBtn = document.getElementById('adminNoteSubmitBtn');
+        submitBtn.disabled = false;
+        submitBtn.textContent = action === 'approve' ? 'Approve' : 'Reject';
+        submitBtn.className = action === 'approve'
+                ? 'px-5 py-2 text-sm font-semibold text-white bg-emerald-600 hover:bg-emerald-700 rounded-xl shadow-sm transition-all'
+                : 'px-5 py-2 text-sm font-semibold text-white bg-rose-600 hover:bg-rose-700 rounded-xl shadow-sm transition-all';
+        modal.style.display = 'flex';
+    }
+
+    function closeAdminNoteModal() {
+        const modal = document.getElementById('adminNoteModal');
+        modal.style.display = 'none';
+    }
+
+    function adminApproveFollowup(reqId, followupId, quoteNo, targetUserId, btnEl) {
+        openAdminNoteModal('approve', reqId, followupId, quoteNo, targetUserId);
+    }
+
+    function adminRejectFollowup(reqId, quoteNo, targetUserId, btnEl) {
+        openAdminNoteModal('reject', reqId, null, quoteNo, targetUserId);
+    }
+
+    async function submitAdminNote() {
+        const modal        = document.getElementById('adminNoteModal');
+        const action       = modal.dataset.action;
+        const reqId        = modal.dataset.reqId;
+        const followupId   = modal.dataset.followupId;
+        const quoteNo      = modal.dataset.quoteNo;
+        const targetUserId = modal.dataset.targetUserId;
+        const adminNote    = document.getElementById('adminNoteInput').value.trim();
+        const submitBtn    = document.getElementById('adminNoteSubmitBtn');
+        const msgEl        = document.getElementById('adminReqMsg');
+
+        submitBtn.disabled = true;
+        submitBtn.textContent = 'กำลังดำเนินการ...';
+
+        try {
+            const now     = new Date().toISOString();
+            const adminId = _currentUser.id;
+            const newStatus = action === 'approve' ? 'resolved' : 'rejected';
+
+            // 1. PATCH followup_requests — log status + resolved_by + resolved_at + admin_note
+            const patchRes = await sbFetch(`/rest/v1/followup_requests?id=eq.${reqId}`, {
+                method: 'PATCH',
+                headers: { 'Prefer': 'return=minimal' },
+                body: JSON.stringify({
+                    status:      newStatus,
+                    resolved_by: adminId,
+                    resolved_at: now,
+                    admin_note:  adminNote || null
+                })
+            });
+            if (!patchRes.ok) throw new Error('อัปเดตคำขอล้มเหลว: ' + patchRes.status);
+
+            // 2. ถ้า Approve → ลบ quote_followup เพื่อให้ user บันทึกใหม่
+            if (action === 'approve' && followupId) {
+                const delRes = await sbFetch(`/rest/v1/quote_followup?id=eq.${followupId}`, { method: 'DELETE' });
+                if (!delRes.ok) throw new Error('ลบ follow-up ล้มเหลว: ' + delRes.status);
+            }
+
+            // 3. ส่ง notification กลับหา user
+            if (targetUserId) {
+                const adminName = _currentProfile?.display_name || 'Admin';
+                const notiTitle = action === 'approve'
+                    ? `✅ คำขอแก้ไขใบ ${quoteNo} ได้รับการอนุมัติ`
+                    : `❌ คำขอแก้ไขใบ ${quoteNo} ถูกปฏิเสธ`;
+                const notiBody = action === 'approve'
+                    ? `${adminName} อนุมัติคำขอของคุณแล้ว กรุณากลับไปบันทึกผลใหม่${adminNote ? '\nหมายเหตุ: ' + adminNote : ''}`
+                    : `${adminName} ปฏิเสธคำขอของคุณ${adminNote ? '\nเหตุผล: ' + adminNote : ''}`;
+                await sbFetch('/rest/v1/notifications', {
+                    method: 'POST',
+                    headers: { 'Prefer': 'return=minimal' },
+                    body: JSON.stringify({
+                        user_id:  targetUserId,
+                        title:    notiTitle,
+                        body:     notiBody,
+                        type:     action === 'approve' ? 'followup_reset' : 'followup_reject',
+                        ref_id:   quoteNo,
+                        is_read:  false
+                    })
+                });
+            }
+
+            closeAdminNoteModal();
+            msgEl.className = 'text-xs mt-2 text-emerald-600 text-right';
+            msgEl.textContent = action === 'approve'
+                ? `✅ Approve ใบ ${quoteNo} สำเร็จ — แจ้ง User แล้ว`
+                : `❌ Reject ใบ ${quoteNo} สำเร็จ — แจ้ง User แล้ว`;
+            await loadFollowupRequestsAdmin();
+            setTimeout(() => pollAdminReqCount(), 800);
+        } catch (e) {
+            document.getElementById('adminNoteError').textContent = e.message;
+            document.getElementById('adminNoteError').classList.remove('hidden');
+            submitBtn.disabled = false;
+            submitBtn.textContent = action === 'approve' ? 'Approve' : 'Reject';
+        }
+    }
+
     // ===== END ADMIN FOLLOW-UP REQUESTS ==================================
-    </script>    <!-- ===== REVISE MODAL ===== -->
+    </script>
+
+    <!-- ===== MODAL: User กรอกเหตุผลขอแก้ไข ===== -->
+    <div id="fuRequestNoteModal" style="display:none;background:rgba(0,0,0,0.45)" class="fixed inset-0 z-[10000] items-center justify-center p-4">
+        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md">
+            <div class="flex items-center justify-between px-6 py-4 border-b border-slate-200">
+                <div class="flex items-center gap-2">
+                    <span class="text-lg">✏️</span>
+                    <h3 class="text-base font-bold text-slate-800">ขอแก้ไขผลใบ <span id="fuRequestNoteQuote" class="text-indigo-600"></span></h3>
+                </div>
+                <button onclick="closeFuRequestNoteModal()" class="text-slate-400 hover:text-slate-600 transition-colors">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+                </button>
+            </div>
+            <div class="px-6 py-5 space-y-4">
+                <div>
+                    <label class="block text-xs font-semibold text-slate-600 uppercase tracking-wide mb-1.5">
+                        เหตุผลที่ขอแก้ไข <span class="text-rose-500">*</span>
+                    </label>
+                    <textarea id="fuRequestNoteInput" rows="3"
+                        class="block w-full rounded-xl border border-slate-300 bg-white px-3 py-2.5 text-sm text-slate-800 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 focus:outline-none transition-all resize-none"
+                        placeholder="ระบุเหตุผลที่ต้องการขอแก้ไขผลการบันทึก..."></textarea>
+                    <p id="fuRequestNoteError" class="hidden text-xs text-rose-500 mt-1.5"></p>
+                </div>
+                <p class="text-xs text-slate-400">ระบบจะแจ้ง Admin และดำเนินการภายใน 15-20 นาที</p>
+            </div>
+            <div class="flex justify-end gap-3 px-6 py-4 border-t border-slate-100">
+                <button onclick="closeFuRequestNoteModal()"
+                    class="px-4 py-2 text-sm font-semibold text-slate-600 bg-slate-100 hover:bg-slate-200 rounded-xl transition-all">
+                    ยกเลิก
+                </button>
+                <button id="fuRequestNoteSubmit" onclick="submitFuRequestNote()"
+                    class="px-5 py-2 text-sm font-semibold text-white bg-indigo-600 hover:bg-indigo-700 rounded-xl shadow-sm transition-all">
+                    ส่งคำขอ
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ===== MODAL: Admin Note (Approve / Reject) ===== -->
+    <div id="adminNoteModal" style="display:none;background:rgba(0,0,0,0.5)" class="fixed inset-0 z-[10001] items-center justify-center p-4">
+        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md">
+            <div class="flex items-center justify-between px-6 py-4 border-b border-slate-200">
+                <div class="flex items-center gap-2">
+                    <h3 id="adminNoteModalTitle" class="text-base font-bold text-slate-800"></h3>
+                    <span class="text-xs text-slate-400">ใบ <span id="adminNoteQuoteNo" class="font-semibold text-slate-600"></span></span>
+                </div>
+                <button onclick="closeAdminNoteModal()" class="text-slate-400 hover:text-slate-600 transition-colors">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+                </button>
+            </div>
+            <div class="px-6 py-5 space-y-4">
+                <div>
+                    <label class="block text-xs font-semibold text-slate-600 uppercase tracking-wide mb-1.5">
+                        หมายเหตุ / เหตุผล <span class="text-slate-400 font-normal normal-case">(ไม่บังคับ)</span>
+                    </label>
+                    <textarea id="adminNoteInput" rows="3"
+                        class="block w-full rounded-xl border border-slate-300 bg-white px-3 py-2.5 text-sm text-slate-800 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 focus:outline-none transition-all resize-none"
+                        placeholder="ระบุเหตุผลหรือหมายเหตุเพิ่มเติม..."></textarea>
+                    <p id="adminNoteError" class="hidden text-xs text-rose-500 mt-1.5"></p>
+                </div>
+            </div>
+            <div class="flex justify-end gap-3 px-6 py-4 border-t border-slate-100">
+                <button onclick="closeAdminNoteModal()"
+                    class="px-4 py-2 text-sm font-semibold text-slate-600 bg-slate-100 hover:bg-slate-200 rounded-xl transition-all">
+                    ยกเลิก
+                </button>
+                <button id="adminNoteSubmitBtn" onclick="submitAdminNote()"
+                    class="px-5 py-2 text-sm font-semibold text-white bg-emerald-600 hover:bg-emerald-700 rounded-xl shadow-sm transition-all">
+                    Approve
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ===== REVISE MODAL ===== -->
     <div id="reviseModal" class="hidden fixed inset-0 z-[9997] flex items-center justify-center p-4" style="background:rgba(0,0,0,0.45)">
         <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md">
             <div class="flex items-center justify-between px-6 py-4 border-b border-slate-200">
@@ -7666,8 +8144,8 @@
 
                 <!-- TAB: Settings -->
                 <div id="adminTabSettings" class="hidden">
-                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4" id="settingsForm">
-                        <p class="text-slate-400 text-sm text-center py-4 col-span-2">กำลังโหลด...</p>
+                    <div id="settingsForm" class="min-h-[200px]">
+                        <p class="text-slate-400 text-sm text-center py-4">กำลังโหลด...</p>
                     </div>
                     <div class="mt-5 flex justify-end">
                         <button onclick="adminSaveSettings()" class="bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold px-6 py-2.5 rounded-xl transition-all">
@@ -7889,31 +8367,75 @@
                 <!-- TAB: คำขอแก้ไข Follow-up -->
                 <div id="adminTabFollowupRequests" class="hidden">
                     <div class="flex items-center justify-between mb-4">
-                        <p class="text-xs text-slate-500">คำขอ reset ผลการบันทึกจาก user — กด Reset เพื่อลบผลเดิมและให้ user บันทึกใหม่</p>
-                        <button onclick="loadFollowupRequestsAdmin()" class="text-xs text-sky-600 hover:underline">รีเฟรช</button>
+                        <p class="text-xs text-slate-500">คำขอแก้ไขผลการบันทึกจาก user — Approve เพื่ออนุมัติ หรือ Reject เพื่อปฏิเสธ</p>
+                        <div class="flex items-center gap-2">
+                            <button onclick="loadFollowupRequestsAdmin()" class="text-xs text-sky-600 hover:underline shrink-0">รีเฟรช</button>
+                        </div>
                     </div>
+                    <!-- Search box -->
+                    <div class="relative mb-4">
+                        <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+                        </svg>
+                        <input type="text" id="adminReqSearchInput" placeholder="ค้นหาเลขใบ / ชื่อ user..."
+                            oninput="renderFollowupRequestsTable()"
+                            class="block w-full rounded-xl border border-slate-300 bg-white pl-9 pr-3 py-2 text-sm text-slate-800 shadow-sm focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 focus:outline-none transition-all">
+                    </div>
+                    <!-- Pending section -->
                     <div class="overflow-x-auto rounded-xl border border-slate-200">
-                        <table class="w-full text-sm">
+                        <table class="w-full min-w-[1000px] text-sm">
                             <thead class="bg-slate-50 border-b border-slate-200">
                                 <tr>
                                     <th class="px-4 py-2.5 text-left font-semibold text-slate-600">User</th>
                                     <th class="px-4 py-2.5 text-left font-semibold text-slate-600">เลขใบ</th>
-                                    <th class="px-4 py-2.5 text-center font-semibold text-slate-600">ผลเดิม</th>
+                                    <th class="px-4 py-2.5 text-left font-semibold text-slate-600">ผลเดิม</th>
+                                    <th class="px-4 py-2.5 text-left font-semibold text-slate-600">เหตุผลที่ขอ</th>
                                     <th class="px-4 py-2.5 text-center font-semibold text-slate-600">วันที่ขอ</th>
                                     <th class="px-4 py-2.5 text-center font-semibold text-slate-600">สถานะ</th>
+                                    <th class="px-4 py-2.5 text-left font-semibold text-slate-600">Admin Note</th>
                                     <th class="px-4 py-2.5 text-center font-semibold text-slate-600">Action</th>
                                 </tr>
                             </thead>
                             <tbody id="followupRequestsBody" class="divide-y divide-slate-100">
-                                <tr><td colspan="6" class="text-center text-slate-400 py-6">กำลังโหลด...</td></tr>
+                                <tr><td colspan="8" class="text-center text-slate-400 py-6">กำลังโหลด...</td></tr>
                             </tbody>
                         </table>
+                    </div>
+                    <!-- History toggle -->
+                    <div class="border-t border-slate-100 pt-3 mt-4">
+                        <button onclick="toggleAdminReqHistory(this)"
+                            class="flex items-center gap-2 text-xs font-semibold text-slate-500 hover:text-slate-700 transition-colors w-full text-left">
+                            <svg class="w-3.5 h-3.5 transform transition-transform duration-200 admin-req-history-chevron" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+                            </svg>
+                            <span class="admin-req-history-toggle-text">แสดงประวัติ</span>
+                            <span id="adminReqHistoryCount" class="ml-auto text-slate-300 font-normal"></span>
+                        </button>
+                        <div id="adminReqHistoryList" class="hidden mt-3 overflow-x-auto rounded-xl border border-slate-200">
+                            <table class="w-full min-w-[1000px] text-sm">
+                                <thead class="bg-slate-50 border-b border-slate-200">
+                                    <tr>
+                                        <th class="px-4 py-2.5 text-left font-semibold text-slate-600">User</th>
+                                        <th class="px-4 py-2.5 text-left font-semibold text-slate-600">เลขใบ</th>
+                                        <th class="px-4 py-2.5 text-left font-semibold text-slate-600">ผลเดิม</th>
+                                        <th class="px-4 py-2.5 text-left font-semibold text-slate-600">เหตุผลที่ขอ</th>
+                                        <th class="px-4 py-2.5 text-center font-semibold text-slate-600">วันที่ขอ</th>
+                                        <th class="px-4 py-2.5 text-center font-semibold text-slate-600">สถานะ</th>
+                                        <th class="px-4 py-2.5 text-left font-semibold text-slate-600">Admin Note</th>
+                                        <th class="px-4 py-2.5 text-center font-semibold text-slate-600">ดำเนินการโดย</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="adminReqHistoryBody" class="divide-y divide-slate-100">
+                                </tbody>
+                            </table>
+                        </div>
                     </div>
                     <p id="adminReqMsg" class="text-xs mt-2 min-h-[1rem] text-right"></p>
                 </div>
 
             </div>
         </div>
+
     </div>
     <!-- ===== END ADMIN MODAL ===== -->
 
