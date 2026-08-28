@@ -2,7 +2,7 @@
 # Format CSV: username,password,display_name,role,issuer_name,issuer_branch
 
 $SUPABASE_URL     = "https://nwoqddeexkciftpzoexl.supabase.co"
-$SERVICE_ROLE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im53b3FkZGVleGtjaWZ0cHpvZXhsIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc4NzY2NDM0OCwiZXhwIjoyMTAzMjQwMzQ4fQ.y9XqvJymmApGJJY5Bx_2OVUoGhRpH12fMRxrPNU0GZ8"
+$SERVICE_ROLE_KEY = "YOUR_SERVICE_ROLE_KEY_HERE"  # ใส่ key ใหม่หลัง rotate ใน Supabase Dashboard
 $DOMAIN           = "dhipaya.co.th"
 $CSV_FILE         = "$PSScriptRoot\users.csv"
 
