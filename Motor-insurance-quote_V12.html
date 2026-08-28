@@ -3239,7 +3239,8 @@
             'ประเภท (1 หรือ 3)*', 'การซ่อม (ซ่อมอู่/ซ่อมห้าง)*',
             'รหัสรถ*', 'ปี ค.ศ.*', 'CC', 'น้ำหนัก (KG)', 'ที่นั่ง*', 'กลุ่มรถ', 'ทุนประกันตัวรถ*',
             'พ.ร.บ. (รวม/ไม่รวม)', 'รหัส พ.ร.บ.', 'ส่วนลดงานกลุ่ม % (0/10)', 'ส่วนลดประวัติดี % (0/20/30)',
-            'ประเภทผู้ขับขี่ (ระบุ/ไม่ระบุ)', 'ระดับส่วนลดพฤติกรรม (LV1-LV5)'
+            'ประเภทผู้ขับขี่ (ระบุ/ไม่ระบุ)', 'ระดับส่วนลดพฤติกรรม (LV1-LV5)',
+            'อุปกรณ์ตกแต่งเพิ่มเติม (บาท)'
         ];
         const IMPORT_TABLE_START_ROW = 7; // แถวแรกของตาราง (นับตั้งแต่บรรทัดหัวตาราง) ตามที่จัดวางในชีท
 
@@ -3259,8 +3260,8 @@
             aoa.push([]);
             aoa.push(['กรอกข้อมูลรถแต่ละคัน 1 แถวต่อ 1 คัน เริ่มตั้งแต่แถวที่ ' + IMPORT_TABLE_START_ROW + ' เป็นต้นไป (ห้ามแก้ไข/ลบแถวหัวตารางแถวที่ ' + (IMPORT_TABLE_START_ROW - 1) + ') ดูคำอธิบายแต่ละคอลัมน์ได้ที่ชีท "คำแนะนำ"']);
             aoa.push(IMPORT_HEADERS);
-            aoa.push([1, 'กข 1234', 'Toyota', 'Camry', '2.5 Premium', '1', 'ซ่อมห้าง', '110', '2024', '2500', '', '7', '3', '1200000', 'รวม', '1.10', '10', '20', 'ระบุ', 'LV3']);
-            aoa.push([2, 'ฮฮ 9876', 'Isuzu', 'D-Max', '', '3', 'ซ่อมอู่', '320', '2023', '', '1900', '3', '', '0', 'รวม', '1.40A', '10', '20', '', '']);
+            aoa.push([1, 'กข 1234', 'Toyota', 'Camry', '2.5 Premium', '1', 'ซ่อมห้าง', '110', '2024', '2500', '', '7', '3', '1200000', 'รวม', '1.10', '10', '20', 'ระบุ', 'LV3', '0']);
+            aoa.push([2, 'ฮฮ 9876', 'Isuzu', 'D-Max', '', '3', 'ซ่อมอู่', '320', '2023', '', '1900', '3', '', '0', 'รวม', '1.40A', '10', '20', '', '', '30000']);
             for (let i = 0; i < 18; i++) aoa.push([]);
 
             const ws = XLSX.utils.aoa_to_sheet(aoa);
@@ -3292,6 +3293,7 @@
                 ['ส่วนลดประวัติดี %', '0, 20 หรือ 30'],
                 ['ประเภทผู้ขับขี่', 'ระบุ หรือ ไม่ระบุ (ใช้ได้เฉพาะรหัสรถ 110, 210)'],
                 ['ระดับส่วนลดพฤติกรรม', 'กรอกเมื่อประเภทผู้ขับขี่ = ระบุ เท่านั้น ค่าที่ใช้ได้ LV1, LV2, LV3, LV4, LV5'],
+                ['อุปกรณ์ตกแต่งเพิ่มเติม (บาท)', 'ราคาอุปกรณ์ตกแต่งที่ติดตั้งเพิ่มเติม (เช่น 30000) สูงสุด 100,000 บาท — เว้นว่างหรือกรอก 0 หากไม่มี'],
                 [],
                 ['หมายเหตุ: ระบบจะตรวจสอบข้อมูลก่อนนำเข้าเสมอ หากพบข้อผิดพลาดจะแจ้งเลขแถวและรายละเอียดให้แก้ไข']
             ];
@@ -3376,6 +3378,7 @@
                         claimDiscount: String(r[17] || '').trim(),
                         driverBehaviorFilter: String(r[18] || '').trim(),
                         driverBehaviorDiscount: String(r[19] || '').trim(),
+                        accessoryAmount: String(r[20] || '').trim(),
                     }));
 
                     const errors = validateImportVehicles(vehicles);
@@ -3607,8 +3610,9 @@
 
             // restore accessoryAmount (ถ้ามี)
             const accAmtInput = card.querySelector('.accessoryAmountInput');
-            if (accAmtInput && v.accessoryAmount) {
-                accAmtInput.value = v.accessoryAmount > 0 ? Number(v.accessoryAmount).toLocaleString('th-TH') : '0';
+            if (accAmtInput && v.accessoryAmount !== undefined) {
+                const amt = parseFloat(String(v.accessoryAmount).replace(/,/g, '')) || 0;
+                accAmtInput.value = amt > 0 ? amt.toLocaleString('th-TH') : '0';
             }
 
             showPremiumResult(card);
@@ -5536,6 +5540,15 @@
         document.getElementById('loginBtn').textContent = 'เข้าสู่ระบบ';
         document.getElementById('userBadge').classList.add('hidden');
         document.getElementById('userBadge').classList.remove('flex');
+        // ซ่อนปุ่ม Follow-up
+        const followUpBtn = document.getElementById('followUpBtn');
+        if (followUpBtn) { followUpBtn.classList.add('hidden'); followUpBtn.classList.remove('flex'); }
+        // ซ่อนปุ่ม Notification
+        const notifBtn = document.getElementById('notifBtn');
+        if (notifBtn) { notifBtn.classList.add('hidden'); notifBtn.classList.remove('flex'); }
+        clearNotifBadge();
+        stopNotifPoll();
+        stopAdminReqPoll();
         // ล้างข้อมูลในฟอร์มเพื่อกันข้อมูลของ user คนก่อนค้างอยู่
         resetFormForNewUser();
     }
@@ -5732,11 +5745,27 @@
                 if (_currentProfile.role === 'admin') {
                     adminBtn.classList.remove('hidden');
                     adminBtn.classList.add('inline-flex');
+                    startAdminReqPoll(); // poll คำขอ reset สำหรับ admin
                 } else {
                     adminBtn.classList.add('hidden');
                     adminBtn.classList.remove('inline-flex');
                 }
             }
+
+            // ปุ่ม Follow-up (แสดงทุก role หลัง login)
+            const followUpBtn = document.getElementById('followUpBtn');
+            if (followUpBtn) {
+                followUpBtn.classList.remove('hidden');
+                followUpBtn.classList.add('flex');
+            }
+            // ปุ่ม Notification bell
+            const notifBtn = document.getElementById('notifBtn');
+            if (notifBtn) {
+                notifBtn.classList.remove('hidden');
+                notifBtn.classList.add('flex');
+            }
+            // เริ่ม poll notification
+            startNotifPoll();
 
             // ปุ่มสุ่มข้อมูล
             const mockBtn = document.getElementById('fillMockDataBtn');
@@ -5865,6 +5894,8 @@
         document.getElementById('adminTabSettings').classList.toggle('hidden', tab !== 'settings');
         document.getElementById('adminTabReports').classList.toggle('hidden', tab !== 'reports');
         document.getElementById('adminTabRates').classList.toggle('hidden', tab !== 'rates');
+        document.getElementById('adminTabFollowupReasons').classList.toggle('hidden', tab !== 'followupReasons');
+        document.getElementById('adminTabFollowupRequests').classList.toggle('hidden', tab !== 'followupRequests');
 
         const activeClass   = 'admin-tab py-3 px-4 text-sm font-semibold border-b-2 border-indigo-500 text-indigo-600 transition-all';
         const inactiveClass = 'admin-tab py-3 px-4 text-sm font-semibold border-b-2 border-transparent text-slate-500 hover:text-slate-700 transition-all';
@@ -5872,10 +5903,14 @@
         document.getElementById('tabSettings').className = tab === 'settings' ? activeClass : inactiveClass;
         document.getElementById('tabReports').className  = tab === 'reports'  ? activeClass : inactiveClass;
         document.getElementById('tabRates').className    = tab === 'rates'    ? activeClass : inactiveClass;
+        document.getElementById('tabFollowupReasons').className = tab === 'followupReasons' ? activeClass : inactiveClass;
+        document.getElementById('tabFollowupRequests').className = tab === 'followupRequests' ? activeClass : inactiveClass;
 
-        if (tab === 'settings') loadAdminSettings();
-        if (tab === 'reports')  initReportDates();
-        if (tab === 'rates')    loadAdminRates();
+        if (tab === 'settings')          loadAdminSettings();
+        if (tab === 'reports')           initReportDates();
+        if (tab === 'rates')             loadAdminRates();
+        if (tab === 'followupReasons')   loadFollowupReasonAdmin();
+        if (tab === 'followupRequests')  loadFollowupRequestsAdmin();
     }
 
     function initReportDates() {
@@ -6641,6 +6676,785 @@
             msgEl.className = 'text-xs text-rose-500'; msgEl.textContent = 'เกิดข้อผิดพลาด: ' + e.message;
         }
     }
+
+    // =====================================================================
+    // ===== FOLLOW-UP SYSTEM ==============================================
+    // =====================================================================
+
+    let _fuReasons   = []; // cache เหตุผลจาก Supabase
+    let _fuQuoteData = []; // cache ใบเสนอราคาทั้งหมด (พร้อม followup status)
+
+    // ===== Modal open / close =====
+    async function openFollowUpModal() {
+        document.getElementById('followUpModal').classList.remove('hidden');
+        document.getElementById('followUpModal').classList.add('flex');
+        document.getElementById('fuSearchInput').value = '';
+        document.getElementById('fuQuoteList').innerHTML =
+            '<p class="text-slate-400 text-center py-8 text-sm">กำลังโหลด...</p>';
+        // ซ่อนประวัติกลับไปทุกครั้งที่เปิด
+        const hist = document.getElementById('fuHistoryList');
+        if (hist) hist.classList.add('hidden');
+        await loadFollowUpReasons();
+        await loadFuQuoteListNew();
+    }
+
+    function closeFollowUpModal() {
+        document.getElementById('followUpModal').classList.add('hidden');
+        document.getElementById('followUpModal').classList.remove('flex');
+    }
+
+    document.addEventListener('DOMContentLoaded', function () {
+        const fuModal = document.getElementById('followUpModal');
+        if (fuModal) fuModal.addEventListener('click', function (e) {
+            if (e.target === this) closeFollowUpModal();
+        });
+    });
+
+    // ===== โหลด reasons =====
+    async function loadFollowUpReasons() {
+        try {
+            const res = await sbFetch('/rest/v1/followup_reasons?is_active=eq.true&order=sort_order.asc,id.asc');
+            if (!res.ok) throw new Error(res.status);
+            _fuReasons = await res.json();
+        } catch (e) {
+            console.warn('[followup] load reasons failed:', e);
+        }
+    }
+
+    // ===== โหลดใบเสนอราคา + สถานะ follow-up แล้ว render =====
+    async function loadFuQuoteListNew() {
+        const container = document.getElementById('fuQuoteList');
+        container.innerHTML = '<p class="text-slate-400 text-center py-8 text-sm">กำลังโหลด...</p>';
+        try {
+            const uid = _currentUser?.id;
+            if (!uid) throw new Error('ไม่พบข้อมูล user');
+
+            const [qRes, fRes, rRes] = await Promise.all([
+                sbFetch(`/rest/v1/quotation_queue?created_by=eq.${uid}&select=quote_no,client_name,created_at&order=created_at.desc&limit=200`),
+                sbFetch(`/rest/v1/quote_followup?created_by=eq.${uid}&select=id,quote_no,outcome,reason_id,reason_other&order=created_at.desc`),
+                sbFetch(`/rest/v1/followup_requests?requested_by=eq.${uid}&select=followup_id,status&order=created_at.desc`)
+            ]);
+            if (!qRes.ok) throw new Error('โหลดใบเสนอราคาล้มเหลว');
+            if (!fRes.ok) throw new Error('โหลดข้อมูล follow-up ล้มเหลว');
+
+            const quotes    = await qRes.json();
+            const followups = await fRes.json();
+            const requests  = rRes.ok ? await rRes.json() : [];
+
+            // map followup_id → request status ล่าสุด
+            const reqMap = {};
+            requests.forEach(r => { if (!reqMap[r.followup_id]) reqMap[r.followup_id] = r.status; });
+
+            // map quote_no → followup ล่าสุด (พร้อม request status)
+            const fuMap = {};
+            followups.forEach(f => {
+                if (!fuMap[f.quote_no]) fuMap[f.quote_no] = { ...f, reqStatus: reqMap[f.id] || null };
+            });
+
+            // เฉพาะ base ล่าสุดของแต่ละ quote
+            const seen = new Set();
+            _fuQuoteData = [];
+            quotes.forEach(row => {
+                const base = row.quote_no.replace(/_V\d+$/, '');
+                if (seen.has(base)) return;
+                seen.add(base);
+                _fuQuoteData.push({ ...row, followup: fuMap[row.quote_no] || null });
+            });
+
+            renderFuQuoteList(_fuQuoteData);
+        } catch (e) {
+            container.innerHTML = `<p class="text-rose-400 text-center py-8 text-sm">${e.message}</p>`;
+        }
+    }
+
+    // ===== Render list — ส่วนบน=ค้าง เท่านั้น (บันทึกแล้วอยู่ใน history toggle) =====
+    function renderFuQuoteList(items) {
+        const container = document.getElementById('fuQuoteList');
+        const reasonMap = {};
+        _fuReasons.forEach(r => { reasonMap[r.id] = r.reason_text; });
+
+        // แยก pending (ยังไม่บันทึก) ออกจาก done
+        const pending = items.filter(r => !r.followup);
+        const done    = items.filter(r => !!r.followup);
+
+        // อัปเดต counter
+        const pendingEl = document.getElementById('fuPendingCount');
+        const doneEl    = document.getElementById('fuDoneCount');
+        if (pendingEl) pendingEl.textContent = pending.length > 0 ? `${pending.length} ใบ` : '';
+        if (doneEl)    doneEl.textContent    = done.length    > 0 ? `${done.length} ใบ`    : '';
+
+        // ===== ส่วนบน: pending =====
+        container.innerHTML = '';
+        if (pending.length === 0) {
+            container.innerHTML = `
+                <div class="flex flex-col items-center py-8 gap-2">
+                    <svg class="w-10 h-10 text-emerald-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                    </svg>
+                    <p class="text-sm font-semibold text-emerald-600">ไม่มีใบรอบันทึก</p>
+                    <p class="text-xs text-slate-400">ทุกใบเสนอราคาบันทึกผลครบแล้ว</p>
+                </div>`;
+        } else {
+            pending.forEach(row => {
+                const dateStr = row.created_at
+                    ? new Date(row.created_at).toLocaleDateString('th-TH', { day: '2-digit', month: 'short', year: '2-digit' })
+                    : '';
+                const el = document.createElement('div');
+                el.className = 'fu-quote-row flex items-center gap-3 px-4 py-3 rounded-xl border bg-white border-slate-200 hover:border-sky-300 hover:shadow-sm transition-all';
+                el.dataset.quoteNo    = row.quote_no;
+                el.dataset.clientName = row.client_name || '';
+                el.innerHTML = `
+                    <div class="flex-1 min-w-0">
+                        <p class="text-sm font-semibold text-slate-800 truncate">${row.quote_no}</p>
+                        <p class="text-xs text-slate-400 truncate">${row.client_name || ''}${dateStr ? ' · ' + dateStr : ''}</p>
+                    </div>
+                    <div class="flex items-center gap-2 shrink-0">
+                        <button onclick="fuSelectOutcome('${row.quote_no}','accepted',this)"
+                            class="text-xs font-semibold px-3 py-1.5 rounded-lg bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border border-emerald-200 transition-all">
+                            ✓ ตกลง
+                        </button>
+                        <button onclick="fuSelectOutcome('${row.quote_no}','rejected',this)"
+                            class="text-xs font-semibold px-3 py-1.5 rounded-lg bg-rose-50 hover:bg-rose-100 text-rose-600 border border-rose-200 transition-all">
+                            ✗ ไม่ทำ
+                        </button>
+                    </div>`;
+                container.appendChild(el);
+            });
+        }
+
+        // ===== ส่วนล่าง: done — render ใน fuHistoryList =====
+        const hist = document.getElementById('fuHistoryList');
+        if (!hist) return;
+        hist.innerHTML = '';
+        if (done.length === 0) {
+            hist.innerHTML = '<p class="text-slate-400 text-center py-4 text-sm">ยังไม่มีการบันทึก</p>';
+            return;
+        }
+        done.forEach(row => {
+            const fu = row.followup;
+            const isAccepted = fu.outcome === 'accepted';
+            const reasonText = !isAccepted ? (fu.reason_other || reasonMap[fu.reason_id] || '') : '';
+            const dateStr = row.created_at
+                ? new Date(row.created_at).toLocaleDateString('th-TH', { day: '2-digit', month: 'short', year: '2-digit' })
+                : '';
+            const reqStatus = fu.reqStatus; // pending | resolved | null
+
+            // ปุ่มขอแก้ไข
+            let reqHtml = '';
+            if (reqStatus === 'pending') {
+                reqHtml = `<span class="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-amber-100 text-amber-600">⏳ รอดำเนินการ</span>`;
+            } else if (reqStatus !== 'resolved') {
+                reqHtml = `<button onclick="fuRequestReset('${fu.id}','${row.quote_no}',this)"
+                    class="text-[10px] text-slate-400 hover:text-rose-500 underline transition-colors">ขอแก้ไข</button>`;
+            }
+
+            const el = document.createElement('div');
+            el.className = 'flex items-start justify-between gap-3 p-3 rounded-xl border '
+                + (isAccepted ? 'bg-emerald-50 border-emerald-200' : 'bg-rose-50 border-rose-200');
+            el.innerHTML = `
+                <div class="min-w-0 flex-1">
+                    <div class="flex items-center gap-2 flex-wrap">
+                        <span class="text-xs font-bold ${isAccepted ? 'text-emerald-700' : 'text-rose-600'}">
+                            ${isAccepted ? '✓ ตกลงทำประกัน' : '✗ ไม่ทำประกัน'}
+                        </span>
+                        <span class="text-xs font-semibold text-slate-600">${row.quote_no}</span>
+                        ${row.client_name ? `<span class="text-xs text-slate-400 truncate max-w-[120px]">${row.client_name}</span>` : ''}
+                    </div>
+                    ${!isAccepted && reasonText ? `<p class="text-xs text-slate-500 mt-0.5">เหตุผล: ${reasonText}</p>` : ''}
+                    <p class="text-[10px] text-slate-300 mt-1">${dateStr}</p>
+                </div>
+                <div class="shrink-0 flex flex-col items-end gap-1">
+                    ${reqHtml}
+                </div>`;
+            hist.appendChild(el);
+        });
+    }
+
+    // ===== Filter ตาม search input (กรองเฉพาะ pending) =====
+    function filterFuQuoteList() {
+        const q = document.getElementById('fuSearchInput').value.trim().toLowerCase();
+        if (!q) { renderFuQuoteList(_fuQuoteData); return; }
+        // ใช้ทุก items แต่ filter ชื่อ/เลขใบ ส่วน pending/done จะถูกแยกใน renderFuQuoteList
+        const filtered = _fuQuoteData.filter(r =>
+            r.quote_no.toLowerCase().includes(q) ||
+            (r.client_name || '').toLowerCase().includes(q)
+        );
+        renderFuQuoteList(filtered);
+    }
+
+    // ===== กดปุ่ม ✓/✗ ใน row =====
+    async function fuSelectOutcome(quoteNo, outcome, btnEl) {
+        if (outcome === 'accepted') {
+            const row = btnEl.closest('.fu-quote-row');
+            await fuSaveRow(quoteNo, 'accepted', null, null, row, btnEl);
+        } else {
+            const row = btnEl.closest('.fu-quote-row');
+            const existing = row.nextElementSibling;
+            if (existing && existing.classList.contains('fu-reason-inline')) {
+                existing.remove(); return;
+            }
+            document.querySelectorAll('.fu-reason-inline').forEach(el => el.remove());
+
+            const reasonOptions = _fuReasons.map(r =>
+                `<option value="${r.id}">${r.reason_text}</option>`
+            ).join('');
+
+            const inlineEl = document.createElement('div');
+            inlineEl.className = 'fu-reason-inline bg-rose-50 border border-x-rose-200 border-b-rose-200 rounded-b-xl px-4 py-3 -mt-2 pt-4 space-y-2';
+            inlineEl.innerHTML = `
+                <div class="flex flex-wrap items-end gap-3">
+                    <div class="flex-1 min-w-[180px]">
+                        <label class="block text-xs font-semibold text-rose-600 uppercase tracking-wide mb-1.5">เหตุผล <span class="text-rose-500">*</span></label>
+                        <select class="fu-inline-reason block w-full rounded-xl border border-rose-300 bg-white px-3 py-2 text-sm text-slate-800 focus:border-rose-400 focus:ring-2 focus:ring-rose-100 focus:outline-none transition-all"
+                            onchange="fuToggleOtherInline(this)">
+                            <option value="">-- เลือกเหตุผล --</option>
+                            ${reasonOptions}
+                        </select>
+                    </div>
+                    <button onclick="fuSaveInline('${quoteNo}', this)"
+                        class="shrink-0 inline-flex items-center gap-1.5 bg-rose-600 hover:bg-rose-700 text-white text-xs font-semibold px-4 py-2 rounded-xl transition-all">
+                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                        บันทึก
+                    </button>
+                </div>
+                <div class="fu-other-wrap hidden">
+                    <label class="block text-xs font-semibold text-rose-600 uppercase tracking-wide mb-1.5">ระบุเหตุผล (อื่นๆ) <span class="text-rose-500">*</span></label>
+                    <input type="text" class="fu-inline-other block w-full rounded-xl border border-rose-300 bg-white px-3 py-2 text-sm text-slate-800 focus:border-rose-400 focus:ring-2 focus:ring-rose-100 focus:outline-none transition-all" placeholder="กรอกเหตุผลเพิ่มเติม...">
+                </div>
+                <p class="fu-inline-msg text-xs min-h-[1rem]"></p>`;
+
+            row.after(inlineEl);
+            row.classList.add('rounded-b-none');
+        }
+    }
+
+    // ===== Toggle ช่อง "อื่นๆ" ใน inline section =====
+    function fuToggleOtherInline(selEl) {
+        const wrap = selEl.closest('.fu-reason-inline').querySelector('.fu-other-wrap');
+        const isOther = selEl.value && (selEl.selectedOptions[0]?.text || '').includes('อื่นๆ');
+        wrap.classList.toggle('hidden', !isOther);
+        if (!isOther) wrap.querySelector('.fu-inline-other').value = '';
+    }
+
+    // ===== บันทึกจาก inline section =====
+    async function fuSaveInline(quoteNo, btnEl) {
+        const inlineEl = btnEl.closest('.fu-reason-inline');
+        const reasonSel = inlineEl.querySelector('.fu-inline-reason');
+        const reasonId  = reasonSel.value;
+        const isOther   = reasonId && (reasonSel.selectedOptions[0]?.text || '').includes('อื่นๆ');
+        const otherTxt  = inlineEl.querySelector('.fu-inline-other').value.trim();
+        const msgEl     = inlineEl.querySelector('.fu-inline-msg');
+
+        if (!reasonId) { msgEl.className = 'fu-inline-msg text-xs text-rose-500'; msgEl.textContent = 'กรุณาเลือกเหตุผล'; return; }
+        if (isOther && !otherTxt) { msgEl.className = 'fu-inline-msg text-xs text-rose-500'; msgEl.textContent = 'กรุณาระบุเหตุผล'; return; }
+
+        const row = inlineEl.previousElementSibling;
+        await fuSaveRow(quoteNo, 'rejected', parseInt(reasonId), isOther ? otherTxt : null, row, btnEl);
+    }
+
+    // ===== Core save =====
+    async function fuSaveRow(quoteNo, outcome, reasonId, reasonOther, rowEl, btnEl) {
+        if (btnEl) btnEl.disabled = true;
+        const clientName = rowEl?.dataset?.clientName || '';
+        try {
+            const payload = {
+                quote_no:     quoteNo,
+                client_name:  clientName,
+                outcome:      outcome,
+                reason_id:    reasonId || null,
+                reason_other: reasonOther || null,
+                note:         null,
+                created_by:   _currentUser.id
+            };
+            const res = await sbFetch('/rest/v1/quote_followup', {
+                method: 'POST',
+                headers: { 'Prefer': 'return=minimal' },
+                body: JSON.stringify(payload)
+            });
+            if (!res.ok) {
+                const errBody = await res.text().catch(() => '');
+                throw new Error('บันทึกล้มเหลว: ' + res.status + ' ' + errBody);
+            }
+            // ลบ inline section
+            const inline = rowEl?.nextElementSibling;
+            if (inline && inline.classList.contains('fu-reason-inline')) inline.remove();
+            // รีโหลดทั้งหมดเพื่ออัปเดตสถานะ (รวม followup id ใหม่)
+            await loadFuQuoteListNew();
+            // re-apply filter
+            const q = document.getElementById('fuSearchInput').value.trim();
+            if (q) filterFuQuoteList();
+        } catch (e) {
+            if (btnEl) btnEl.disabled = false;
+            const inlineSec = btnEl?.closest('.fu-reason-inline');
+            if (inlineSec) {
+                const msgEl = inlineSec.querySelector('.fu-inline-msg');
+                msgEl.className = 'fu-inline-msg text-xs text-rose-500';
+                msgEl.textContent = e.message;
+            } else {
+                alert(e.message);
+            }
+        }
+    }
+
+    // ===== ขอ reset จาก user =====
+    async function fuRequestReset(followupId, quoteNo, btnEl) {
+        if (!confirm(`ต้องการขอแก้ไขผลใบ ${quoteNo}?\nระบบจะแจ้ง Admin และดำเนินการภายใน 15-20 นาที`)) return;
+        btnEl.disabled = true;
+        try {
+            const res = await sbFetch('/rest/v1/followup_requests', {
+                method: 'POST',
+                headers: { 'Prefer': 'return=minimal' },
+                body: JSON.stringify({
+                    followup_id:    parseInt(followupId),
+                    quote_no:       quoteNo,
+                    requested_by:   _currentUser.id,
+                    requester_name: _currentProfile?.display_name || '',
+                    status:         'pending'
+                })
+            });
+            if (!res.ok) throw new Error(await res.text().catch(() => res.status));
+            // แจ้ง user
+            btnEl.outerHTML = `<span class="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-amber-100 text-amber-600">⏳ รอดำเนินการ</span>`;
+        } catch (e) {
+            alert('ส่งคำขอไม่สำเร็จ: ' + e.message);
+            btnEl.disabled = false;
+        }
+    }
+
+    // ===== Toggle ประวัติ =====
+    function toggleFuHistory(btnEl) {
+        const hist    = document.getElementById('fuHistoryList');
+        const chevron = btnEl.querySelector('.fu-history-chevron');
+        const label   = btnEl.querySelector('.fu-history-toggle-text');
+        const isHidden = hist.classList.contains('hidden');
+        hist.classList.toggle('hidden', !isHidden);
+        if (chevron) chevron.style.transform = isHidden ? 'rotate(180deg)' : '';
+        if (label) label.textContent = isHidden ? 'ซ่อนใบที่บันทึกแล้ว' : 'แสดงใบที่บันทึกแล้ว';
+    }
+
+    // ===== loadFollowUpHistory ไม่ใช้แล้ว (รวมอยู่ใน renderFuQuoteList) =====
+    async function loadFollowUpHistory() { /* deprecated — handled by renderFuQuoteList */ }
+
+    // ===== deleteFollowUp ถูกลบออก user ไม่มีสิทธิ์ลบ =====
+    function deleteFollowUp() { alert('ไม่สามารถลบได้ กรุณากดปุ่ม "ขอแก้ไข" แล้วรอ Admin ดำเนินการ'); }
+
+    // =====================================================================
+    // ===== FOLLOW-UP REASONS — Admin Panel ===============================
+    // =====================================================================
+
+    async function loadFollowupReasonAdmin() {
+        const tbody = document.getElementById('followupReasonsList');
+        tbody.innerHTML = '<tr><td colspan="4" class="text-center text-slate-400 py-6">กำลังโหลด...</td></tr>';
+        document.getElementById('adminReasonMsg').textContent = '';
+        try {
+            const res = await sbFetch('/rest/v1/followup_reasons?order=sort_order.asc,id.asc');
+            if (!res.ok) throw new Error(res.status);
+            const data = await res.json();
+            if (data.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="4" class="text-center text-slate-400 py-6">ยังไม่มีเหตุผล</td></tr>';
+                return;
+            }
+            tbody.innerHTML = '';
+            data.forEach(r => {
+                const tr = document.createElement('tr');
+                tr.className = 'hover:bg-slate-50 transition-colors';
+                tr.innerHTML = `
+                    <td class="px-4 py-2.5">
+                        <input type="text" value="${r.reason_text.replace(/"/g, '&quot;')}"
+                            class="w-full rounded-lg border border-slate-200 bg-white px-2 py-1 text-sm focus:border-indigo-400 focus:outline-none"
+                            onblur="adminSaveReason(${r.id}, this.value, null)">
+                    </td>
+                    <td class="px-4 py-2.5 text-center">
+                        <input type="number" value="${r.sort_order}" min="0"
+                            class="w-16 rounded-lg border border-slate-200 bg-white px-2 py-1 text-sm text-center focus:border-indigo-400 focus:outline-none"
+                            onblur="adminSaveReason(${r.id}, null, this.value)">
+                    </td>
+                    <td class="px-4 py-2.5 text-center">
+                        <button onclick="adminToggleReason(${r.id}, ${!r.is_active}, this)"
+                            class="text-xs font-semibold px-2.5 py-1 rounded-lg transition-all ${r.is_active
+                                ? 'bg-emerald-100 text-emerald-700 hover:bg-emerald-200'
+                                : 'bg-slate-100 text-slate-400 hover:bg-slate-200'}">
+                            ${r.is_active ? 'เปิดใช้' : 'ปิดใช้'}
+                        </button>
+                    </td>
+                    <td class="px-4 py-2.5 text-center">
+                        <button onclick="adminDeleteReason(${r.id}, this)" title="ลบ"
+                            class="text-slate-300 hover:text-rose-500 transition-colors">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                            </svg>
+                        </button>
+                    </td>`;
+                tbody.appendChild(tr);
+            });
+        } catch (e) {
+            tbody.innerHTML = `<tr><td colspan="4" class="text-center text-rose-400 py-6">${e.message}</td></tr>`;
+        }
+    }
+
+    async function adminAddFollowupReason() {
+        const text  = document.getElementById('newReasonText').value.trim();
+        const sort  = parseInt(document.getElementById('newReasonSort').value) || 0;
+        const msgEl = document.getElementById('adminReasonMsg');
+        if (!text) { msgEl.className = 'text-xs mt-2 text-rose-500'; msgEl.textContent = 'กรุณากรอกเหตุผล'; return; }
+        msgEl.className = 'text-xs mt-2 text-slate-400'; msgEl.textContent = 'กำลังบันทึก...';
+        try {
+            const res = await sbFetch('/rest/v1/followup_reasons', {
+                method: 'POST',
+                headers: { 'Prefer': 'return=minimal' },
+                body: JSON.stringify({ reason_text: text, sort_order: sort, is_active: true })
+            });
+            if (!res.ok) throw new Error(res.status);
+            document.getElementById('newReasonText').value = '';
+            document.getElementById('newReasonSort').value = '10';
+            msgEl.className = 'text-xs mt-2 text-emerald-600'; msgEl.textContent = 'เพิ่มสำเร็จ ✓';
+            await loadFollowupReasonAdmin();
+        } catch (e) {
+            msgEl.className = 'text-xs mt-2 text-rose-500'; msgEl.textContent = 'เกิดข้อผิดพลาด: ' + e.message;
+        }
+    }
+
+    async function adminSaveReason(id, newText, newSort) {
+        try {
+            const patch = {};
+            if (newText !== null) patch.reason_text = newText.trim();
+            if (newSort !== null) patch.sort_order   = parseInt(newSort) || 0;
+            if (!Object.keys(patch).length) return;
+            const res = await sbFetch(`/rest/v1/followup_reasons?id=eq.${id}`, {
+                method: 'PATCH',
+                headers: { 'Prefer': 'return=minimal' },
+                body: JSON.stringify(patch)
+            });
+            if (!res.ok) throw new Error(res.status);
+        } catch (e) {
+            console.warn('[followup admin] save reason failed:', e);
+        }
+    }
+
+    async function adminToggleReason(id, newActive, btnEl) {
+        btnEl.disabled = true;
+        try {
+            const res = await sbFetch(`/rest/v1/followup_reasons?id=eq.${id}`, {
+                method: 'PATCH',
+                headers: { 'Prefer': 'return=minimal' },
+                body: JSON.stringify({ is_active: newActive })
+            });
+            if (!res.ok) throw new Error(res.status);
+            await loadFollowupReasonAdmin();
+        } catch (e) {
+            alert('แก้ไขไม่สำเร็จ: ' + e.message);
+            btnEl.disabled = false;
+        }
+    }
+
+    async function adminDeleteReason(id, btnEl) {
+        if (!confirm('ลบเหตุผลนี้? (ข้อมูล follow-up ที่อ้างอิงเหตุผลนี้จะไม่ถูกลบ)')) return;
+        btnEl.disabled = true;
+        try {
+            const res = await sbFetch(`/rest/v1/followup_reasons?id=eq.${id}`, { method: 'DELETE' });
+            if (!res.ok) throw new Error(res.status);
+            await loadFollowupReasonAdmin();
+        } catch (e) {
+            alert('ลบไม่สำเร็จ: ' + e.message);
+            btnEl.disabled = false;
+        }
+    }
+
+    // ===== END FOLLOW-UP SYSTEM ==========================================
+
+    // =====================================================================
+    // ===== NOTIFICATION SYSTEM ===========================================
+    // =====================================================================
+
+    let _notifPollTimer = null;
+    const NOTIF_POLL_INTERVAL = 5 * 60 * 1000; // 5 นาที
+
+    // ----- เริ่ม/หยุด poll -----
+    function startNotifPoll() {
+        stopNotifPoll();
+        pollNotifCount(); // ดึงทันทีเมื่อ login
+        _notifPollTimer = setInterval(pollNotifCount, NOTIF_POLL_INTERVAL);
+    }
+    function stopNotifPoll() {
+        if (_notifPollTimer) { clearInterval(_notifPollTimer); _notifPollTimer = null; }
+    }
+
+    // ----- ดึงจำนวน unread แล้วอัปเดต badge -----
+    async function pollNotifCount() {
+        if (!_currentUser?.id) return;
+        try {
+            const res = await sbFetch(
+                `/rest/v1/notifications?user_id=eq.${_currentUser.id}&is_read=eq.false&select=id`
+            );
+            if (!res.ok) return;
+            const data = await res.json();
+            updateNotifBadge(Array.isArray(data) ? data.length : 0);
+        } catch (e) { /* silent */ }
+    }
+
+    function updateNotifBadge(count) {
+        const badge = document.getElementById('notifBadge');
+        if (!badge) return;
+        if (count > 0) {
+            badge.textContent = count > 99 ? '99+' : String(count);
+            badge.classList.remove('hidden');
+            badge.classList.add('flex');
+        } else {
+            clearNotifBadge();
+        }
+    }
+    function clearNotifBadge() {
+        const badge = document.getElementById('notifBadge');
+        if (badge) { badge.classList.add('hidden'); badge.classList.remove('flex'); }
+    }
+
+    // ----- Modal open / close -----
+    async function openNotifModal() {
+        document.getElementById('notifModal').classList.remove('hidden');
+        document.getElementById('notifModal').classList.add('flex');
+        await loadNotifList();
+    }
+    function closeNotifModal() {
+        document.getElementById('notifModal').classList.add('hidden');
+        document.getElementById('notifModal').classList.remove('flex');
+    }
+    document.addEventListener('DOMContentLoaded', function () {
+        const nm = document.getElementById('notifModal');
+        if (nm) nm.addEventListener('click', function (e) { if (e.target === this) closeNotifModal(); });
+    });
+
+    // ----- โหลดรายการ notifications -----
+    async function loadNotifList() {
+        const container = document.getElementById('notifList');
+        container.innerHTML = '<p class="text-slate-400 text-center py-8 text-sm">กำลังโหลด...</p>';
+        try {
+            const res = await sbFetch(
+                `/rest/v1/notifications?user_id=eq.${_currentUser.id}&order=created_at.desc&limit=50`
+            );
+            if (!res.ok) throw new Error(res.status);
+            const data = await res.json();
+
+            if (data.length === 0) {
+                container.innerHTML = '<p class="text-slate-400 text-center py-8 text-sm">ไม่มีการแจ้งเตือน</p>';
+                return;
+            }
+
+            const typeIcon = {
+                followup_reset:   '🔄',
+                followup_request: '📋',
+                system:           '📢'
+            };
+
+            container.innerHTML = '';
+            data.forEach(n => {
+                const dateStr = new Date(n.created_at).toLocaleString('th-TH', {
+                    day: '2-digit', month: 'short', year: '2-digit', hour: '2-digit', minute: '2-digit'
+                });
+                const el = document.createElement('div');
+                el.className = 'flex items-start gap-3 p-3 rounded-xl border cursor-pointer transition-all '
+                    + (n.is_read ? 'bg-white border-slate-100 opacity-60' : 'bg-sky-50 border-sky-200');
+                el.onclick = () => markNotifRead(n.id, el, n.ref_id, n.type);
+                el.innerHTML = `
+                    <div class="shrink-0 text-base mt-0.5">${typeIcon[n.type] || '🔔'}</div>
+                    <div class="flex-1 min-w-0">
+                        <p class="text-sm font-semibold text-slate-800">${n.title}</p>
+                        ${n.body ? `<p class="text-xs text-slate-500 mt-0.5">${n.body}</p>` : ''}
+                        <p class="text-[10px] text-slate-300 mt-1">${dateStr}</p>
+                    </div>
+                    ${!n.is_read ? '<div class="shrink-0 w-2 h-2 rounded-full bg-sky-500 mt-1.5"></div>' : ''}`;
+                container.appendChild(el);
+            });
+        } catch (e) {
+            container.innerHTML = `<p class="text-rose-400 text-center py-8 text-xs">${e.message}</p>`;
+        }
+    }
+
+    // ----- mark 1 รายการ as read + action -----
+    async function markNotifRead(id, el, refId, type) {
+        // mark read ใน DB (fire and forget)
+        sbFetch(`/rest/v1/notifications?id=eq.${id}`, {
+            method: 'PATCH',
+            headers: { 'Prefer': 'return=minimal' },
+            body: JSON.stringify({ is_read: true })
+        }).then(() => pollNotifCount()).catch(() => {});
+        // อัปเดต UI ทันที
+        el.classList.remove('bg-sky-50', 'border-sky-200');
+        el.classList.add('bg-white', 'border-slate-100', 'opacity-60');
+        el.querySelector('.w-2.h-2')?.remove();
+        // action ตาม type
+        if (type === 'followup_reset' && refId) {
+            closeNotifModal();
+            openFollowUpModal(); // เปิด follow-up modal เพื่อดูใบที่ถูก reset
+        }
+    }
+
+    // ----- mark all as read -----
+    async function markAllNotifsRead() {
+        try {
+            await sbFetch(`/rest/v1/notifications?user_id=eq.${_currentUser.id}&is_read=eq.false`, {
+                method: 'PATCH',
+                headers: { 'Prefer': 'return=minimal' },
+                body: JSON.stringify({ is_read: true })
+            });
+            clearNotifBadge();
+            await loadNotifList();
+        } catch (e) { /* silent */ }
+    }
+
+    // ===== END NOTIFICATION SYSTEM =======================================
+
+    // =====================================================================
+    // ===== ADMIN: FOLLOW-UP REQUESTS =====================================
+    // =====================================================================
+
+    let _adminReqPollTimer = null;
+
+    // ----- poll badge จำนวน pending requests (สำหรับ admin เท่านั้น) -----
+    function startAdminReqPoll() {
+        stopAdminReqPoll();
+        pollAdminReqCount();
+        _adminReqPollTimer = setInterval(pollAdminReqCount, 5 * 60 * 1000);
+    }
+    function stopAdminReqPoll() {
+        if (_adminReqPollTimer) { clearInterval(_adminReqPollTimer); _adminReqPollTimer = null; }
+    }
+    async function pollAdminReqCount() {
+        if (_currentProfile?.role !== 'admin') return;
+        try {
+            const res = await sbFetch('/rest/v1/followup_requests?status=eq.pending&select=id');
+            if (!res.ok) return;
+            const data = await res.json();
+            const total = Array.isArray(data) ? data.length : 0;
+            const badge = document.getElementById('adminReqBadge');
+            if (!badge) return;
+            if (total > 0) {
+                badge.textContent = total > 99 ? '99+' : String(total);
+                badge.classList.remove('hidden');
+                badge.classList.add('flex');
+            } else {
+                badge.classList.add('hidden');
+                badge.classList.remove('flex');
+            }
+        } catch (e) { /* silent */ }
+    }
+
+    // ----- โหลดรายการ requests ทั้งหมด -----
+    async function loadFollowupRequestsAdmin() {
+        const tbody  = document.getElementById('followupRequestsBody');
+        const msgEl  = document.getElementById('adminReqMsg');
+        tbody.innerHTML = '<tr><td colspan="6" class="text-center text-slate-400 py-6">กำลังโหลด...</td></tr>';
+        msgEl.textContent = '';
+        try {
+            // ดึง followup_requests ก่อน แล้วดึง quote_followup แยก
+            const res = await sbFetch(
+                `/rest/v1/followup_requests?select=id,quote_no,requester_name,status,created_at,followup_id&order=created_at.desc&limit=100`
+            );
+            if (!res.ok) throw new Error('โหลดคำขอล้มเหลว: ' + res.status);
+            const data = await res.json();
+
+            if (data.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="6" class="text-center text-slate-400 py-6">ไม่มีคำขอ</td></tr>';
+                return;
+            }
+
+            // ดึง quote_followup ที่เกี่ยวข้องทั้งหมดในครั้งเดียว
+            const fuIds = [...new Set(data.map(r => r.followup_id).filter(Boolean))];
+            let fuMap = {};
+            if (fuIds.length > 0) {
+                const fuRes = await sbFetch(
+                    `/rest/v1/quote_followup?id=in.(${fuIds.join(',')})&select=id,outcome,reason_other,created_by`
+                );
+                if (fuRes.ok) {
+                    const fuData = await fuRes.json();
+                    fuData.forEach(f => { fuMap[f.id] = f; });
+                }
+            }
+
+            tbody.innerHTML = '';
+            data.forEach(r => {
+                const fu = fuMap[r.followup_id] || null;
+                const isAccepted = fu?.outcome === 'accepted';
+                const outcomeLabel = fu
+                    ? (isAccepted
+                        ? '<span class="text-emerald-600 font-semibold">✓ ตกลง</span>'
+                        : '<span class="text-rose-500 font-semibold">✗ ไม่ทำ</span>')
+                    : '<span class="text-slate-300">-</span>';
+                const dateStr = new Date(r.created_at).toLocaleString('th-TH', {
+                    day: '2-digit', month: 'short', year: '2-digit', hour: '2-digit', minute: '2-digit'
+                });
+                const isPending = r.status === 'pending';
+                const statusBadge = isPending
+                    ? '<span class="text-xs font-semibold px-2 py-0.5 rounded-full bg-amber-100 text-amber-600">⏳ รอดำเนินการ</span>'
+                    : '<span class="text-xs font-semibold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-600">✓ แก้ไขแล้ว</span>';
+
+                const tr = document.createElement('tr');
+                tr.className = 'hover:bg-slate-50 transition-colors' + (isPending ? '' : ' opacity-50');
+                tr.innerHTML = `
+                    <td class="px-4 py-3 text-sm text-slate-700">${r.requester_name || '-'}</td>
+                    <td class="px-4 py-3 text-sm font-semibold text-slate-800">${r.quote_no}</td>
+                    <td class="px-4 py-3 text-center text-sm">${outcomeLabel}</td>
+                    <td class="px-4 py-3 text-center text-xs text-slate-400">${dateStr}</td>
+                    <td class="px-4 py-3 text-center">${statusBadge}</td>
+                    <td class="px-4 py-3 text-center">
+                        ${isPending ? `
+                        <button onclick="adminResetFollowup(${r.id}, ${r.followup_id}, '${r.quote_no}', '${fu?.created_by || ''}', this)"
+                            class="inline-flex items-center gap-1 text-xs font-semibold px-3 py-1.5 rounded-lg bg-indigo-50 hover:bg-indigo-100 text-indigo-600 border border-indigo-200 transition-all">
+                            🔄 Reset
+                        </button>` : '<span class="text-xs text-slate-300">-</span>'}
+                    </td>`;
+                tbody.appendChild(tr);
+            });
+            pollAdminReqCount();
+        } catch (e) {
+            tbody.innerHTML = `<tr><td colspan="6" class="text-center text-rose-400 py-6">${e.message}</td></tr>`;
+        }
+    }
+
+    // ----- admin กด Reset -----
+    async function adminResetFollowup(reqId, followupId, quoteNo, targetUserId, btnEl) {
+        if (!confirm(`Reset ผลใบ ${quoteNo}?\nผลการบันทึกเดิมจะถูกลบ และ User จะต้องบันทึกใหม่`)) return;
+        btnEl.disabled = true;
+        const msgEl = document.getElementById('adminReqMsg');
+        msgEl.className = 'text-xs mt-2 text-slate-400 text-right'; msgEl.textContent = 'กำลังดำเนินการ...';
+        try {
+            // 1. ลบ followup_requests ที่อ้างอิง followup_id นี้ก่อน (เพราะมี FK)
+            const delReqRes = await sbFetch(`/rest/v1/followup_requests?followup_id=eq.${followupId}`, { method: 'DELETE' });
+            if (!delReqRes.ok) throw new Error('ลบคำขอล้มเหลว: ' + delReqRes.status);
+
+            // 2. ลบ quote_followup
+            const delFuRes = await sbFetch(`/rest/v1/quote_followup?id=eq.${followupId}`, { method: 'DELETE' });
+            if (!delFuRes.ok) throw new Error('ลบ follow-up ล้มเหลว: ' + delFuRes.status);
+
+            // 3. ส่ง notification กลับหา user (ถ้ามี userId)
+            if (targetUserId) {
+                await sbFetch('/rest/v1/notifications', {
+                    method: 'POST',
+                    headers: { 'Prefer': 'return=minimal' },
+                    body: JSON.stringify({
+                        user_id:  targetUserId,
+                        title:    `ผลใบ ${quoteNo} ถูก Reset แล้ว`,
+                        body:     'Admin ได้ดำเนินการแก้ไขคำขอของคุณ กรุณากลับไปบันทึกผลใหม่',
+                        type:     'followup_reset',
+                        ref_id:   quoteNo,
+                        is_read:  false
+                    })
+                });
+            }
+
+            msgEl.className = 'text-xs mt-2 text-emerald-600 text-right';
+            msgEl.textContent = `Reset ใบ ${quoteNo} สำเร็จ — แจ้ง User แล้ว`;
+            await loadFollowupRequestsAdmin();
+            // รอสั้นๆ ให้ Supabase flush แล้วนับใหม่
+            setTimeout(() => pollAdminReqCount(), 800);
+        } catch (e) {
+            msgEl.className = 'text-xs mt-2 text-rose-500 text-right';
+            msgEl.textContent = 'เกิดข้อผิดพลาด: ' + e.message;
+            btnEl.disabled = false;
+        }
+    }
+
+    // ===== END ADMIN FOLLOW-UP REQUESTS ==================================
     </script>    <!-- ===== REVISE MODAL ===== -->
     <div id="reviseModal" class="hidden fixed inset-0 z-[9997] flex items-center justify-center p-4" style="background:rgba(0,0,0,0.45)">
         <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md">
@@ -6686,6 +7500,26 @@
             class="w-8 h-8 flex items-center justify-center rounded-lg bg-white/80 hover:bg-slate-100 dark:bg-slate-700/90 dark:hover:bg-slate-600 border border-slate-200 dark:border-slate-600 text-slate-500 hover:text-slate-700 dark:text-sky-300 dark:hover:text-white shadow-sm backdrop-blur-sm transition-all">
             <svg id="darkModeIconMoon" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"/></svg>
             <svg id="darkModeIconSun" class="hidden w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"/></svg>
+        </button>
+
+        <!-- Follow-up button (แสดงหลัง login) -->
+        <button type="button" id="followUpBtn" onclick="openFollowUpModal()"
+            title="ติดตามผลการตอบกลับลูกค้า"
+            class="hidden w-8 h-8 items-center justify-center rounded-lg bg-sky-50 hover:bg-sky-100 dark:bg-sky-500/20 dark:hover:bg-sky-500/30 border border-sky-200 dark:border-sky-500/40 text-sky-600 dark:text-sky-400 shadow-sm backdrop-blur-sm transition-all">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"/>
+            </svg>
+        </button>
+
+        <!-- Notification bell (แสดงหลัง login) -->
+        <button type="button" id="notifBtn" onclick="openNotifModal()"
+            title="การแจ้งเตือน"
+            class="hidden relative w-8 h-8 items-center justify-center rounded-lg bg-white/80 hover:bg-slate-100 border border-slate-200 text-slate-500 hover:text-slate-700 shadow-sm backdrop-blur-sm transition-all">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/>
+            </svg>
+            <!-- badge จำนวน unread -->
+            <span id="notifBadge" class="hidden absolute -top-1 -right-1 min-w-[16px] h-4 px-1 flex items-center justify-center rounded-full bg-rose-500 text-white text-[9px] font-bold leading-none"></span>
         </button>
 
         <!-- User info + actions (แสดงหลัง login) -->
@@ -6789,6 +7623,15 @@
                 <button onclick="switchAdminTab('rates')" id="tabRates"
                     class="admin-tab py-3 px-4 text-sm font-semibold border-b-2 border-transparent text-slate-500 hover:text-slate-700 transition-all">
                     เรท/ทาริฟ
+                </button>
+                <button onclick="switchAdminTab('followupReasons')" id="tabFollowupReasons"
+                    class="admin-tab py-3 px-4 text-sm font-semibold border-b-2 border-transparent text-slate-500 hover:text-slate-700 transition-all">
+                    เหตุผล Follow-up
+                </button>
+                <button onclick="switchAdminTab('followupRequests')" id="tabFollowupRequests"
+                    class="admin-tab py-3 px-4 text-sm font-semibold border-b-2 border-transparent text-slate-500 hover:text-slate-700 transition-all flex items-center gap-1.5">
+                    คำขอแก้ไข
+                    <span id="adminReqBadge" class="hidden min-w-[18px] h-[18px] px-1 flex items-center justify-center rounded-full bg-rose-500 text-white text-[9px] font-bold"></span>
                 </button>
             </div>
             <!-- Content -->
@@ -7010,10 +7853,145 @@
                     </div>
                 </div>
 
+                <!-- TAB: เหตุผล Follow-up -->
+                <div id="adminTabFollowupReasons" class="hidden">
+                    <div class="bg-slate-50 rounded-xl p-4 mb-5 border border-slate-200">
+                        <h3 class="text-sm font-semibold text-slate-700 mb-3">เพิ่มเหตุผลใหม่</h3>
+                        <div class="flex gap-3">
+                            <input type="text" id="newReasonText" placeholder="เช่น ราคาสูงเกินไป"
+                                class="flex-1 rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 focus:outline-none">
+                            <input type="number" id="newReasonSort" placeholder="ลำดับ" min="0" value="10"
+                                class="w-24 rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 focus:outline-none">
+                            <button onclick="adminAddFollowupReason()"
+                                class="bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold px-4 py-2 rounded-xl transition-all whitespace-nowrap">
+                                + เพิ่ม
+                            </button>
+                        </div>
+                        <p id="adminReasonMsg" class="text-xs mt-2 min-h-[1rem]"></p>
+                    </div>
+                    <div class="overflow-x-auto rounded-xl border border-slate-200">
+                        <table class="w-full text-sm">
+                            <thead class="bg-slate-50 border-b border-slate-200">
+                                <tr>
+                                    <th class="px-4 py-2.5 text-left font-semibold text-slate-600">เหตุผล</th>
+                                    <th class="px-4 py-2.5 text-center font-semibold text-slate-600 w-20">ลำดับ</th>
+                                    <th class="px-4 py-2.5 text-center font-semibold text-slate-600 w-24">สถานะ</th>
+                                    <th class="px-4 py-2.5 text-center font-semibold text-slate-600 w-20">ลบ</th>
+                                </tr>
+                            </thead>
+                            <tbody id="followupReasonsList" class="divide-y divide-slate-100">
+                                <tr><td colspan="4" class="text-center text-slate-400 py-6">กำลังโหลด...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- TAB: คำขอแก้ไข Follow-up -->
+                <div id="adminTabFollowupRequests" class="hidden">
+                    <div class="flex items-center justify-between mb-4">
+                        <p class="text-xs text-slate-500">คำขอ reset ผลการบันทึกจาก user — กด Reset เพื่อลบผลเดิมและให้ user บันทึกใหม่</p>
+                        <button onclick="loadFollowupRequestsAdmin()" class="text-xs text-sky-600 hover:underline">รีเฟรช</button>
+                    </div>
+                    <div class="overflow-x-auto rounded-xl border border-slate-200">
+                        <table class="w-full text-sm">
+                            <thead class="bg-slate-50 border-b border-slate-200">
+                                <tr>
+                                    <th class="px-4 py-2.5 text-left font-semibold text-slate-600">User</th>
+                                    <th class="px-4 py-2.5 text-left font-semibold text-slate-600">เลขใบ</th>
+                                    <th class="px-4 py-2.5 text-center font-semibold text-slate-600">ผลเดิม</th>
+                                    <th class="px-4 py-2.5 text-center font-semibold text-slate-600">วันที่ขอ</th>
+                                    <th class="px-4 py-2.5 text-center font-semibold text-slate-600">สถานะ</th>
+                                    <th class="px-4 py-2.5 text-center font-semibold text-slate-600">Action</th>
+                                </tr>
+                            </thead>
+                            <tbody id="followupRequestsBody" class="divide-y divide-slate-100">
+                                <tr><td colspan="6" class="text-center text-slate-400 py-6">กำลังโหลด...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <p id="adminReqMsg" class="text-xs mt-2 min-h-[1rem] text-right"></p>
+                </div>
+
             </div>
         </div>
     </div>
     <!-- ===== END ADMIN MODAL ===== -->
+
+    <!-- ===== FOLLOW-UP MODAL ===== -->
+    <div id="followUpModal" class="hidden fixed inset-0 z-[9997] flex items-center justify-center p-4" style="background:rgba(0,0,0,0.5)">
+        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-2xl flex flex-col" style="max-height:90vh">
+            <!-- Header -->
+            <div class="flex items-center justify-between px-6 py-4 border-b border-slate-200 shrink-0">
+                <div class="flex items-center gap-2">
+                    <svg class="w-5 h-5 text-sky-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"/>
+                    </svg>
+                    <h2 class="text-lg font-bold text-slate-800">ติดตามผลการตอบกลับลูกค้า</h2>
+                </div>
+                <button onclick="closeFollowUpModal()" class="text-slate-400 hover:text-slate-600 transition-colors">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+                </button>
+            </div>
+            <!-- Content -->
+            <div class="overflow-y-auto flex-1 p-5 space-y-3">
+                <!-- ===== ส่วนบน: รอบันทึกผล ===== -->
+                <div>
+                    <div class="flex items-center justify-between mb-2">
+                        <p class="text-xs font-semibold text-slate-500 uppercase tracking-wide">รอบันทึกผล</p>
+                        <span id="fuPendingCount" class="text-xs text-slate-400"></span>
+                    </div>
+                    <div class="relative mb-2">
+                        <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+                        </svg>
+                        <input type="text" id="fuSearchInput" placeholder="ค้นหาเลขใบ / ชื่อลูกค้า..."
+                            oninput="filterFuQuoteList()"
+                            class="block w-full rounded-xl border border-slate-300 bg-white pl-9 pr-3 py-2 text-sm text-slate-800 shadow-sm focus:border-sky-500 focus:ring-2 focus:ring-sky-200 focus:outline-none transition-all">
+                    </div>
+                    <div id="fuQuoteList" class="space-y-1.5 overflow-y-auto" style="max-height:22rem">
+                        <p class="text-slate-400 text-center py-8 text-sm">กำลังโหลด...</p>
+                    </div>
+                </div>
+                <!-- ===== ส่วนล่าง: บันทึกแล้ว (toggle) ===== -->
+                <div class="border-t border-slate-100 pt-3">
+                    <button onclick="toggleFuHistory(this)"
+                        class="flex items-center gap-2 text-xs font-semibold text-slate-500 hover:text-slate-700 transition-colors w-full text-left">
+                        <svg class="w-3.5 h-3.5 transform transition-transform duration-200 fu-history-chevron" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+                        </svg>
+                        <span class="fu-history-toggle-text">แสดงใบที่บันทึกแล้ว</span>
+                        <span id="fuDoneCount" class="ml-auto text-slate-300 font-normal"></span>
+                    </button>
+                    <div id="fuHistoryList" class="hidden mt-3 space-y-1.5"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- ===== END FOLLOW-UP MODAL ===== -->
+
+    <!-- ===== NOTIFICATION MODAL ===== -->
+    <div id="notifModal" class="hidden fixed inset-0 z-[9996] flex items-center justify-center p-4" style="background:rgba(0,0,0,0.5)">
+        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md flex flex-col" style="max-height:85vh">
+            <div class="flex items-center justify-between px-6 py-4 border-b border-slate-200 shrink-0">
+                <div class="flex items-center gap-2">
+                    <svg class="w-5 h-5 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/>
+                    </svg>
+                    <h2 class="text-lg font-bold text-slate-800">การแจ้งเตือน</h2>
+                </div>
+                <div class="flex items-center gap-2">
+                    <button onclick="markAllNotifsRead()" class="text-xs text-sky-600 hover:underline">อ่านทั้งหมด</button>
+                    <button onclick="closeNotifModal()" class="text-slate-400 hover:text-slate-600 transition-colors">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+                    </button>
+                </div>
+            </div>
+            <div id="notifList" class="overflow-y-auto flex-1 p-4 space-y-2">
+                <p class="text-slate-400 text-center py-8 text-sm">กำลังโหลด...</p>
+            </div>
+        </div>
+    </div>
+    <!-- ===== END NOTIFICATION MODAL ===== -->
 
     <!-- V12 Loading Overlay — แสดงขณะโหลด JSON -->
     <div id="loadingOverlay" style="display:flex;position:fixed;inset:0;background:rgba(255,255,255,0.92);z-index:9999;flex-direction:column;align-items:center;justify-content:center;gap:16px;">
