@@ -1,4 +1,5 @@
 # ไม่ push ไฟล์ที่มี password หรือไม่จำเป็น
+BACKLOG.md
 password supabase.txt
 supabase/password supabase.txt
 supabase/users.csv
