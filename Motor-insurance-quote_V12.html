@@ -344,7 +344,7 @@
                     <div class="flex items-center justify-between mb-6">
                         <div class="flex items-center gap-3">
                             <span class="flex items-center justify-center w-8 h-8 rounded-full bg-indigo-50 text-indigo-600 font-bold text-sm">1</span>
-                            <h2 class="text-lg font-semibold text-slate-800">ข้อมูลผู้เอาประกัน และผู้ออกงาน</h2>
+                            <h2 class="text-lg font-semibold text-slate-800">ข้อมูลผู้เอาประกัน และตัวแทน/นายหน้า</h2>
                         </div>
                         <div class="flex items-center gap-3">
                             <button type="button" onclick="openReviseModal()"
@@ -356,12 +356,16 @@
                         </div>
                     </div>
 
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
-                        <div>
+                    <div class="grid grid-cols-1 md:grid-cols-5 gap-5">
+                        <div class="md:col-span-2">
                             <label class="block text-xs font-semibold text-slate-700 uppercase tracking-wide mb-1.5">ชื่อผู้เอาประกัน / หน่วยงาน <span class="text-rose-500">*</span></label>
                             <input type="text" id="clientName" class="block w-full rounded-xl border border-slate-300 bg-white px-4 py-2.5 text-sm text-slate-800 shadow-sm focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 focus:outline-none transition-all" placeholder="บริษัท หรือ ชื่อ-นามสกุล" required>
                         </div>
-                        <div>
+                        <div class="md:col-span-2">
+                            <label class="block text-xs font-semibold text-slate-700 uppercase tracking-wide mb-1.5">ชื่อตัวแทน / นายหน้า <span class="text-rose-500">*</span></label>
+                            <input type="text" id="agentName" class="block w-full rounded-xl border border-slate-300 bg-white px-4 py-2.5 text-sm text-slate-800 shadow-sm focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 focus:outline-none transition-all" placeholder="ระบุชื่อตัวแทน/นายหน้า (ไม่มีให้ใส่ 'ไม่มี')" required>
+                        </div>
+                        <div class="md:col-span-1">
                             <label class="block text-xs font-semibold text-slate-500 uppercase tracking-wide mb-1.5">วัน - เวลา ที่ออกงาน</label>
                             <input type="datetime-local" id="currentDateTime" class="block w-full rounded-xl border border-slate-200 bg-slate-100 px-4 py-2.5 text-sm text-slate-500 focus:outline-none transition-all" readonly>
                         </div>
@@ -3284,6 +3288,7 @@
             // ----- ชีทที่ 1: ข้อมูลนำเข้า -----
             const aoa = [];
             aoa.push(['ชื่อผู้เอาประกัน / หน่วยงาน', '']);
+            aoa.push(['ชื่อตัวแทน / นายหน้า', '']);
             aoa.push(['ชื่อผู้ออกงาน', '']);
             aoa.push(['ฝ่าย / สาขาที่ออกงาน', '']);
             aoa.push([]);
@@ -3369,8 +3374,9 @@
                     const rows = XLSX.utils.sheet_to_json(ws, { header: 1, raw: false, defval: '' });
 
                     const clientName = (rows[0] && rows[0][1]) ? String(rows[0][1]).trim() : '';
-                    const issuerName = (rows[1] && rows[1][1]) ? String(rows[1][1]).trim() : '';
-                    const issuerBranch = (rows[2] && rows[2][1]) ? String(rows[2][1]).trim() : '';
+                    const agentName = (rows[1] && rows[1][1]) ? String(rows[1][1]).trim() : '';
+                    const issuerName = (rows[2] && rows[2][1]) ? String(rows[2][1]).trim() : '';
+                    const issuerBranch = (rows[3] && rows[3][1]) ? String(rows[3][1]).trim() : '';
 
                     const headerRowIdx = rows.findIndex(r => r.some(cell => String(cell).indexOf('ทะเบียนรถ') !== -1));
                     if (headerRowIdx === -1) {
@@ -3417,7 +3423,7 @@
                         return;
                     }
 
-                    applyImportedData({ clientName, issuerName, issuerBranch, vehicles });
+                    applyImportedData({ clientName, agentName, issuerName, issuerBranch, vehicles });
                     showImportMessage('นำเข้าข้อมูลสำเร็จ ทั้งหมด ' + vehicles.length + ' คัน กรุณาตรวจสอบความถูกต้องของข้อมูลในฟอร์มอีกครั้งก่อนขอเบี้ยประกันภัย', false);
                 } catch (err) {
                     showImportMessage('ไม่สามารถอ่านไฟล์ได้: ' + err.message, true);
@@ -3494,6 +3500,7 @@
         // นำข้อมูลที่ผ่านการตรวจสอบแล้ว ใส่ลงในฟอร์มจริง (ลบการ์ดรถเดิมทั้งหมด แล้วสร้างใหม่ตามจำนวนที่นำเข้า)
         function applyImportedData(importData) {
             document.getElementById('clientName').value = importData.clientName || '';
+            document.getElementById('agentName').value = importData.agentName || '';
             // issuerName/issuerBranch ล็อคจาก profile — ไม่ override จาก import
 
             const container = document.getElementById('vehicleContainer');
@@ -3856,6 +3863,7 @@
                 };
 
                 const clientName = (document.getElementById('clientName').value || '-').trim();
+            const agentName = (document.getElementById('agentName').value || '-').trim();
             const dateTimeVal = document.getElementById('currentDateTime').value;
             const issuerName = (document.getElementById('issuerName').value || '-').trim();
             const issuerBranch = (document.getElementById('issuerBranch').value || '-').trim();
@@ -3866,7 +3874,7 @@
             // ===== ส่วนหัวใบเสนอราคา =====
             setCell('A2', 'ใบเสนอราคาประกันภัยรถยนต์  /  ผู้เอาประกันภัย: ' + clientName);
             setCell('A3', `เลขที่ใบเสนอราคา: ${currentQuoteNo || '-'}`);
-            setCell('A4', `วันที่ออกงาน: ${dateDisplay}    ฝ่าย/สาขาที่ออกงาน: ${issuerBranch}`);
+            setCell('A4', `วันที่ออกงาน: ${dateDisplay}    ฝ่าย/สาขาที่ออกงาน: ${issuerBranch}    ตัวแทน/นายหน้า: ${agentName}`);
             setCell('G43', issuerName);
 
             // ===== รายคันรถ (แถว 7 เป็นต้นไป ตามโครงสร้าง Template) =====
@@ -4072,6 +4080,7 @@
                 };
 
                 const clientName = (document.getElementById('clientName').value || '-').trim();
+                const agentName = (document.getElementById('agentName').value || '-').trim();
                 const dateTimeVal = document.getElementById('currentDateTime').value;
                 const issuerName = (document.getElementById('issuerName').value || '-').trim();
                 const issuerBranch = (document.getElementById('issuerBranch').value || '-').trim();
@@ -4082,7 +4091,7 @@
                 // ===== ส่วนหัว =====
                 setCell('A2', 'รายละเอียดไฟล์คำนวณ  /  ผู้เอาประกันภัย: ' + clientName);
                 setCell('A3', `เลขที่ใบเสนอราคา: ${currentQuoteNo || '-'}`);
-                setCell('A4', `วันที่ออกงาน: ${dateDisplay}    ฝ่าย/สาขาที่ออกงาน: ${issuerBranch}   ผู้เสนอราคา : ${issuerName}`);
+                setCell('A4', `วันที่ออกงาน: ${dateDisplay}    ฝ่าย/สาขาที่ออกงาน: ${issuerBranch}   ผู้เสนอราคา : ${issuerName}   ตัวแทน/นายหน้า: ${agentName}`);
                 // ===== รายคันรถ (แถว 8 เป็นต้นไป ตามโครงสร้าง Template) =====
                 const selectedCards = Array.from(cards).slice(0, MAX_ROWS);
                 const rowsXml = selectedCards.map((card, idx) => {
@@ -4547,6 +4556,7 @@
 
             const header = {
                 clientName:   (document.getElementById('clientName')?.value   || '').trim(),
+                agentName:    (document.getElementById('agentName')?.value    || '').trim(),
                 issuerName:   (document.getElementById('issuerName')?.value   || '').trim(),
                 issuerBranch: (document.getElementById('issuerBranch')?.value || '').trim(),
                 dateTime:     (document.getElementById('currentDateTime')?.value || '')
@@ -4739,6 +4749,7 @@
                 if (qd && qd.header && qd.vehicles && qd.vehicles.length > 0) {
                     applyImportedData({
                         clientName:   qd.header.clientName   || record.client_name   || '',
+                        agentName:    qd.header.agentName    || '',
                         issuerName:   qd.header.issuerName   || record.issuer_name   || '',
                         issuerBranch: qd.header.issuerBranch || record.issuer_branch || '',
                         vehicles:     qd.vehicles
@@ -4818,6 +4829,7 @@
 
             // --- clear header fields ---
             document.getElementById('clientName').value   = '';
+            document.getElementById('agentName').value    = '';
             document.getElementById('issuerName').value   = _currentProfile?.issuer_name   || '';
             document.getElementById('issuerBranch').value = _currentProfile?.issuer_branch || '';
 
@@ -4916,6 +4928,7 @@
             const issuerName   = (document.getElementById('issuerName')?.value || '-').trim();
             const issuerBranch = (document.getElementById('issuerBranch')?.value || '-').trim();
             const clientName   = (document.getElementById('clientName')?.value || '-').trim();
+            const agentName    = (document.getElementById('agentName')?.value || '-').trim();
 
             try {
                 let quoteNo;
@@ -4957,6 +4970,7 @@
                         issuer_name:   issuerName,
                         issuer_branch: issuerBranch,
                         client_name:   clientName,
+                        agent_name:    agentName,
                         vehicle_count: cards.length,
                         total_premium: totalPremium,
                         quote_data:    collectQuoteData(),
@@ -4969,7 +4983,10 @@
                 }
 
                 // บันทึก vehicle rows ลง quotation_vehicles (fire-and-forget)
-                saveQuotationVehicles(quoteNo, todayStr, clientName, issuerName, issuerBranch);
+                saveQuotationVehicles(quoteNo, todayStr, clientName, issuerName, issuerBranch, agentName);
+
+                // สร้าง/อัปเดต quote_followup เป็น pending (ผูก base quote_no — revision ใช้ row เดิม)
+                upsertFollowupPending(quoteNo, clientName, agentName, issuerName, issuerBranch);
 
                 return quoteNo;
 
@@ -4983,7 +5000,7 @@
         // saveQuotationVehicles() — บันทึกรถแต่ละคันลง quotation_vehicles
         // เรียกหลัง INSERT quotation_queue สำเร็จ (fire-and-forget)
         // =====================================================================
-        function saveQuotationVehicles(quoteNo, quoteDate, clientName, issuerName, issuerBranch) {
+        function saveQuotationVehicles(quoteNo, quoteDate, clientName, issuerName, issuerBranch, agentName) {
             try {
                 const num = (s) => parseFloat(String(s || '0').replace(/,/g, '')) || 0;
                 const rows = [];
@@ -5026,6 +5043,7 @@
                         vehicle_seq:             idx + 1,
                         quote_date:              quoteDate,
                         client_name:             clientName,
+                        agent_name:              agentName,
                         issuer_name:             issuerName,
                         issuer_branch:           issuerBranch,
                         created_by:              _currentUser?.id || null,
@@ -5089,6 +5107,40 @@
 
             } catch (err) {
                 console.warn('saveQuotationVehicles error:', err);
+            }
+        }
+
+        // =====================================================================
+        // upsertFollowupPending() — สร้าง/อัปเดต quote_followup เป็น pending
+        // เรียกตอนรันคิว (fire-and-forget)
+        // - ผูกกับ base quote_no (strip _V) → revision ใช้ row เดิม
+        // - ถ้ามี row อยู่แล้ว (เคยรัน/เคยยืนยัน) จะไม่ทับ outcome เดิม (ON CONFLICT DO NOTHING)
+        // =====================================================================
+        function upsertFollowupPending(quoteNo, clientName, agentName, issuerName, issuerBranch) {
+            try {
+                const baseNo = String(quoteNo).replace(/_V\d+$/, '');
+                const payload = {
+                    quote_no:      baseNo,
+                    client_name:   clientName || null,
+                    agent_name:    agentName || null,
+                    username:      issuerName || _currentProfile?.display_name || null,
+                    issuer_branch: issuerBranch || null,
+                    outcome:       'pending',
+                    created_by:    _currentUser?.id || null
+                };
+                // ON CONFLICT (quote_no) DO NOTHING — ถ้ามี row เดิม (เคยยืนยันแล้ว) จะไม่ทับ
+                sbFetch('/rest/v1/quote_followup?on_conflict=quote_no', {
+                    method: 'POST',
+                    headers: { 'Prefer': 'return=minimal,resolution=ignore-duplicates' },
+                    body: JSON.stringify(payload)
+                }).then(async res => {
+                    if (!res.ok) {
+                        const body = await res.text().catch(() => '');
+                        console.warn('[followup pending] upsert failed', res.status, body);
+                    }
+                }).catch(err => console.warn('[followup pending] error:', err));
+            } catch (err) {
+                console.warn('upsertFollowupPending error:', err);
             }
         }
 
@@ -5348,6 +5400,7 @@
     // type: 'number' | 'toggle'
     const SETTINGS_META = [
         { key: 'session_timeout_hours',        label: 'Session Timeout (ชั่วโมง)', hint: '0 = ไม่หมดอายุ', type: 'number',  min: 0, max: 720, zone: 'general' },
+        { key: 'followup_expire_days',         label: 'Follow-up หมดอายุ (วัน)', hint: 'pending ค้างเกินกี่วัน → หมดอายุอัตโนมัติ (0 = ไม่หมดอายุ)', type: 'number', min: 0, max: 365, zone: 'general' },
         { key: 'driver_name_feature_enabled',  label: 'เปิดใช้ฟีเจอร์ระบุชื่อผู้ขับขี่', hint: 'ปิดไว้จนกว่า OIC จะบังคับใช้', type: 'toggle', zone: 'general' },
         { key: 'max_group_discount_lv1',       label: 'ส่วนลดงานกลุ่ม สูงสุด (%)',  hint: '', type: 'number', min: 0, max: 100, zone: 'lv1' },
         { key: 'max_claim_discount_lv1',       label: 'ส่วนลดประวัติดี สูงสุด (%)', hint: '', type: 'number', min: 0, max: 100, zone: 'lv1' },
@@ -5617,6 +5670,8 @@
         // clear header fields
         const clientNameEl = document.getElementById('clientName');
         if (clientNameEl) clientNameEl.value = '';
+        const agentNameEl = document.getElementById('agentName');
+        if (agentNameEl) agentNameEl.value = '';
         const issuerNameEl = document.getElementById('issuerName');
         if (issuerNameEl) issuerNameEl.value = '';
         const issuerBranchEl = document.getElementById('issuerBranch');
@@ -6714,7 +6769,7 @@
             }
 
             const headers = [
-                'เลขที่ใบเสนอราคา', 'วันที่ออก', 'ชื่อผู้เอาประกัน', 'ผู้ออกงาน', 'สาขา',
+                'เลขที่ใบเสนอราคา', 'วันที่ออก', 'ชื่อผู้เอาประกัน', 'ตัวแทน/นายหน้า', 'ผู้ออกงาน', 'สาขา',
                 'คันที่', 'ทะเบียนรถ', 'ยี่ห้อ', 'รุ่น', 'สเปก', 'ปี', 'กลุ่มรถ',
                 'ประเภท', 'การซ่อม', 'รหัสรถ', 'CC', 'น้ำหนัก(kg)', 'ที่นั่ง',
                 'ทุนประกัน', 'อุปกรณ์พิเศษ', 'มูลค่าอุปกรณ์',
@@ -6734,6 +6789,7 @@
                     isFirst ? v.quote_no      : '',
                     isFirst ? v.quote_date    : '',
                     isFirst ? v.client_name   : '',
+                    isFirst ? (v.agent_name || '-') : '',
                     isFirst ? v.issuer_name   : '',
                     isFirst ? v.issuer_branch : '',
                     v.vehicle_seq             || '',
@@ -6903,36 +6959,60 @@
             const uid = _currentUser?.id;
             if (!uid) throw new Error('ไม่พบข้อมูล user');
 
-            const [qRes, fRes, rRes] = await Promise.all([
-                sbFetch(`/rest/v1/quotation_queue?created_by=eq.${uid}&select=quote_no,client_name,created_at&order=created_at.desc&limit=200`),
-                sbFetch(`/rest/v1/quote_followup?created_by=eq.${uid}&select=id,quote_no,outcome,reason_id,reason_other&order=created_at.desc`),
+            // quote_followup เป็นหลัก (1 row/ใบ, สร้าง pending ตอนรันคิว)
+            const [fRes, rRes] = await Promise.all([
+                sbFetch(`/rest/v1/quote_followup?created_by=eq.${uid}&select=id,quote_no,client_name,outcome,reason_id,reason_other,created_at,confirmed_at,expired_at&order=created_at.desc&limit=300`),
                 sbFetch(`/rest/v1/followup_requests?requested_by=eq.${uid}&select=followup_id,status&order=created_at.desc`)
             ]);
-            if (!qRes.ok) throw new Error('โหลดใบเสนอราคาล้มเหลว');
             if (!fRes.ok) throw new Error('โหลดข้อมูล follow-up ล้มเหลว');
 
-            const quotes    = await qRes.json();
-            const followups = await fRes.json();
+            let followups   = await fRes.json();
             const requests  = rRes.ok ? await rRes.json() : [];
+
+            // ===== auto-expire: pending ที่เกิน followup_expire_days → mark expired =====
+            const expireDays = parseInt(_appSettings['followup_expire_days'] || '30', 10);
+            if (expireDays > 0) {
+                const now = Date.now();
+                const expireMs = expireDays * 24 * 60 * 60 * 1000;
+                const toExpire = followups.filter(f =>
+                    f.outcome === 'pending' &&
+                    f.created_at &&
+                    (now - new Date(f.created_at).getTime()) > expireMs
+                );
+                if (toExpire.length > 0) {
+                    const nowIso = new Date().toISOString();
+                    // อัปเดต DB (ไม่ต้องรอทีละอัน — ยิงพร้อมกัน)
+                    await Promise.all(toExpire.map(f =>
+                        sbFetch(`/rest/v1/quote_followup?id=eq.${f.id}`, {
+                            method: 'PATCH',
+                            headers: { 'Prefer': 'return=minimal' },
+                            body: JSON.stringify({ outcome: 'expired', expired_at: nowIso })
+                        }).catch(() => {})
+                    ));
+                    // อัปเดตใน memory ด้วย
+                    const expiredIds = new Set(toExpire.map(f => f.id));
+                    followups = followups.map(f =>
+                        expiredIds.has(f.id) ? { ...f, outcome: 'expired', expired_at: nowIso } : f
+                    );
+                }
+            }
 
             // map followup_id → request status ล่าสุด
             const reqMap = {};
             requests.forEach(r => { if (!reqMap[r.followup_id]) reqMap[r.followup_id] = r.status; });
 
-            // map quote_no → followup ล่าสุด (พร้อม request status)
-            const fuMap = {};
-            followups.forEach(f => {
-                if (!fuMap[f.quote_no]) fuMap[f.quote_no] = { ...f, reqStatus: reqMap[f.id] || null };
-            });
-
-            // เฉพาะ base ล่าสุดของแต่ละ quote
+            // dedup ตาม quote_no (row เดียวต่อใบอยู่แล้วจาก unique constraint) + ผูก reqStatus
             const seen = new Set();
             _fuQuoteData = [];
-            quotes.forEach(row => {
-                const base = row.quote_no.replace(/_V\d+$/, '');
-                if (seen.has(base)) return;
-                seen.add(base);
-                _fuQuoteData.push({ ...row, followup: fuMap[row.quote_no] || null });
+            followups.forEach(f => {
+                if (seen.has(f.quote_no)) return;
+                seen.add(f.quote_no);
+                _fuQuoteData.push({
+                    quote_no:    f.quote_no,
+                    client_name: f.client_name,
+                    created_at:  f.created_at,
+                    followup:    { ...f, reqStatus: reqMap[f.id] || null }
+                });
             });
 
             renderFuQuoteList(_fuQuoteData);
@@ -6947,9 +7027,9 @@
         const reasonMap = {};
         _fuReasons.forEach(r => { reasonMap[r.id] = r.reason_text; });
 
-        // แยก pending (ยังไม่บันทึก) ออกจาก done
-        const pending = items.filter(r => !r.followup);
-        const done    = items.filter(r => !!r.followup);
+        // แยก pending (ยังไม่ยืนยัน) ออกจาก done (accepted/rejected/expired)
+        const pending = items.filter(r => r.followup && r.followup.outcome === 'pending');
+        const done    = items.filter(r => r.followup && r.followup.outcome !== 'pending');
 
         // อัปเดต counter
         const pendingEl = document.getElementById('fuPendingCount');
@@ -7007,11 +7087,13 @@
         done.forEach(row => {
             const fu = row.followup;
             const isAccepted = fu.outcome === 'accepted';
-            const reasonText = !isAccepted ? (fu.reason_other || reasonMap[fu.reason_id] || '') : '';
+            const isExpired  = fu.outcome === 'expired';
+            const isRejected = fu.outcome === 'rejected';
+            const reasonText = isRejected ? (fu.reason_other || reasonMap[fu.reason_id] || '') : '';
             const dateStr = row.created_at
                 ? new Date(row.created_at).toLocaleDateString('th-TH', { day: '2-digit', month: 'short', year: '2-digit' })
                 : '';
-            const reqStatus = fu.reqStatus; // pending | resolved | null
+            const reqStatus = fu.reqStatus; // pending | resolved | rejected | null
 
             // ปุ่มขอแก้ไข
             let reqHtml = '';
@@ -7024,19 +7106,26 @@
                     class="text-[10px] text-slate-400 hover:text-rose-500 underline transition-colors">ขอแก้ไข</button>`;
             }
 
+            // สี + label ตาม outcome
+            let bgClass, labelClass, labelText;
+            if (isAccepted) {
+                bgClass = 'bg-emerald-50 border-emerald-200'; labelClass = 'text-emerald-700'; labelText = '✓ ตกลงทำประกัน';
+            } else if (isExpired) {
+                bgClass = 'bg-slate-100 border-slate-300'; labelClass = 'text-slate-500'; labelText = '⌛ หมดอายุ (ไม่ตอบสนอง)';
+            } else {
+                bgClass = 'bg-rose-50 border-rose-200'; labelClass = 'text-rose-600'; labelText = '✗ ไม่ทำประกัน';
+            }
+
             const el = document.createElement('div');
-            el.className = 'flex items-start justify-between gap-3 p-3 rounded-xl border '
-                + (isAccepted ? 'bg-emerald-50 border-emerald-200' : 'bg-rose-50 border-rose-200');
+            el.className = 'flex items-start justify-between gap-3 p-3 rounded-xl border ' + bgClass;
             el.innerHTML = `
                 <div class="min-w-0 flex-1">
                     <div class="flex items-center gap-2 flex-wrap">
-                        <span class="text-xs font-bold ${isAccepted ? 'text-emerald-700' : 'text-rose-600'}">
-                            ${isAccepted ? '✓ ตกลงทำประกัน' : '✗ ไม่ทำประกัน'}
-                        </span>
+                        <span class="text-xs font-bold ${labelClass}">${labelText}</span>
                         <span class="text-xs font-semibold text-slate-600">${row.quote_no}</span>
                         ${row.client_name ? `<span class="text-xs text-slate-400 truncate max-w-[120px]">${row.client_name}</span>` : ''}
                     </div>
-                    ${!isAccepted && reasonText ? `<p class="text-xs text-slate-500 mt-0.5">เหตุผล: ${reasonText}</p>` : ''}
+                    ${reasonText ? `<p class="text-xs text-slate-500 mt-0.5">เหตุผล: ${reasonText}</p>` : ''}
                     <p class="text-[10px] text-slate-300 mt-1">${dateStr}</p>
                 </div>
                 <div class="shrink-0 flex flex-col items-end gap-1">
@@ -7128,22 +7217,20 @@
         await fuSaveRow(quoteNo, 'rejected', parseInt(reasonId), isOther ? otherTxt : null, row, btnEl);
     }
 
-    // ===== Core save =====
+    // ===== Core save — UPDATE row เดิม (pending → accepted/rejected) =====
     async function fuSaveRow(quoteNo, outcome, reasonId, reasonOther, rowEl, btnEl) {
         if (btnEl) btnEl.disabled = true;
-        const clientName = rowEl?.dataset?.clientName || '';
         try {
+            // ผูกกับ base quote_no (row ถูกสร้างเป็น pending ตอนรันคิว)
+            const baseNo = String(quoteNo).replace(/_V\d+$/, '');
             const payload = {
-                quote_no:     quoteNo,
-                client_name:  clientName,
                 outcome:      outcome,
                 reason_id:    reasonId || null,
                 reason_other: reasonOther || null,
-                note:         null,
-                created_by:   _currentUser.id
+                confirmed_at: new Date().toISOString()
             };
-            const res = await sbFetch('/rest/v1/quote_followup', {
-                method: 'POST',
+            const res = await sbFetch(`/rest/v1/quote_followup?quote_no=eq.${encodeURIComponent(baseNo)}`, {
+                method: 'PATCH',
                 headers: { 'Prefer': 'return=minimal' },
                 body: JSON.stringify(payload)
             });
@@ -7747,9 +7834,13 @@
             });
             if (!patchReqRes.ok) throw new Error('อัปเดตคำขอล้มเหลว: ' + patchReqRes.status);
 
-            // 2. ลบ quote_followup (reset ผลจริง)
-            const delFuRes = await sbFetch(`/rest/v1/quote_followup?id=eq.${followupId}`, { method: 'DELETE' });
-            if (!delFuRes.ok) throw new Error('ลบ follow-up ล้มเหลว: ' + delFuRes.status);
+            // 2. reset quote_followup กลับเป็น pending (ไม่ลบ row — ให้ user บันทึกใหม่)
+            const delFuRes = await sbFetch(`/rest/v1/quote_followup?id=eq.${followupId}`, {
+                method: 'PATCH',
+                headers: { 'Prefer': 'return=minimal' },
+                body: JSON.stringify({ outcome: 'pending', reason_id: null, reason_other: null, confirmed_at: null, expired_at: null })
+            });
+            if (!delFuRes.ok) throw new Error('reset follow-up ล้มเหลว: ' + delFuRes.status);
 
             // 3. ส่ง notification กลับหา user
             if (targetUserId) {
@@ -7848,10 +7939,14 @@
             });
             if (!patchRes.ok) throw new Error('อัปเดตคำขอล้มเหลว: ' + patchRes.status);
 
-            // 2. ถ้า Approve → ลบ quote_followup เพื่อให้ user บันทึกใหม่
+            // 2. ถ้า Approve → reset quote_followup กลับเป็น pending (ไม่ลบ row) ให้ user บันทึกใหม่
             if (action === 'approve' && followupId) {
-                const delRes = await sbFetch(`/rest/v1/quote_followup?id=eq.${followupId}`, { method: 'DELETE' });
-                if (!delRes.ok) throw new Error('ลบ follow-up ล้มเหลว: ' + delRes.status);
+                const delRes = await sbFetch(`/rest/v1/quote_followup?id=eq.${followupId}`, {
+                    method: 'PATCH',
+                    headers: { 'Prefer': 'return=minimal' },
+                    body: JSON.stringify({ outcome: 'pending', reason_id: null, reason_other: null, confirmed_at: null, expired_at: null })
+                });
+                if (!delRes.ok) throw new Error('reset follow-up ล้มเหลว: ' + delRes.status);
             }
 
             // 3. ส่ง notification กลับหา user
