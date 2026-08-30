@@ -7669,16 +7669,17 @@
         try {
             // ดึง followup_requests ทั้งหมด
             const res = await sbFetch(
-                `/rest/v1/followup_requests?select=id,quote_no,requester_name,status,created_at,followup_id,resolved_by,resolved_at,request_note,admin_note&order=created_at.desc&limit=200`
+                `/rest/v1/followup_requests?select=id,quote_no,requester_name,status,created_at,followup_id,resolved_by,resolved_by_name,resolved_at,request_note,admin_note&order=created_at.desc&limit=200`
             );
             if (!res.ok) throw new Error('โหลดคำขอล้มเหลว: ' + res.status);
             const data = await res.json();
 
-            // ดึงชื่อ admin ที่ approve/reject
-            const resolverIds = [...new Set(data.map(r => r.resolved_by).filter(Boolean))];
+            // resolved_by_name เก็บ snapshot ชื่อ admin ไว้แล้ว — ไม่ต้อง query user_profiles
+            // (fallback query สำหรับ row เก่าที่ยังไม่มี resolved_by_name)
+            const legacyIds = [...new Set(data.filter(r => r.resolved_by && !r.resolved_by_name).map(r => r.resolved_by))];
             let resolverMap = {};
-            if (resolverIds.length > 0) {
-                const rpRes = await sbFetch(`/rest/v1/user_profiles?id=in.(${resolverIds.join(',')})&select=id,display_name`);
+            if (legacyIds.length > 0) {
+                const rpRes = await sbFetch(`/rest/v1/user_profiles?id=in.(${legacyIds.join(',')})&select=id,display_name`);
                 if (rpRes.ok) { const d = await rpRes.json(); d.forEach(u => { resolverMap[u.id] = u.display_name; }); }
             }
 
@@ -7704,7 +7705,7 @@
             }
 
             // เก็บ cache พร้อม enriched data
-            _adminReqData = data.map(r => ({ ...r, _fu: fuMap[r.followup_id] || null, _resolverName: resolverMap[r.resolved_by] || null }));
+            _adminReqData = data.map(r => ({ ...r, _fu: fuMap[r.followup_id] || null, _resolverName: r.resolved_by_name || resolverMap[r.resolved_by] || null }));
             renderFollowupRequestsTable();
             pollAdminReqCount();
         } catch (e) {
@@ -7827,9 +7828,10 @@
                 method: 'PATCH',
                 headers: { 'Prefer': 'return=minimal' },
                 body: JSON.stringify({
-                    status:      'resolved',
-                    resolved_by: adminId,
-                    resolved_at: now
+                    status:           'resolved',
+                    resolved_by:      adminId,
+                    resolved_by_name: _currentProfile?.display_name || 'Admin',
+                    resolved_at:      now
                 })
             });
             if (!patchReqRes.ok) throw new Error('อัปเดตคำขอล้มเหลว: ' + patchReqRes.status);
@@ -7931,10 +7933,11 @@
                 method: 'PATCH',
                 headers: { 'Prefer': 'return=minimal' },
                 body: JSON.stringify({
-                    status:      newStatus,
-                    resolved_by: adminId,
-                    resolved_at: now,
-                    admin_note:  adminNote || null
+                    status:           newStatus,
+                    resolved_by:      adminId,
+                    resolved_by_name: _currentProfile?.display_name || 'Admin',
+                    resolved_at:      now,
+                    admin_note:       adminNote || null
                 })
             });
             if (!patchRes.ok) throw new Error('อัปเดตคำขอล้มเหลว: ' + patchRes.status);
