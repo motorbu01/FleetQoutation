@@ -616,8 +616,8 @@
                                     <div>
                                         <label class="block text-xs font-semibold text-slate-500 uppercase tracking-wide mb-1.5">อุปกรณ์ตกแต่งเพิ่มเติม</label>
                                         <input type="text" inputmode="numeric"
-                                            class="block w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-700 shadow-sm focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 focus:outline-none transition-all accessoryAmountInput"
-                                            placeholder="0" value="0"
+                                            class="block w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-700 shadow-sm focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 focus:outline-none transition-all accessoryAmountInput spec-locked"
+                                            placeholder="0" value="0" disabled
                                             onblur="formatAccessoryAmount(this)" onfocus="unformatAccessoryAmount(this)">
                                         <p class="text-[10px] text-slate-400 mt-0.5">สูงสุด 100,000 บาท</p>
                                     </div>
@@ -1070,6 +1070,20 @@
         // ปัดเศษทศนิยมทิ้ง (floor) เป็นจำนวนเต็ม .00 — ใช้ตามขั้นตอนที่กำหนด
         function floorToInt(n) {
             return Math.floor(n);
+        }
+
+        // แปลง spec ที่เป็นตัวเลขให้มีทศนิยม 1 ตำแหน่งเสมอ เช่น "2" → "2.0", "1.9" → "1.9", "2.5 Premium" → "2.5 Premium"
+        function formatSpec(spec) {
+            if (!spec) return spec;
+            const s = String(spec).trim();
+            // ถ้า spec ขึ้นต้นด้วยตัวเลข (อาจตามด้วย text เช่น "2.5 Premium")
+            const m = s.match(/^(\d+(?:\.\d+)?)(.*)$/);
+            if (!m) return s; // ไม่ใช่ตัวเลขนำหน้า → คืนเดิม
+            const num  = parseFloat(m[1]);
+            const rest = m[2]; // ส่วนที่เหลือหลังตัวเลข เช่น " Premium"
+            // format ให้มีทศนิยม 1 ตำแหน่งเสมอ
+            const formatted = Number.isInteger(num) ? num.toFixed(1) : m[1];
+            return formatted + rest;
         }
 
         // ============ getPackageId (lookup Package ID ตาม code/cls/repair/weight) ============
@@ -1659,7 +1673,7 @@
             }
             specSelect.disabled = false;
             specSelect.innerHTML = '<option value="">เลือกสเปก (' + modelNode.specs.length + ' สเปก)</option>' +
-                modelNode.specs.map(s => `<option value="${escapeHtmlAttr(s)}">${escapeHtml(s)}</option>`).join('');
+                modelNode.specs.map(s => `<option value="${escapeHtmlAttr(s)}">${escapeHtml(formatSpec(s))}</option>`).join('');
             refreshSearchableSelect(specSelect);
         }
 
@@ -1684,7 +1698,7 @@
             // อัปเดตช่อง brandModelInput (ใช้ร่วมกับสรุปย่อ/mocked/excel เดิม) ให้ตรงกับที่เลือก
             const hiddenTextInput = card.querySelector('.brandModelInput');
             if (hiddenTextInput) {
-                hiddenTextInput.value = `${rBrand} ${rModel} ${rSpec}`.trim();
+                hiddenTextInput.value = `${rBrand} ${rModel} ${formatSpec(rSpec)}`.trim();
                 updateVehicleSummary(card);
             }
             // เก็บ brand/model/spec แยก field ไว้ใน dataset สำหรับ collectQuoteData()
@@ -2538,6 +2552,17 @@
             });
             // ถอด spec-locked-ss ออกจาก SearchableSelect wrappers
             card.querySelectorAll('.spec-locked-ss').forEach(el => el.classList.remove('spec-locked-ss'));
+
+            // re-apply lock สำหรับ accessoryAmountInput ถ้า type เป็น 2 หรือ 3
+            const typeValNow = card.querySelector('.typeSelect')?.value;
+            const accAmtEl = card.querySelector('.accessoryAmountInput');
+            if (accAmtEl && (typeValNow === '2' || typeValNow === '3')) {
+                accAmtEl.disabled = true;
+                accAmtEl.value = '0';
+                accAmtEl.classList.add('bg-slate-100', 'cursor-not-allowed', 'text-slate-400');
+                accAmtEl.classList.remove('bg-white', 'text-slate-700', 'shadow-sm',
+                    'focus:border-indigo-500', 'focus:ring-2', 'focus:ring-indigo-200');
+            }
 
             // ปลดล็อค checkbox พิมพ์เอง
             const manualToggle = card.querySelector('.carManualModeToggle');
@@ -3456,9 +3481,12 @@
                 }
                 if (!validGroupDiscount.includes(v.groupDiscount)) errors.push(p + 'ส่วนลดงานกลุ่มต้องเป็น 0 หรือ 10 (พบ: "' + v.groupDiscount + '")');
                 if (!validClaimDiscount.includes(v.claimDiscount)) errors.push(p + 'ส่วนลดประวัติดีต้องเป็น 0, 20 หรือ 30 (พบ: "' + v.claimDiscount + '")');
-                if (!validDriverFilter.includes(v.driverBehaviorFilter)) errors.push(p + 'ประเภทผู้ขับขี่ต้องเป็น "ระบุ" หรือ "ไม่ระบุ" (พบ: "' + v.driverBehaviorFilter + '")');
-                if (!validDriverLv.includes(v.driverBehaviorDiscount)) errors.push(p + 'ระดับส่วนลดพฤติกรรมต้องเป็น LV1-LV5 (พบ: "' + v.driverBehaviorDiscount + '")');
-                if (v.driverBehaviorFilter === 'ระบุ' && !v.driverBehaviorDiscount) errors.push(p + 'กรุณาระบุระดับส่วนลดพฤติกรรมเมื่อเลือกประเภทผู้ขับขี่ = ระบุ');
+                // validate driver behavior เฉพาะเมื่อ feature เปิดอยู่
+                if (_appSettings['driver_name_feature_enabled'] === 'true') {
+                    if (!validDriverFilter.includes(v.driverBehaviorFilter)) errors.push(p + 'ประเภทผู้ขับขี่ต้องเป็น "ระบุ" หรือ "ไม่ระบุ" (พบ: "' + v.driverBehaviorFilter + '")');
+                    if (!validDriverLv.includes(v.driverBehaviorDiscount)) errors.push(p + 'ระดับส่วนลดพฤติกรรมต้องเป็น LV1-LV5 (พบ: "' + v.driverBehaviorDiscount + '")');
+                    if (v.driverBehaviorFilter === 'ระบุ' && !v.driverBehaviorDiscount) errors.push(p + 'กรุณาระบุระดับส่วนลดพฤติกรรมเมื่อเลือกประเภทผู้ขับขี่ = ระบุ');
+                }
             });
             return errors;
         }
@@ -3613,11 +3641,18 @@
                 }
             }
 
-            // restore accessoryAmount (ถ้ามี)
+            // restore accessoryAmount (ถ้ามี) — type 2/3 บังคับ 0
             const accAmtInput = card.querySelector('.accessoryAmountInput');
             if (accAmtInput && v.accessoryAmount !== undefined) {
-                const amt = parseFloat(String(v.accessoryAmount).replace(/,/g, '')) || 0;
+                const typeNow = card.querySelector('.typeSelect')?.value;
+                const isLocked = (typeNow === '2' || typeNow === '3');
+                const amt = isLocked ? 0 : (parseFloat(String(v.accessoryAmount).replace(/,/g, '')) || 0);
                 accAmtInput.value = amt > 0 ? amt.toLocaleString('th-TH') : '0';
+                if (isLocked) {
+                    accAmtInput.disabled = true;
+                    accAmtInput.classList.add('bg-slate-100', 'cursor-not-allowed', 'text-slate-400');
+                    accAmtInput.classList.remove('bg-white', 'text-slate-700', 'shadow-sm');
+                }
             }
 
             showPremiumResult(card);
@@ -4541,7 +4576,7 @@
                 const bmiParts = brandModel.split(/\s+/).filter(Boolean);
                 const brand = (!isManualMode && brandSel?.value) || card.dataset.savedBrand || bmiParts[0] || '';
                 const model = (!isManualMode && modelSel?.value) || card.dataset.savedModel || bmiParts.slice(1).join(' ') || '';
-                const spec  = (!isManualMode && specSel?.value)  || card.dataset.savedSpec  || '';
+                const spec  = formatSpec((!isManualMode && specSel?.value)  || card.dataset.savedSpec  || '');
 
                 if (!brandModel && brand) {
                     brandModel = [brand, model, spec].filter(Boolean).join(' ');
@@ -4984,7 +5019,7 @@
                     const bmiParts  = bmiVal.split(/\s+/).filter(Boolean);
                     const brand     = (!isManual && brandSel?.value) || card.dataset.savedBrand || bmiParts[0] || '';
                     const model     = (!isManual && modelSel?.value) || card.dataset.savedModel || bmiParts.slice(1).join(' ') || '';
-                    const spec      = (!isManual && specSel?.value)  || card.dataset.savedSpec  || '';
+                    const spec      = formatSpec((!isManual && specSel?.value)  || card.dataset.savedSpec  || '');
 
                     rows.push({
                         quote_no:                quoteNo,
@@ -5099,7 +5134,7 @@
             <!-- Tabs -->
             <div class="flex flex-wrap gap-2 px-5 md:px-6 py-3 border-b border-slate-200 bg-slate-50 shrink-0">
                 <button type="button" onclick="switchGuideTab('tab1')" data-guide-tab="tab1" class="guide-tab-btn inline-flex items-center gap-1.5 py-2 px-3.5 rounded-lg text-xs md:text-sm font-medium border transition-all">
-                    รหัสรถที่สาขาพิจารณาได้เอง
+                    รหัสที่เสนอราคาได้
                 </button>
                 <button type="button" onclick="switchGuideTab('tab2')" data-guide-tab="tab2" class="guide-tab-btn inline-flex items-center gap-1.5 py-2 px-3.5 rounded-lg text-xs md:text-sm font-medium border transition-all">
                     รหัสรถที่ต้องส่ง UW Pool พิจารณา
@@ -6705,7 +6740,7 @@
                     v.plate                   || '',
                     v.brand                   || '',
                     v.model                   || '',
-                    v.spec                    || '',
+                    formatSpec(v.spec         || ''),
                     v.car_year                || '',
                     v.car_group               || '',
                     v.type                    || '',
