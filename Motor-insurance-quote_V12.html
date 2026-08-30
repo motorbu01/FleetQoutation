@@ -5545,13 +5545,15 @@
                 method: 'POST',
                 headers: { 'Prefer': 'return=minimal' },
                 body: JSON.stringify({
-                    user_id:      _currentUser.id,
-                    email:        _currentUser.email,
-                    display_name: _currentProfile.display_name,
-                    role:         _currentProfile.role,
-                    user_agent:   navigator.userAgent,
-                    action:       'login',
-                    session_id:   _currentSessionId
+                    user_id:       _currentUser.id,
+                    email:         _currentUser.email,
+                    display_name:  _currentProfile.display_name,
+                    role:          _currentProfile.role,
+                    issuer_name:   _currentProfile.issuer_name   || null,
+                    issuer_branch: _currentProfile.issuer_branch || null,
+                    user_agent:    navigator.userAgent,
+                    action:        'login',
+                    session_id:    _currentSessionId
                 })
             }).catch(() => {}); // เงียบๆ ถ้า table ยังไม่ถูกสร้าง
 
@@ -5614,6 +5616,8 @@
                 email:          _currentUser.email,
                 display_name:   _currentProfile?.display_name || null,
                 role:           _currentProfile?.role         || null,
+                issuer_name:    _currentProfile?.issuer_name   || null,
+                issuer_branch:  _currentProfile?.issuer_branch || null,
                 user_agent:     navigator.userAgent,
                 action:         action,
                 session_id:     _currentSessionId,
@@ -6065,11 +6069,11 @@
         const today     = new Date().toLocaleDateString('sv-SE', { timeZone: 'Asia/Bangkok' });
         const _now      = new Date(new Date().toLocaleString('en-US', { timeZone: 'Asia/Bangkok' }));
         const firstDay  = new Date(_now.getFullYear(), _now.getMonth(), 1).toLocaleDateString('sv-SE', { timeZone: 'Asia/Bangkok' });
-        ['reportQuoteFrom', 'reportLoginFrom'].forEach(id => {
+        ['reportQuoteFrom', 'reportLoginFrom', 'reportFollowupFrom'].forEach(id => {
             const el = document.getElementById(id);
             if (el && !el.value) el.value = firstDay;
         });
-        ['reportQuoteTo', 'reportLoginTo'].forEach(id => {
+        ['reportQuoteTo', 'reportLoginTo', 'reportFollowupTo'].forEach(id => {
             const el = document.getElementById(id);
             if (el && !el.value) el.value = today;
         });
@@ -6864,41 +6868,151 @@
         msgEl.className = 'text-xs text-amber-600'; msgEl.textContent = 'กำลังดึงข้อมูล...';
 
         try {
+            // ดึงทุก record ในช่วง (ทั้ง login และ logout) — จับคู่ด้วย session_id
             const url = `/rest/v1/login_log?logged_in_at=gte.${fromVal}T00:00:00&logged_in_at=lte.${toVal}T23:59:59`
-                      + `&select=email,display_name,role,issuer_name,issuer_branch,action,logged_in_at,session_id,user_agent`
+                      + `&select=email,display_name,role,issuer_name,issuer_branch,action,logged_in_at,logged_out_at,session_id`
                       + `&order=logged_in_at.asc`;
             const res  = await sbFetch(url);
             const rows = await res.json();
-            console.log('[LoginReport] status:', res.status, 'rows:', Array.isArray(rows) ? rows.length : rows);
             if (!res.ok) throw new Error(rows.message || JSON.stringify(rows));
             if (!rows || rows.length === 0) {
                 msgEl.className = 'text-xs text-slate-500'; msgEl.textContent = 'ไม่พบข้อมูลในช่วงที่เลือก'; return;
             }
 
-            const headers = ['อีเมล', 'ชื่อแสดง', 'Role', 'ผู้ออกงาน', 'สาขา', 'Action', 'วันที่', 'เวลา', 'Session ID', 'User Agent'];
-            const data    = [headers];
+            // จับคู่ login/logout ด้วย session_id → 1 row/session
+            const sessions = {};
             rows.forEach(r => {
-                const dateStr = toThaiDate(r.logged_in_at);
-                const timeStr = toThaiTime(r.logged_in_at);
+                const sid = r.session_id || ('_no_sid_' + Math.random());
+                if (!sessions[sid]) {
+                    sessions[sid] = {
+                        email: r.email, display_name: r.display_name, role: r.role,
+                        issuer_name: r.issuer_name, issuer_branch: r.issuer_branch,
+                        session_id: r.session_id,
+                        login_at: null, logout_at: null
+                    };
+                }
+                const s = sessions[sid];
+                // เก็บ meta ล่าสุดที่ไม่ว่าง
+                s.email         = s.email         || r.email;
+                s.display_name  = s.display_name  || r.display_name;
+                s.role          = s.role          || r.role;
+                s.issuer_name   = s.issuer_name   || r.issuer_name;
+                s.issuer_branch = s.issuer_branch || r.issuer_branch;
+                // login row → เก็บ login time; logout/expired row → เก็บ logout time
+                if (r.action === 'login') {
+                    s.login_at = r.logged_in_at;
+                } else {
+                    // logout / session_expired
+                    s.logout_at = r.logged_out_at || r.logged_in_at;
+                }
+            });
+
+            // เรียงตาม login ล่าสุดขึ้นก่อน
+            const sessionList = Object.values(sessions).sort((a, b) => {
+                const ta = a.login_at ? new Date(a.login_at).getTime() : 0;
+                const tb = b.login_at ? new Date(b.login_at).getTime() : 0;
+                return tb - ta;
+            });
+
+            const headers = ['อีเมล', 'ชื่อแสดง', 'Role', 'ผู้ออกงาน', 'สาขา',
+                'วันที่ Login', 'เวลา Login', 'วันที่ Logout', 'เวลา Logout'];
+            const data = [headers];
+            sessionList.forEach(s => {
                 data.push([
-                    r.email           || '',
-                    r.display_name    || '',
-                    r.role            || '',
-                    r.issuer_name     || '',
-                    r.issuer_branch   || '',
-                    r.action          || '',
-                    dateStr,
-                    timeStr,
-                    r.session_id      || '',
-                    r.user_agent      || ''
+                    s.email          || '',
+                    s.display_name   || '',
+                    s.role           || '',
+                    s.issuer_name    || '',
+                    s.issuer_branch  || '',
+                    s.login_at  ? toThaiDate(s.login_at)  : '-',
+                    s.login_at  ? toThaiTime(s.login_at)  : '-',
+                    s.logout_at ? toThaiDate(s.logout_at) : '-',
+                    s.logout_at ? toThaiTime(s.logout_at) : '-'
                 ]);
             });
 
             const ws = XLSX.utils.aoa_to_sheet(data);
-            ws['!cols'] = [{ wch: 30 }, { wch: 20 }, { wch: 8 }, { wch: 20 }, { wch: 20 }, { wch: 16 }, { wch: 14 }, { wch: 12 }, { wch: 36 }, { wch: 50 }];
+            ws['!cols'] = [{ wch: 30 }, { wch: 20 }, { wch: 8 }, { wch: 20 }, { wch: 20 }, { wch: 14 }, { wch: 12 }, { wch: 14 }, { wch: 12 }];
             const wb = XLSX.utils.book_new();
             XLSX.utils.book_append_sheet(wb, ws, 'Login Log');
             XLSX.writeFile(wb, `LoginReport_${fromVal}_to_${toVal}.xlsx`);
+
+            msgEl.className = 'text-xs text-emerald-600';
+            msgEl.textContent = `Export สำเร็จ ${sessionList.length} session`;
+        } catch (e) {
+            msgEl.className = 'text-xs text-rose-500'; msgEl.textContent = 'เกิดข้อผิดพลาด: ' + e.message;
+        }
+    }
+
+    // ===== Export รายงาน Follow-up (1 ใบเสนอราคา = 1 row) =====
+    async function exportFollowupReport() {
+        const fromVal = document.getElementById('reportFollowupFrom')?.value;
+        const toVal   = document.getElementById('reportFollowupTo')?.value;
+        const msgEl   = document.getElementById('reportFollowupMsg');
+
+        if (!fromVal || !toVal) {
+            msgEl.className = 'text-xs text-rose-500'; msgEl.textContent = 'กรุณาเลือกช่วงวันที่'; return;
+        }
+        if (fromVal > toVal) {
+            msgEl.className = 'text-xs text-rose-500'; msgEl.textContent = 'วันเริ่มต้นต้องไม่มากกว่าวันสิ้นสุด'; return;
+        }
+        if (typeof XLSX === 'undefined') {
+            msgEl.className = 'text-xs text-rose-500'; msgEl.textContent = 'ไม่พบ library XLSX'; return;
+        }
+
+        msgEl.className = 'text-xs text-amber-600'; msgEl.textContent = 'กำลังดึงข้อมูล...';
+
+        try {
+            const url = `/rest/v1/quote_followup?created_at=gte.${fromVal}T00:00:00&created_at=lte.${toVal}T23:59:59`
+                      + `&select=quote_no,client_name,agent_name,username,issuer_branch,outcome,reason_id,reason_other,created_at,confirmed_at,expired_at`
+                      + `&order=created_at.asc`;
+            const res  = await sbFetch(url);
+            const rows = await res.json();
+            if (!res.ok) throw new Error(rows.message || JSON.stringify(rows));
+            if (!rows || rows.length === 0) {
+                msgEl.className = 'text-xs text-slate-500'; msgEl.textContent = 'ไม่พบข้อมูลในช่วงที่เลือก'; return;
+            }
+
+            // ดึง reasons เพื่อแปลง reason_id → text
+            let reasonMap = {};
+            try {
+                const rRes = await sbFetch('/rest/v1/followup_reasons?select=id,reason_text');
+                if (rRes.ok) { const rd = await rRes.json(); rd.forEach(r => { reasonMap[r.id] = r.reason_text; }); }
+            } catch (_) {}
+
+            const statusLabel = {
+                pending:  'รอติดตาม',
+                accepted: 'ทำประกัน',
+                rejected: 'ไม่ทำประกัน',
+                expired:  'หมดอายุ (ไม่ตอบสนอง)'
+            };
+
+            const headers = ['เลขที่ใบเสนอราคา', 'ชื่อลูกค้า', 'ตัวแทน/นายหน้า', 'ผู้ออกงาน', 'สาขา',
+                'สถานะ', 'เหตุผลที่ไม่ทำ', 'วันที่ออกใบ (pending)', 'วันที่ยืนยัน', 'วันที่หมดอายุ'];
+            const data = [headers];
+            rows.forEach(r => {
+                const reasonTxt = r.outcome === 'rejected'
+                    ? (r.reason_other || reasonMap[r.reason_id] || '')
+                    : '';
+                data.push([
+                    r.quote_no        || '',
+                    r.client_name     || '',
+                    r.agent_name      || '',
+                    r.username        || '',
+                    r.issuer_branch   || '',
+                    statusLabel[r.outcome] || r.outcome || '',
+                    reasonTxt,
+                    r.created_at   ? toThaiDateTime(r.created_at)   : '',
+                    r.confirmed_at ? toThaiDateTime(r.confirmed_at) : '',
+                    r.expired_at   ? toThaiDateTime(r.expired_at)   : ''
+                ]);
+            });
+
+            const ws = XLSX.utils.aoa_to_sheet(data);
+            ws['!cols'] = [{ wch: 18 }, { wch: 28 }, { wch: 20 }, { wch: 20 }, { wch: 18 }, { wch: 18 }, { wch: 28 }, { wch: 20 }, { wch: 20 }, { wch: 20 }];
+            const wb = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(wb, ws, 'Follow-up Report');
+            XLSX.writeFile(wb, `FollowupReport_${fromVal}_to_${toVal}.xlsx`);
 
             msgEl.className = 'text-xs text-emerald-600';
             msgEl.textContent = `Export สำเร็จ ${rows.length} รายการ`;
@@ -8292,57 +8406,73 @@
                 <div id="adminTabReports" class="hidden space-y-6">
 
                     <!-- Report 1: Quotation Vehicles -->
-                    <div class="bg-slate-50 rounded-xl p-5 border border-slate-200">
-                        <div class="flex items-center gap-2 mb-4">
-                            <svg class="w-4 h-4 text-emerald-600 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
-                            <h3 class="text-sm font-semibold text-slate-700">รายงานใบเสนอราคา (Quotation Vehicles)</h3>
-                        </div>
-                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-4">
-                            <div>
-                                <label class="block text-xs font-semibold text-slate-600 uppercase tracking-wide mb-1.5">ตั้งแต่วันที่</label>
-                                <input type="date" id="reportQuoteFrom"
-                                    class="block w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 focus:outline-none">
+                    <div class="bg-slate-50 rounded-xl px-4 py-3 border border-slate-200">
+                        <div class="flex items-center gap-3 flex-wrap">
+                            <div class="flex items-center gap-2 mr-auto">
+                                <svg class="w-4 h-4 text-emerald-600 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+                                <h3 class="text-sm font-semibold text-slate-700 shrink-0">รายงานใบเสนอราคา</h3>
+                                <span id="reportQuoteMsg" class="text-xs whitespace-nowrap"></span>
                             </div>
-                            <div>
-                                <label class="block text-xs font-semibold text-slate-600 uppercase tracking-wide mb-1.5">ถึงวันที่</label>
-                                <input type="date" id="reportQuoteTo"
-                                    class="block w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 focus:outline-none">
+                            <div class="flex items-center gap-1.5">
+                                <span class="text-xs font-semibold text-slate-500">ตั้งแต่</span>
+                                <input type="date" id="reportQuoteFrom" class="rounded-lg border border-slate-300 bg-white px-2.5 py-1.5 text-sm focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 focus:outline-none">
                             </div>
-                        </div>
-                        <div class="flex items-center justify-between">
-                            <p id="reportQuoteMsg" class="text-xs text-slate-500 min-h-[1rem]"></p>
+                            <div class="flex items-center gap-1.5">
+                                <span class="text-xs font-semibold text-slate-500">ถึง</span>
+                                <input type="date" id="reportQuoteTo" class="rounded-lg border border-slate-300 bg-white px-2.5 py-1.5 text-sm focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 focus:outline-none">
+                            </div>
                             <button onclick="exportQuotationReport()"
-                                class="inline-flex items-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-semibold px-5 py-2.5 rounded-xl transition-all">
+                                class="inline-flex items-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-semibold px-4 py-2 rounded-lg transition-all shrink-0">
                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
-                                Export Excel
+                                Export
                             </button>
                         </div>
                     </div>
 
                     <!-- Report 2: Login Log -->
-                    <div class="bg-slate-50 rounded-xl p-5 border border-slate-200">
-                        <div class="flex items-center gap-2 mb-4">
-                            <svg class="w-4 h-4 text-indigo-600 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1"/></svg>
-                            <h3 class="text-sm font-semibold text-slate-700">รายงาน Login Log</h3>
-                        </div>
-                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-4">
-                            <div>
-                                <label class="block text-xs font-semibold text-slate-600 uppercase tracking-wide mb-1.5">ตั้งแต่วันที่</label>
-                                <input type="date" id="reportLoginFrom"
-                                    class="block w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 focus:outline-none">
+                    <div class="bg-slate-50 rounded-xl px-4 py-3 border border-slate-200">
+                        <div class="flex items-center gap-3 flex-wrap">
+                            <div class="flex items-center gap-2 mr-auto">
+                                <svg class="w-4 h-4 text-indigo-600 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1"/></svg>
+                                <h3 class="text-sm font-semibold text-slate-700 shrink-0">รายงาน Login Log</h3>
+                                <span id="reportLoginMsg" class="text-xs whitespace-nowrap"></span>
                             </div>
-                            <div>
-                                <label class="block text-xs font-semibold text-slate-600 uppercase tracking-wide mb-1.5">ถึงวันที่</label>
-                                <input type="date" id="reportLoginTo"
-                                    class="block w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 focus:outline-none">
+                            <div class="flex items-center gap-1.5">
+                                <span class="text-xs font-semibold text-slate-500">ตั้งแต่</span>
+                                <input type="date" id="reportLoginFrom" class="rounded-lg border border-slate-300 bg-white px-2.5 py-1.5 text-sm focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 focus:outline-none">
                             </div>
-                        </div>
-                        <div class="flex items-center justify-between">
-                            <p id="reportLoginMsg" class="text-xs text-slate-500 min-h-[1rem]"></p>
+                            <div class="flex items-center gap-1.5">
+                                <span class="text-xs font-semibold text-slate-500">ถึง</span>
+                                <input type="date" id="reportLoginTo" class="rounded-lg border border-slate-300 bg-white px-2.5 py-1.5 text-sm focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 focus:outline-none">
+                            </div>
                             <button onclick="exportLoginReport()"
-                                class="inline-flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold px-5 py-2.5 rounded-xl transition-all">
+                                class="inline-flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold px-4 py-2 rounded-lg transition-all shrink-0">
                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
-                                Export Excel
+                                Export
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Report 3: Follow-up -->
+                    <div class="bg-slate-50 rounded-xl px-4 py-3 border border-slate-200">
+                        <div class="flex items-center gap-3 flex-wrap">
+                            <div class="flex items-center gap-2 mr-auto">
+                                <svg class="w-4 h-4 text-sky-600 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"/></svg>
+                                <h3 class="text-sm font-semibold text-slate-700 shrink-0">รายงาน Follow-up</h3>
+                                <span id="reportFollowupMsg" class="text-xs whitespace-nowrap"></span>
+                            </div>
+                            <div class="flex items-center gap-1.5">
+                                <span class="text-xs font-semibold text-slate-500">ตั้งแต่</span>
+                                <input type="date" id="reportFollowupFrom" class="rounded-lg border border-slate-300 bg-white px-2.5 py-1.5 text-sm focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 focus:outline-none">
+                            </div>
+                            <div class="flex items-center gap-1.5">
+                                <span class="text-xs font-semibold text-slate-500">ถึง</span>
+                                <input type="date" id="reportFollowupTo" class="rounded-lg border border-slate-300 bg-white px-2.5 py-1.5 text-sm focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 focus:outline-none">
+                            </div>
+                            <button onclick="exportFollowupReport()"
+                                class="inline-flex items-center gap-2 bg-sky-600 hover:bg-sky-700 text-white text-sm font-semibold px-4 py-2 rounded-lg transition-all shrink-0">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+                                Export
                             </button>
                         </div>
                     </div>
