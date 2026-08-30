@@ -11,6 +11,7 @@ car_master.json.bak
 # โฟลเดอร์ไฟล์ที่ไม่เกี่ยวข้อง
 ไม่เกี่ยว/
 สำรอง/
+convert carmaster to json/
 
 # Kiro IDE
 .kiro/
