@@ -5,6 +5,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ระบบเสนอราคาเบี้ยประกันภัยรถยนต์กลุ่ม</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = { darkMode: 'class' }
+    </script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
@@ -86,6 +89,8 @@
         html.dark .bg-sky-50\/60 { background-color: rgba(14,165,233,0.12) !important; }
         html.dark .bg-sky-100 { background-color: rgba(14,165,233,0.22) !important; }
         html.dark .bg-rose-50 { background-color: rgba(244,63,94,0.15) !important; }
+        html.dark .bg-rose-100 { background-color: rgba(244,63,94,0.22) !important; }
+        html.dark .bg-rose-500\/20 { background-color: rgba(244,63,94,0.2) !important; }
 
         /* Borders */
         html.dark .border-slate-100 { border-color: #334155 !important; }
@@ -122,6 +127,8 @@
         html.dark .text-amber-700 { color: #fde68a !important; }
         html.dark .text-amber-800 { color: #fef3c7 !important; }
         html.dark .text-rose-500 { color: #fb7185 !important; }
+        html.dark .text-rose-600 { color: #fb7185 !important; }
+        html.dark .text-rose-700 { color: #fda4af !important; }
         html.dark .text-sky-700 { color: #7dd3fc !important; }
 
         /* Form controls & shadows */
@@ -252,9 +259,10 @@
             color: #dc2626; font-size: 0.82rem; margin-top: 0.5rem;
             min-height: 1.2rem; text-align: center;
         }
+
     </style>
 </head>
-<body class="p-4 md:p-8">
+<body class="p-4 md:p-8 pt-[4.5rem] md:pt-20">
 
     <!-- ===== AUTH OVERLAY ===== -->
     <div id="authOverlay">
@@ -294,7 +302,7 @@
                 <div class="absolute inset-0 flex items-center justify-center pointer-events-none">
                     <div class="text-center">
                         <h1 class="text-2xl md:text-3xl font-bold text-slate-800 tracking-tight">ใบเสนอราคาประกันภัยรถยนต์กลุ่ม</h1>
-                        <p class="text-slate-400 mt-2 text-sm uppercase tracking-widest">Group Motor Insurance Quotation</p>
+                        <p class="text-slate-400 mt-2 text-sm uppercase tracking-widest">Fleet Motor Insurance Quotation</p>
                     </div>
                 </div>
             </div>
@@ -385,19 +393,7 @@
                     </div>
                 </div>
 
-                <!-- แถบสรุป + ควบคุมรายการรถ (sticky) สำหรับเลื่อนดูง่ายเมื่อมีหลายคัน -->
-                <div id="vehicleToolbar" class="sticky top-2 z-20 mb-5 bg-white/90 backdrop-blur border border-slate-200 rounded-2xl shadow-[0_2px_15px_-3px_rgba(0,0,0,0.06)] p-3">
-                    <div class="flex items-center justify-between gap-3 mb-2 px-1">
-                        <div class="flex items-center gap-2 text-sm font-semibold text-slate-700">
-                            รายการรถ <span id="vehicleCountBadge" class="text-indigo-600">1 คัน</span>
-                        </div>
-                        <div class="flex items-center gap-2 shrink-0">
-                            <button type="button" onclick="setAllVehicleCards(false)" class="text-xs font-medium text-slate-500 hover:text-slate-800 bg-slate-100 hover:bg-slate-200 px-2.5 py-1.5 rounded-lg transition-all">ขยายทั้งหมด</button>
-                            <button type="button" onclick="setAllVehicleCards(true)" class="text-xs font-medium text-slate-500 hover:text-slate-800 bg-slate-100 hover:bg-slate-200 px-2.5 py-1.5 rounded-lg transition-all">ย่อทั้งหมด</button>
-                        </div>
-                    </div>
-                    <div id="vehicleNavList" class="flex items-center gap-2 overflow-x-auto pb-1"></div>
-                </div>
+                <!-- (vehicleToolbar ย้ายไป navbar ด้านบนแล้ว — #navbarToolbar) -->
 
                 <!-- ส่วนที่ 2: ข้อมูลรถคันเอาประกัน -->
                 <div id="vehicleContainer">
@@ -774,15 +770,15 @@
                                     </p>
                                     <div class="grid grid-cols-2 md:grid-cols-3 gap-3">
                                         <div>
-                                            <label class="block text-xs font-semibold text-slate-500 uppercase tracking-wide mb-1.5">TPBI / Person</label>
+                                            <label class="block text-xs font-semibold text-slate-500 uppercase tracking-wide mb-1.5" title="ความรับผิดต่อชีวิต ร่างกาย หรืออนามัยของบุคคลภายนอก (ต่อคน)">ความรับผิดต่อชีวิต ร่างกาย หรืออนามัยของบุคคลภายนอก (ต่อคน)</label>
                                             <input type="text" class="block w-full rounded-xl border border-slate-200 bg-slate-100 px-3 py-2.5 text-sm text-slate-500 cursor-not-allowed tpbiPersonInput" value="-" readonly>
                                         </div>
                                         <div>
-                                            <label class="block text-xs font-semibold text-slate-500 uppercase tracking-wide mb-1.5">TPBI / ACC</label>
+                                            <label class="block text-xs font-semibold text-slate-500 uppercase tracking-wide mb-1.5" title="ความรับผิดต่อชีวิต ร่างกาย หรืออนามัยของบุคคลภายนอก (ต่อครั้ง)">ความรับผิดต่อชีวิต ร่างกาย หรืออนามัยของบุคคลภายนอก (ต่อครั้ง)</label>
                                             <input type="text" class="block w-full rounded-xl border border-slate-200 bg-slate-100 px-3 py-2.5 text-sm text-slate-500 cursor-not-allowed tpbiAccInput" value="-" readonly>
                                         </div>
                                         <div>
-                                            <label class="block text-xs font-semibold text-slate-500 uppercase tracking-wide mb-1.5">TPPD / ACC</label>
+                                            <label class="block text-xs font-semibold text-slate-500 uppercase tracking-wide mb-1.5" title="ความรับผิดต่อทรัพย์สินของบุคคลภายนอก (ต่อครั้ง)">ความรับผิดต่อทรัพย์สินของบุคคลภายนอก (ต่อครั้ง)</label>
                                             <input type="text" class="block w-full rounded-xl border border-slate-200 bg-slate-100 px-3 py-2.5 text-sm text-slate-500 cursor-not-allowed tppdAccInput" value="-" readonly>
                                         </div>
                                     </div>
@@ -795,19 +791,19 @@
                                     </p>
                                     <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
                                         <div>
-                                            <label class="block text-xs font-semibold text-slate-500 uppercase tracking-wide mb-1.5">PA Driver</label>
+                                            <label class="block text-xs font-semibold text-slate-500 uppercase tracking-wide mb-1.5" title="อุบัติเหตุส่วนบุคคล (ผู้ขับขี่)">อุบัติเหตุส่วนบุคคล (ผู้ขับขี่)</label>
                                             <input type="text" class="block w-full rounded-xl border border-slate-200 bg-slate-100 px-3 py-2.5 text-sm text-slate-500 cursor-not-allowed paDriverInput" value="-" readonly>
                                         </div>
                                         <div>
-                                            <label class="block text-xs font-semibold text-slate-500 uppercase tracking-wide mb-1.5">PA Passenger</label>
+                                            <label class="block text-xs font-semibold text-slate-500 uppercase tracking-wide mb-1.5" title="อุบัติเหตุส่วนบุคคล (ผู้โดยสาร)">อุบัติเหตุส่วนบุคคล (ผู้โดยสาร)</label>
                                             <input type="text" class="block w-full rounded-xl border border-slate-200 bg-slate-100 px-3 py-2.5 text-sm text-slate-500 cursor-not-allowed paPassengerInput" value="-" readonly>
                                         </div>
                                         <div>
-                                            <label class="block text-xs font-semibold text-slate-500 uppercase tracking-wide mb-1.5">Medical</label>
+                                            <label class="block text-xs font-semibold text-slate-500 uppercase tracking-wide mb-1.5" title="ค่ารักษาพยาบาล">ค่ารักษาพยาบาล</label>
                                             <input type="text" class="block w-full rounded-xl border border-slate-200 bg-slate-100 px-3 py-2.5 text-sm text-slate-500 cursor-not-allowed medicalInput" value="-" readonly>
                                         </div>
                                         <div>
-                                            <label class="block text-xs font-semibold text-slate-500 uppercase tracking-wide mb-1.5">Bailbond</label>
+                                            <label class="block text-xs font-semibold text-slate-500 uppercase tracking-wide mb-1.5" title="ประกันตัวผู้ขับขี่">ประกันตัวผู้ขับขี่</label>
                                             <input type="text" class="block w-full rounded-xl border border-slate-200 bg-slate-100 px-3 py-2.5 text-sm text-slate-500 cursor-not-allowed bailbondInput" value="-" readonly>
                                         </div>
                                     </div>
@@ -2801,13 +2797,14 @@
                     'bg-slate-100', 'cursor-not-allowed', 'text-slate-400');
                 discountSelect.classList.add('spec-locked');
             } else {
-                discountSelect.innerHTML = `
-                    <option value="LV1">LV. 1</option>
-                    <option value="LV2">LV. 2</option>
-                    <option value="LV3">LV. 3</option>
-                    <option value="LV4">LV. 4</option>
-                    <option value="LV5">LV. 5</option>
-                `;
+                // value คงเป็น LV1-LVn (ไม่กระทบ rate/validation/Excel) — แสดง % ควบคู่ให้ user เห็น
+                // จำกัดตัวเลือกตาม setting max_driver_behavior_lv (default 1) — admin ล็อกเพดานได้
+                const maxLv = parseInt(_appSettings['max_driver_behavior_lv'] || '1', 10);
+                let lvOptions = '';
+                for (let lv = 1; lv <= maxLv; lv++) {
+                    lvOptions += `<option value="LV${lv}">LV. ${lv} (${(lv - 1) * 10}%)</option>`;
+                }
+                discountSelect.innerHTML = lvOptions;
                 discountSelect.disabled = false;
                 discountSelect.classList.remove('spec-locked', 'bg-slate-100', 'cursor-not-allowed', 'text-slate-400');
                 discountSelect.classList.add('bg-amber-50/50', 'text-amber-700', 'border-amber-200');
@@ -2992,28 +2989,91 @@
             renderVehicleNav();
         }
 
-        // สร้างแถบรายการรถแบบเลื่อนดูได้ ด้านบน สำหรับกระโดดไปยังคันที่ต้องการโดยไม่ต้องเลื่อนหน้ายาว ๆ
-        function renderVehicleNav() {
-            const nav = document.getElementById('vehicleNavList');
-            const badge = document.getElementById('vehicleCountBadge');
-            const cards = document.querySelectorAll('.vehicle-card');
-            badge.innerText = `${cards.length} คัน`;
+        // แสดง/ซ่อน toolbar รายการรถใน navbar — แสดงเฉพาะเมื่อ login แล้ว + อยู่หน้าฟอร์ม
+        function updateNavbarToolbar() {
+            const bar = document.getElementById('navbarToolbar');
+            if (!bar) return;
+            const loggedIn = !!_currentUser;
+            const formVisible = !document.getElementById('formView')?.classList.contains('hidden');
+            const show = loggedIn && formVisible;
+            bar.classList.toggle('hidden', !show);
+            bar.classList.toggle('flex', show);
+        }
 
-            nav.innerHTML = '';
+        // สร้างแถบรายการรถแบบเลื่อนดูได้ ด้านบน สำหรับกระโดดไปยังคันที่ต้องการโดยไม่ต้องเลื่อนหน้ายาว ๆ
+        // คำนวณเบี้ยรวมต่อคัน (สมัครใจ+พ.ร.บ. รวมภาษีอากร) — ใช้ค่าที่คำนวณไว้แล้วเท่านั้น (ไม่คำนวณสด)
+        function getCardGrandTotal(card) {
+            const calculated = card.dataset.premiumCalculated === '1';
+            if (!calculated) return 0;
+            const volNum = parseFloat(String(card.querySelector('.premiumInput')?.value || '0').replace(/,/g, '')) || 0;
+            const prbSelect = card.querySelector('.prbSelect');
+            const prbNum = (prbSelect?.value === 'รวม')
+                ? (parseFloat(String(card.querySelector('.prbPriceInput')?.value || '0').replace(/,/g, '')) || 0) : 0;
+            return volNum + prbNum;
+        }
+
+        function renderVehicleNav() {
+            const badge = document.getElementById('vehicleCountBadge');
+            const list  = document.getElementById('vehicleSummaryList');
+            const grand = document.getElementById('vehicleSummaryGrandTotal');
+            const cards = document.querySelectorAll('.vehicle-card');
+            if (badge) badge.innerText = `${cards.length} คัน`;
+            if (!list) return;
+
+            list.innerHTML = '';
+            let grandTotal = 0;
             cards.forEach((card, index) => {
-                const plate = card.querySelector('.plateInput')?.value.trim();
+                const plate    = card.querySelector('.plateInput')?.value.trim();
                 const isFilled = !!plate;
-                const btn = document.createElement('button');
-                btn.type = 'button';
-                btn.className = `shrink-0 flex items-center gap-1.5 text-xs font-medium px-3 py-1.5 rounded-lg border transition-all ${isFilled ? 'bg-indigo-50 border-indigo-200 text-indigo-700 hover:bg-indigo-100' : 'bg-slate-50 border-slate-200 text-slate-400 hover:bg-slate-100'}`;
-                btn.innerHTML = `<span class="w-1.5 h-1.5 rounded-full ${isFilled ? 'bg-indigo-500' : 'bg-slate-300'}"></span> คันที่ ${index + 1}${plate ? ' · ' + plate : ''}`;
-                btn.onclick = function() {
+                const total    = getCardGrandTotal(card);
+                grandTotal += total;
+
+                const row = document.createElement('button');
+                row.type = 'button';
+                row.className = 'w-full flex items-center gap-3 px-4 py-2.5 text-left hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors';
+                row.innerHTML = `
+                    <span class="w-1.5 h-1.5 rounded-full shrink-0 ${isFilled ? 'bg-indigo-500' : 'bg-slate-300 dark:bg-slate-600'}"></span>
+                    <div class="min-w-0 flex-1">
+                        <p class="text-xs font-semibold text-slate-700 dark:text-slate-200 truncate">คันที่ ${index + 1}${plate ? ' · ' + plate : ' · (ยังไม่ระบุทะเบียน)'}</p>
+                        <p class="text-[11px] text-slate-400 dark:text-slate-500">${formatCurrency(total)} บาท</p>
+                    </div>
+                    <svg class="w-4 h-4 text-slate-300 dark:text-slate-600 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>`;
+                row.onclick = function() {
+                    closeVehicleSummaryDropdown();
                     toggleVehicleCard(card, false);
                     card.scrollIntoView({ behavior: 'smooth', block: 'start' });
                 };
-                nav.appendChild(btn);
+                list.appendChild(row);
             });
+            if (grand) grand.textContent = `${formatCurrency(grandTotal)} บาท`;
         }
+
+        // เปิด/ปิด dropdown สรุปรายการรถ
+        function toggleVehicleSummaryDropdown(event) {
+            event.stopPropagation();
+            const dd = document.getElementById('vehicleSummaryDropdown');
+            const chevron = document.getElementById('vehicleSummaryChevron');
+            if (!dd) return;
+            const willOpen = dd.classList.contains('hidden');
+            if (willOpen) {
+                renderVehicleNav();  // refresh ข้อมูลล่าสุดก่อนเปิด
+                dd.classList.remove('hidden');
+                chevron?.classList.add('rotate-180');
+            } else {
+                closeVehicleSummaryDropdown();
+            }
+        }
+        function closeVehicleSummaryDropdown() {
+            document.getElementById('vehicleSummaryDropdown')?.classList.add('hidden');
+            document.getElementById('vehicleSummaryChevron')?.classList.remove('rotate-180');
+        }
+        // คลิกนอก dropdown → ปิด
+        document.addEventListener('click', function(e) {
+            const dd = document.getElementById('vehicleSummaryDropdown');
+            const btn = document.getElementById('vehicleSummaryBtn');
+            if (!dd || dd.classList.contains('hidden')) return;
+            if (!dd.contains(e.target) && !btn.contains(e.target)) closeVehicleSummaryDropdown();
+        });
 
         function removeVehicleCard(card) {
             const container = document.getElementById('vehicleContainer');
@@ -3221,7 +3281,9 @@
             card1.querySelector('.claimDiscountSelect').value = "20";
             card1.querySelector('.driverBehaviorFilter').value = "ระบุ";
             onDriverBehaviorFilterChange(card1.querySelector('.driverBehaviorFilter'));
-            card1.querySelector('.driverBehaviorDiscountSelect').value = "LV3";
+            // เลือก LV สูงสุดที่ setting อนุญาต (mock data — clamp ตาม max_driver_behavior_lv)
+            const _mockMaxLv = parseInt(_appSettings['max_driver_behavior_lv'] || '1', 10);
+            card1.querySelector('.driverBehaviorDiscountSelect').value = 'LV' + Math.min(3, _mockMaxLv);
             showPremiumResult(card1);
 
             // ---- คันที่ 2: ISUZU D-MAX 2023 รหัส 320 ----
@@ -3449,7 +3511,10 @@
             const validGroupDiscount = ['0', '10', ''];
             const validClaimDiscount = ['0', '20', '30', ''];
             const validDriverFilter = ['ระบุ', 'ไม่ระบุ', ''];
-            const validDriverLv = ['LV1', 'LV2', 'LV3', 'LV4', 'LV5', ''];
+            // validDriverLv จำกัดตาม setting max_driver_behavior_lv (default 1) ให้ตรงกับ dropdown ในฟอร์ม
+            const maxDriverLv = parseInt(_appSettings['max_driver_behavior_lv'] || '1', 10);
+            const validDriverLv = ['', ...Array.from({ length: maxDriverLv }, (_, i) => 'LV' + (i + 1))];
+            const importRole = _currentProfile?.role || 'lv1';  // ใช้เช็คเพดานส่วนลดตามสิทธิ์
 
             vehicles.forEach(v => {
                 const p = 'แถวที่ ' + v.rowNum + ': ';
@@ -3462,8 +3527,42 @@
                 if (v.type === '1' && v.repair === 'ซ่อมห้าง' && v.vehicleCode && !hangCodes.includes(v.vehicleCode)) {
                     errors.push(p + 'ชั้น 1 ซ่อมห้าง เลือกรหัสรถได้เฉพาะ 110 หรือ 120 เท่านั้น (พบ: "' + v.vehicleCode + '")');
                 }
+                // ประเภท 3 ซ่อมได้เฉพาะ "ซ่อมอู่" เท่านั้น (ฟอร์มมือ lock repair ของ type≠1 ให้เป็นซ่อมอู่)
+                if (v.type === '3' && v.repair === 'ซ่อมห้าง') {
+                    errors.push(p + 'ประเภท 3 เลือกได้เฉพาะ "ซ่อมอู่" เท่านั้น (ซ่อมห้างไม่รองรับ)');
+                }
                 if (!validCodes.includes(v.vehicleCode)) errors.push(p + 'รหัสรถไม่ถูกต้อง (พบ: "' + v.vehicleCode + '")');
-                if (!v.year) errors.push(p + 'กรุณากรอกปี (ค.ศ.)');
+                if (!v.year) {
+                    errors.push(p + 'กรุณากรอกปี (ค.ศ.)');
+                } else {
+                    // ตรวจช่วงอายุรถตาม type+repair — mirror ตรรกะ maxAge ใน updateYearDropdown()
+                    // currentYear = 2026 (ตรงกับที่ hard-code ในฟอร์ม เพื่อให้เกณฑ์ import = manual)
+                    const CURRENT_YEAR = 2026;
+                    const yearNum = parseInt(String(v.year).replace(/[^\d]/g, ''), 10);
+                    if (isNaN(yearNum)) {
+                        errors.push(p + 'ปี (ค.ศ.) ต้องเป็นตัวเลข (พบ: "' + v.year + '")');
+                    } else {
+                        // คำนวณช่วงปีที่อนุญาตตาม type + repair
+                        let minYear;
+                        if (v.type === '3') {
+                            minYear = CURRENT_YEAR - 40;          // type 3 → ย้อนได้ 40 ปี (1986)
+                        } else if (v.type === '1' && v.repair === 'ซ่อมห้าง') {
+                            minYear = CURRENT_YEAR - 5 + 1;        // type 1 ซ่อมห้าง → อายุ ≤5 ปี (2022)
+                        } else if (v.type === '1') {
+                            minYear = CURRENT_YEAR - 15 + 1;       // type 1 ซ่อมอู่ → อายุ ≤15 ปี (2012)
+                        } else {
+                            minYear = CURRENT_YEAR - 25 + 1;       // fallback (2+/3+)
+                        }
+                        if (yearNum > CURRENT_YEAR) {
+                            errors.push(p + 'ปีรถต้องไม่เกิน ' + CURRENT_YEAR + ' (พบ: "' + v.year + '")');
+                        } else if (yearNum < minYear) {
+                            const label = (v.type === '1' && v.repair === 'ซ่อมห้าง') ? 'ประเภท 1 ซ่อมห้าง (รับปี ' + minYear + '-' + CURRENT_YEAR + ')'
+                                        : (v.type === '1') ? 'ประเภท 1 ซ่อมอู่ (รับปี ' + minYear + '-' + CURRENT_YEAR + ')'
+                                        : 'ประเภทนี้ (รับปี ' + minYear + '-' + CURRENT_YEAR + ')';
+                            errors.push(p + 'ปีรถ ' + v.year + ' เก่าเกินเงื่อนไข ' + label);
+                        }
+                    }
+                }
                 if (!v.seat && !['520', '540'].includes(v.vehicleCode)) errors.push(p + 'กรุณากรอกที่นั่ง');
 
                 // ล็อกจำนวนที่นั่งให้ตรงตามรหัสรถ เหมือนกับที่ฟอร์มหน้าเว็บกำหนดไว้
@@ -3477,6 +3576,28 @@
                 if (['520', '540'].includes(v.vehicleCode) && v.seat && v.seat !== '0') {
                     errors.push(p + 'รหัสรถ ' + v.vehicleCode + ' ไม่ต้องกรอกที่นั่ง (เว้นว่างหรือกรอก 0) (พบ: "' + v.seat + '")');
                 }
+
+                // ===== กลุ่ม 2: field บังคับตามรหัสรถ (mirror onVehicleCodeChange) =====
+                // CC: รหัส 110/120 ต้องมีค่า (>0) เพราะใช้คำนวณเบี้ย
+                if (['110', '120'].includes(v.vehicleCode)) {
+                    const ccNum = parseFloat(String(v.cc).replace(/,/g, ''));
+                    if (!v.cc || isNaN(ccNum) || ccNum <= 0) {
+                        errors.push(p + 'รหัสรถ ' + v.vehicleCode + ' ต้องระบุ CC (ตัวเลขมากกว่า 0) (พบ: "' + v.cc + '")');
+                    }
+                }
+                // carGroup: รหัส 110/120 ต้องระบุกลุ่มรถ
+                if (['110', '120'].includes(v.vehicleCode) && !v.carGroup) {
+                    errors.push(p + 'รหัสรถ ' + v.vehicleCode + ' ต้องระบุกลุ่มรถ (carGroup)');
+                }
+                // น้ำหนัก: รหัส 320/327/340/347/420/520/540 ต้องกรอก (>0) เพราะใช้คำนวณเบี้ย
+                const weightRequiredCodes = ['320', '327', '340', '347', '420', '520', '540'];
+                if (weightRequiredCodes.includes(v.vehicleCode)) {
+                    const wNum = parseFloat(String(v.weight).replace(/,/g, ''));
+                    if (!v.weight || isNaN(wNum) || wNum <= 0) {
+                        errors.push(p + 'รหัสรถ ' + v.vehicleCode + ' ต้องระบุน้ำหนักรถ (ตัวเลขมากกว่า 0) (พบ: "' + v.weight + '")');
+                    }
+                }
+
                 if (!v.sumInsured || isNaN(parseFloat(String(v.sumInsured).replace(/,/g, '')))) {
                     errors.push(p + 'กรุณากรอกทุนประกันตัวรถให้ถูกต้อง (ตัวเลขเท่านั้น)');
                 }
@@ -3485,12 +3606,45 @@
                 if (v.prb === 'รวม' && v.prbCode && prbMapping[v.vehicleCode] && !prbMapping[v.vehicleCode].includes(v.prbCode)) {
                     errors.push(p + 'รหัส พ.ร.บ. "' + v.prbCode + '" ไม่ตรงกับรหัสรถ "' + v.vehicleCode + '"');
                 }
-                if (!validGroupDiscount.includes(v.groupDiscount)) errors.push(p + 'ส่วนลดงานกลุ่มต้องเป็น 0 หรือ 10 (พบ: "' + v.groupDiscount + '")');
-                if (!validClaimDiscount.includes(v.claimDiscount)) errors.push(p + 'ส่วนลดประวัติดีต้องเป็น 0, 20 หรือ 30 (พบ: "' + v.claimDiscount + '")');
+                // Gap C: เลือก พ.ร.บ. = ไม่รวม แต่ใส่รหัส พ.ร.บ. มาด้วย → รหัสจะถูกทิ้งเงียบตอน apply
+                // เตือนให้ user ตรวจสอบว่าต้องการ "รวม" หรือ "ไม่รวม" กันแน่ (ป้องกันกรอกขัดกัน)
+                if (v.prb === 'ไม่รวม' && v.prbCode) {
+                    errors.push(p + 'เลือก พ.ร.บ. = "ไม่รวม" แต่ระบุรหัส พ.ร.บ. "' + v.prbCode + '" มาด้วย — หากต้องการรวม พ.ร.บ. กรุณาแก้ช่อง พ.ร.บ. เป็น "รวม" มิฉะนั้นให้ลบรหัส พ.ร.บ. ออก');
+                }
+                // ===== กลุ่ม 3: ส่วนลดตามสิทธิ์ role/settings (mirror limitCardDiscounts) =====
+                // admin ไม่จำกัด — role อื่นจำกัดตามเพดานใน _appSettings
+                if (!validGroupDiscount.includes(v.groupDiscount)) {
+                    errors.push(p + 'ส่วนลดงานกลุ่มต้องเป็น 0 หรือ 10 (พบ: "' + v.groupDiscount + '")');
+                } else if (importRole !== 'admin' && v.groupDiscount) {
+                    const maxGroup = parseInt(_appSettings['max_group_discount_' + importRole] || '0', 10);
+                    if (parseInt(v.groupDiscount, 10) > maxGroup) {
+                        errors.push(p + 'ส่วนลดงานกลุ่ม ' + v.groupDiscount + '% เกินสิทธิ์ของคุณ (สูงสุด ' + maxGroup + '%)');
+                    }
+                }
+                if (!validClaimDiscount.includes(v.claimDiscount)) {
+                    errors.push(p + 'ส่วนลดประวัติดีต้องเป็น 0, 20 หรือ 30 (พบ: "' + v.claimDiscount + '")');
+                } else if (importRole !== 'admin' && v.claimDiscount) {
+                    const maxClaim = parseInt(_appSettings['max_claim_discount_' + importRole] || '20', 10);
+                    if (parseInt(v.claimDiscount, 10) > maxClaim) {
+                        errors.push(p + 'ส่วนลดประวัติดี ' + v.claimDiscount + '% เกินสิทธิ์ของคุณ (สูงสุด ' + maxClaim + '%)');
+                    }
+                }
+                // ===== กลุ่ม 4: อุปกรณ์ตกแต่งเพิ่มเติมไม่เกิน 100,000 (mirror formatAccessoryAmount) =====
+                // type 3 บังคับ 0 อยู่แล้วตอน apply — เช็คเฉพาะกรณีที่กรอกมาแล้วเกินเพดาน
+                if (v.accessoryAmount) {
+                    const accNum = parseFloat(String(v.accessoryAmount).replace(/,/g, ''));
+                    if (!isNaN(accNum) && accNum > 100000) {
+                        errors.push(p + 'อุปกรณ์ตกแต่งเพิ่มเติมต้องไม่เกิน 100,000 บาท (พบ: "' + v.accessoryAmount + '")');
+                    }
+                }
+
                 // validate driver behavior เฉพาะเมื่อ feature เปิดอยู่
                 if (_appSettings['driver_name_feature_enabled'] === 'true') {
                     if (!validDriverFilter.includes(v.driverBehaviorFilter)) errors.push(p + 'ประเภทผู้ขับขี่ต้องเป็น "ระบุ" หรือ "ไม่ระบุ" (พบ: "' + v.driverBehaviorFilter + '")');
-                    if (!validDriverLv.includes(v.driverBehaviorDiscount)) errors.push(p + 'ระดับส่วนลดพฤติกรรมต้องเป็น LV1-LV5 (พบ: "' + v.driverBehaviorDiscount + '")');
+                    if (!validDriverLv.includes(v.driverBehaviorDiscount)) {
+                        const lvRange = maxDriverLv === 1 ? 'LV1' : ('LV1-LV' + maxDriverLv);
+                        errors.push(p + 'ระดับส่วนลดพฤติกรรมต้องเป็น ' + lvRange + ' (พบ: "' + v.driverBehaviorDiscount + '")');
+                    }
                     if (v.driverBehaviorFilter === 'ระบุ' && !v.driverBehaviorDiscount) errors.push(p + 'กรุณาระบุระดับส่วนลดพฤติกรรมเมื่อเลือกประเภทผู้ขับขี่ = ระบุ');
                 }
             });
@@ -3518,6 +3672,7 @@
             setAllVehicleCards(true);
             document.getElementById('formView').classList.remove('hidden');
             document.getElementById('summaryView').classList.add('hidden');
+            updateNavbarToolbar();
             window.scrollTo({ top: 0, behavior: 'smooth' });
         }
 
@@ -3754,6 +3909,7 @@
 
             document.getElementById('formView').classList.add('hidden');
             document.getElementById('summaryView').classList.remove('hidden');
+            updateNavbarToolbar();
             window.scrollTo({ top: 0, behavior: 'smooth' });
         }
 
@@ -3876,6 +4032,14 @@
             setCell('A3', `เลขที่ใบเสนอราคา: ${currentQuoteNo || '-'}`);
             setCell('A4', `วันที่ออกงาน: ${dateDisplay}    ฝ่าย/สาขาที่ออกงาน: ${issuerBranch}    ตัวแทน/นายหน้า: ${agentName}`);
             setCell('G43', issuerName);
+
+            // ===== M40: วันที่ออกใบเสนอราคา (แทน formula TODAY() เพื่อไม่ต้อง Enable Editing ใน Excel) =====
+            // ใช้วันที่เดียวกับ dateTimeVal (วันที่ออกงาน) แปลงเป็น DD/MM/YYYY แบบ พ.ศ.
+            const _m40Date = dateTimeVal ? new Date(dateTimeVal) : new Date();
+            const _m40dd = String(_m40Date.getDate()).padStart(2, '0');
+            const _m40mm = String(_m40Date.getMonth() + 1).padStart(2, '0');
+            const _m40yyyy = String(_m40Date.getFullYear() + 543);
+            setCell('M40', `${_m40dd}/${_m40mm}/${_m40yyyy}`);
 
             // ===== รายคันรถ (แถว 7 เป็นต้นไป ตามโครงสร้าง Template) =====
             Array.from(cards).slice(0, MAX_ROWS).forEach((card, idx) => {
@@ -4532,6 +4696,7 @@
         function backToForm() {
             document.getElementById('summaryView').classList.add('hidden');
             document.getElementById('formView').classList.remove('hidden');
+            updateNavbarToolbar();
             window.scrollTo({ top: 0, behavior: 'smooth' });
             // ไม่ reset currentQuoteNo — เก็บเลขคิวเดิมไว้
             // เพื่อให้พอกด export ซ้ำหลังแก้ไข จะได้เลขเดิม (ไม่รันต่อ)
@@ -4893,6 +5058,7 @@
             document.getElementById('summaryView').classList.add('hidden');
             document.getElementById('formView').classList.remove('hidden');
             renderVehicleNav();
+            updateNavbarToolbar();
             window.scrollTo({ top: 0, behavior: 'smooth' });
         }
 
@@ -5120,15 +5286,16 @@
             try {
                 const baseNo = String(quoteNo).replace(/_V\d+$/, '');
                 const payload = {
-                    quote_no:      baseNo,
-                    client_name:   clientName || null,
-                    agent_name:    agentName || null,
-                    username:      issuerName || _currentProfile?.display_name || null,
-                    issuer_branch: issuerBranch || null,
-                    outcome:       'pending',
-                    created_by:    _currentUser?.id || null
+                    quote_no:        baseNo,
+                    latest_quote_no: quoteNo,   // เลข revision ล่าสุด (เช่น FQ..._V1)
+                    client_name:     clientName || null,
+                    agent_name:      agentName || null,
+                    username:        issuerName || _currentProfile?.display_name || null,
+                    issuer_branch:   issuerBranch || null,
+                    outcome:         'pending',
+                    created_by:      _currentUser?.id || null
                 };
-                // ON CONFLICT (quote_no) DO NOTHING — ถ้ามี row เดิม (เคยยืนยันแล้ว) จะไม่ทับ
+                // ON CONFLICT (quote_no) DO NOTHING — ถ้ามี row เดิม (เคยยืนยันแล้ว) จะไม่ทับ outcome
                 sbFetch('/rest/v1/quote_followup?on_conflict=quote_no', {
                     method: 'POST',
                     headers: { 'Prefer': 'return=minimal,resolution=ignore-duplicates' },
@@ -5137,6 +5304,16 @@
                     if (!res.ok) {
                         const body = await res.text().catch(() => '');
                         console.warn('[followup pending] upsert failed', res.status, body);
+                        return;
+                    }
+                    // revise: row เดิมมีอยู่แล้ว (insert ถูก ignore) → อัปเดตเฉพาะ latest_quote_no
+                    // ไม่แตะ outcome เพื่อคงสถานะที่เคยยืนยันไว้
+                    if (quoteNo !== baseNo) {
+                        sbFetch(`/rest/v1/quote_followup?quote_no=eq.${encodeURIComponent(baseNo)}`, {
+                            method: 'PATCH',
+                            headers: { 'Prefer': 'return=minimal' },
+                            body: JSON.stringify({ latest_quote_no: quoteNo })
+                        }).catch(err => console.warn('[followup pending] latest_quote_no patch error:', err));
                     }
                 }).catch(err => console.warn('[followup pending] error:', err));
             } catch (err) {
@@ -5413,6 +5590,14 @@
         { key: 'session_timeout_hours',        label: 'Session Timeout (ชั่วโมง)', hint: '0 = ไม่หมดอายุ', type: 'number',  min: 0, max: 720, zone: 'general' },
         { key: 'followup_expire_days',         label: 'Follow-up หมดอายุ (วัน)', hint: 'pending ค้างเกินกี่วัน → หมดอายุอัตโนมัติ (0 = ไม่หมดอายุ)', type: 'number', min: 0, max: 365, zone: 'general' },
         { key: 'driver_name_feature_enabled',  label: 'เปิดใช้ฟีเจอร์ระบุชื่อผู้ขับขี่', hint: 'ปิดไว้จนกว่า OIC จะบังคับใช้', type: 'toggle', zone: 'general' },
+        { key: 'max_driver_behavior_lv',       label: 'ส่วนลดพฤติกรรม สูงสุด (LV)', hint: 'จำกัดระดับ LV ที่เลือกได้ในการ์ด', type: 'select', default: '1', zone: 'general',
+          options: [
+              { value: '1', text: 'LV.1 (0%) เท่านั้น' },
+              { value: '2', text: 'ถึง LV.2 (10%)' },
+              { value: '3', text: 'ถึง LV.3 (20%)' },
+              { value: '4', text: 'ถึง LV.4 (30%)' },
+              { value: '5', text: 'ถึง LV.5 (40%) — เปิดครบ' },
+          ] },
         { key: 'max_group_discount_lv1',       label: 'ส่วนลดงานกลุ่ม สูงสุด (%)',  hint: '', type: 'number', min: 0, max: 100, zone: 'lv1' },
         { key: 'max_claim_discount_lv1',       label: 'ส่วนลดประวัติดี สูงสุด (%)', hint: '', type: 'number', min: 0, max: 100, zone: 'lv1' },
         { key: 'max_group_discount_lv2',       label: 'ส่วนลดงานกลุ่ม สูงสุด (%)',  hint: '', type: 'number', min: 0, max: 100, zone: 'lv2' },
@@ -5589,14 +5774,18 @@
         if (isHidden) {
             // fill ข้อมูล
             const roleLabels = { admin: 'Admin', lv2: 'LV 2', lv1: 'LV 1' };
-            const roleColors = { admin: 'bg-rose-100 text-rose-700', lv2: 'bg-amber-100 text-amber-700', lv1: 'bg-indigo-100 text-indigo-700' };
+            const roleColors = {
+                admin: 'bg-rose-100 text-rose-600 dark:bg-rose-500/20 dark:text-rose-400',
+                lv2:   'bg-amber-100 text-amber-600 dark:bg-amber-500/20 dark:text-amber-400',
+                lv1:   'bg-indigo-100 text-indigo-600 dark:bg-indigo-500/20 dark:text-indigo-400',
+            };
             document.getElementById('popupDisplayName').textContent   = _currentProfile?.display_name  || '-';
             document.getElementById('popupEmail').textContent         = _currentUser?.email             || '-';
             document.getElementById('popupIssuerName').textContent    = _currentProfile?.issuer_name    || '-';
             document.getElementById('popupIssuerBranch').textContent  = _currentProfile?.issuer_branch  || '-';
             const roleEl = document.getElementById('popupRole');
             roleEl.textContent  = roleLabels[_currentProfile?.role] || _currentProfile?.role || '-';
-            roleEl.className    = `font-semibold px-1.5 py-0.5 rounded text-[10px] ${roleColors[_currentProfile?.role] || ''}`;
+            roleEl.className    = `font-semibold px-1.5 py-0.5 rounded text-[10px] ${roleColors[_currentProfile?.role] || 'bg-slate-100 text-slate-500 dark:bg-slate-700 dark:text-slate-400'}`;
             popup.classList.remove('hidden');
         } else {
             popup.classList.add('hidden');
@@ -5651,6 +5840,9 @@
         document.getElementById('loginBtn').textContent = 'เข้าสู่ระบบ';
         document.getElementById('userBadge').classList.add('hidden');
         document.getElementById('userBadge').classList.remove('flex');
+        // ซ่อน toolbar รายการรถใน navbar (logout)
+        document.getElementById('navbarToolbar')?.classList.add('hidden');
+        document.getElementById('navbarToolbar')?.classList.remove('flex');
         // ซ่อนปุ่ม Follow-up
         const followUpBtn = document.getElementById('followUpBtn');
         if (followUpBtn) { followUpBtn.classList.add('hidden'); followUpBtn.classList.remove('flex'); }
@@ -5746,8 +5938,8 @@
 
         function tick() {
             const el = document.getElementById('countdownDisplay');
-            const box = document.getElementById('sessionCountdown');
-            if (!el || !box) return;
+            const row = document.getElementById('popupCountdownRow');
+            if (!el) return;
 
             const remaining = Math.max(0, _sessionExpiresAt - Date.now());
             const totalSec  = Math.floor(remaining / 1000);
@@ -5759,21 +5951,22 @@
             // เปลี่ยนสีเมื่อใกล้หมด
             el.className = el.className.replace(/text-(rose|amber|slate)-\d+/g, '');
             if (remaining <= 10 * 60 * 1000) {
-                el.classList.add('text-rose-400');
+                el.classList.add('text-rose-500', 'dark:text-rose-400');
             } else if (remaining <= 30 * 60 * 1000) {
-                el.classList.add('text-amber-400');
+                el.classList.add('text-amber-500', 'dark:text-amber-400');
             } else {
-                el.classList.add('text-slate-400');
+                el.classList.add('text-slate-600', 'dark:text-slate-300');
             }
         }
 
         tick();
         _countdownInterval = setInterval(tick, 1000);
 
-        const box = document.getElementById('sessionCountdown');
-        if (box) {
-            box.classList.remove('hidden');
-            box.classList.add('flex');
+        // แสดง countdown row ใน popup
+        const row = document.getElementById('popupCountdownRow');
+        if (row) {
+            row.classList.remove('hidden');
+            row.classList.add('flex');
         }
     }
 
@@ -5783,10 +5976,10 @@
             _countdownInterval = null;
         }
         _sessionExpiresAt = null;
-        const box = document.getElementById('sessionCountdown');
-        if (box) {
-            box.classList.add('hidden');
-            box.classList.remove('flex');
+        const row = document.getElementById('popupCountdownRow');
+        if (row) {
+            row.classList.add('hidden');
+            row.classList.remove('flex');
         }
     }
 
@@ -5835,7 +6028,16 @@
             if (nameEl) nameEl.textContent = _currentProfile.display_name;
             const roleEl = document.getElementById('userRoleBadge');
             const roleLabels = { admin: 'Admin', lv2: 'LV 2', lv1: 'LV 1' };
-            if (roleEl) roleEl.textContent = roleLabels[_currentProfile.role] || _currentProfile.role;
+            // สี role badge — light และ dark กำหนดตรงๆ ไม่พึ่ง CSS override
+            const roleBadgeColors = {
+                admin: 'bg-rose-100 text-rose-600 dark:bg-rose-500/20 dark:text-rose-400',
+                lv2:   'bg-amber-100 text-amber-600 dark:bg-amber-500/20 dark:text-amber-400',
+                lv1:   'bg-indigo-100 text-indigo-600 dark:bg-indigo-500/20 dark:text-indigo-400',
+            };
+            if (roleEl) {
+                roleEl.textContent = roleLabels[_currentProfile.role] || _currentProfile.role;
+                roleEl.className = `text-[9px] font-bold uppercase px-1.5 py-0.5 rounded shrink-0 ${roleBadgeColors[_currentProfile.role] || 'bg-slate-100 text-slate-500 dark:bg-slate-700 dark:text-slate-400'}`;
+            }
 
             // เริ่ม countdown หลัง DOM พร้อม
             if (_countdownTarget) {
@@ -5895,6 +6097,9 @@
             // apply permission
             applyPermissions();
             applyDriverNameFeature();
+
+            // แสดง toolbar รายการรถใน navbar (ถ้าอยู่หน้าฟอร์ม)
+            updateNavbarToolbar();
         }
 
         if (document.readyState === 'loading') {
@@ -6245,6 +6450,21 @@
                             <div class="w-11 h-6 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:bg-indigo-500 transition-all after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:after:translate-x-5"></div>
                             <span id="toggle_label_${s.key}" class="ml-2 text-xs font-semibold text-slate-500 w-6">${checked ? 'เปิด' : 'ปิด'}</span>
                         </label>
+                    </div>`;
+                }
+                if (s.type === 'select') {
+                    const current = map[s.key] ?? s.default ?? '';
+                    const opts = (s.options || []).map(o =>
+                        `<option value="${escHtml(o.value)}" ${String(o.value) === String(current) ? 'selected' : ''}>${escHtml(o.text)}</option>`
+                    ).join('');
+                    return `
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-600 uppercase tracking-wide mb-1.5">${s.label}</label>
+                        <select id="setting_${s.key}"
+                            class="block w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 focus:outline-none">
+                            ${opts}
+                        </select>
+                        ${s.hint ? `<p class="text-[11px] text-slate-400 mt-1">${s.hint}</p>` : ''}
                     </div>`;
                 }
                 return `
@@ -6792,21 +7012,56 @@
                 'พ.ร.บ.', 'รหัส พ.ร.บ.', 'เบี้ยสุทธิ พ.ร.บ.', 'อากร พ.ร.บ.', 'VAT พ.ร.บ.', 'เบี้ยรวม พ.ร.บ.',
                 'รวมทั้งสิ้น',
                 'ส่วนลดกลุ่ม', 'ส่วนลดประวัติดี', 'ประเภทผู้ขับ', 'ระดับพฤติกรรม',
-                'วันเวลาที่บันทึก'
+                'วันเวลาที่บันทึก', 'ใบล่าสุด'
             ];
             const data = [headers];
 
-            let prevQuoteNo = null;
+            // ===== หา revision ล่าสุดของแต่ละ base quote_no (ดึงจาก quotation_queue ทั้งหมด ไม่จำกัดวันที่) =====
+            // เพื่อระบุว่าแต่ละ record เป็น "ใบล่าสุด" หรือไม่ (Y/N)
+            const latestRevMap = {}; // baseNo → revision ล่าสุด (number)
+            try {
+                const baseNos = [...new Set(rows.map(v => String(v.quote_no).replace(/_V\d+$/, '')).filter(Boolean))];
+                if (baseNos.length > 0) {
+                    const revOf = (s) => { const m = String(s).match(/_V(\d+)$/); return m ? parseInt(m[1], 10) : 0; };
+                    const orFilter = baseNos.map(b => `quote_no.like.${b}*`).join(',');
+                    const qRes = await sbFetch(
+                        `/rest/v1/quotation_queue?or=(${orFilter})&select=quote_no`
+                    );
+                    if (qRes.ok) {
+                        const qRows = await qRes.json();
+                        qRows.forEach(q => {
+                            const base = String(q.quote_no).replace(/_V\d+$/, '');
+                            const rev  = revOf(q.quote_no);
+                            if (latestRevMap[base] === undefined || rev > latestRevMap[base]) {
+                                latestRevMap[base] = rev;
+                            }
+                        });
+                    }
+                }
+            } catch (_) { /* ถ้าดึงไม่ได้ → คำนวณจากข้อมูลใน rows แทน (ด้านล่าง) */ }
+
+            // fallback: ถ้า latestRevMap ว่าง ให้คำนวณจาก rows ที่ดึงมา
+            const revOfLocal = (s) => { const m = String(s).match(/_V(\d+)$/); return m ? parseInt(m[1], 10) : 0; };
             rows.forEach(v => {
-                const isFirst = v.quote_no !== prevQuoteNo;
-                prevQuoteNo = v.quote_no;
+                const base = String(v.quote_no).replace(/_V\d+$/, '');
+                const rev  = revOfLocal(v.quote_no);
+                if (latestRevMap[base] === undefined || rev > latestRevMap[base]) {
+                    // เติมเฉพาะกรณีที่ยังไม่มีจาก quotation_queue (ไม่ทับค่าที่ครบกว่า)
+                    if (latestRevMap[base] === undefined) latestRevMap[base] = rev;
+                }
+            });
+
+            rows.forEach(v => {
+                const base     = String(v.quote_no).replace(/_V\d+$/, '');
+                const isLatest = revOfLocal(v.quote_no) === latestRevMap[base];
+                // แจงข้อมูลหัวครบทุกแถว (1 แถว = 1 record สมบูรณ์) — ไม่เว้นว่าง เพื่อให้ filter/sort/pivot ได้
                 data.push([
-                    isFirst ? v.quote_no      : '',
-                    isFirst ? v.quote_date    : '',
-                    isFirst ? v.client_name   : '',
-                    isFirst ? (v.agent_name || '-') : '',
-                    isFirst ? v.issuer_name   : '',
-                    isFirst ? v.issuer_branch : '',
+                    v.quote_no                || '',
+                    v.quote_date              || '',
+                    v.client_name             || '',
+                    v.agent_name              || '-',
+                    v.issuer_name             || '',
+                    v.issuer_branch           || '',
                     v.vehicle_seq             || '',
                     v.plate                   || '',
                     v.brand                   || '',
@@ -6838,7 +7093,8 @@
                     v.claim_discount          || '',
                     v.driver_behavior_filter  || '',
                     v.driver_behavior_discount || '',
-                    toThaiDateTime(v.created_at)
+                    toThaiDateTime(v.created_at),
+                    isLatest ? 'Y' : 'N'
                 ]);
             });
 
@@ -6850,6 +7106,7 @@
             ws['!cols'][4].wch = 18; // สาขา
             ws['!cols'][8].wch = 16; // รุ่น
             ws['!cols'][36].wch = 20; // วันเวลาที่บันทึก
+            ws['!cols'][37].wch = 10; // ใบล่าสุด
             const wb = XLSX.utils.book_new();
             XLSX.utils.book_append_sheet(wb, ws, 'Quotation Vehicles');
             XLSX.writeFile(wb, `QuotationReport_${fromVal}_to_${toVal}.xlsx`);
@@ -6991,6 +7248,28 @@
                 if (rRes.ok) { const rd = await rRes.json(); rd.forEach(r => { reasonMap[r.id] = r.reason_text; }); }
             } catch (_) {}
 
+            // ===== หา revision ล่าสุดของแต่ละ base quote_no จาก quotation_queue =====
+            // quote_followup เก็บ quote_no แบบ base (strip _V) → รายงานควรแสดงเลขล่าสุดพร้อม _V
+            const latestRevMap = {}; // baseNo → display quote_no ล่าสุด (เช่น FQ...0009_V1)
+            try {
+                const baseNos = [...new Set(rows.map(r => r.quote_no).filter(Boolean))];
+                if (baseNos.length > 0) {
+                    const orFilter = baseNos.map(b => `quote_no.like.${b}*`).join(',');
+                    const qRes = await sbFetch(
+                        `/rest/v1/quotation_queue?or=(${orFilter})&select=quote_no&order=quote_no.asc`
+                    );
+                    if (qRes.ok) {
+                        const qRows = await qRes.json();
+                        const revOf = (s) => { const m = String(s).match(/_V(\d+)$/); return m ? parseInt(m[1], 10) : 0; };
+                        qRows.forEach(q => {
+                            const base = String(q.quote_no).replace(/_V\d+$/, '');
+                            const cur  = latestRevMap[base];
+                            if (!cur || revOf(q.quote_no) > revOf(cur)) latestRevMap[base] = q.quote_no;
+                        });
+                    }
+                }
+            } catch (_) { /* ถ้าดึงไม่ได้ ใช้ base quote_no ตามเดิม */ }
+
             const statusLabel = {
                 pending:  'รอติดตาม',
                 accepted: 'ทำประกัน',
@@ -7006,7 +7285,7 @@
                     ? (r.reason_other || reasonMap[r.reason_id] || '')
                     : '';
                 data.push([
-                    r.quote_no        || '',
+                    latestRevMap[r.quote_no] || r.quote_no || '',
                     r.client_name     || '',
                     r.agent_name      || '',
                     r.username        || '',
@@ -7086,13 +7365,41 @@
 
             // quote_followup เป็นหลัก (1 row/ใบ, สร้าง pending ตอนรันคิว)
             const [fRes, rRes] = await Promise.all([
-                sbFetch(`/rest/v1/quote_followup?created_by=eq.${uid}&select=id,quote_no,client_name,outcome,reason_id,reason_other,created_at,confirmed_at,expired_at&order=created_at.desc&limit=300`),
+                sbFetch(`/rest/v1/quote_followup?created_by=eq.${uid}&select=id,quote_no,latest_quote_no,client_name,outcome,reason_id,reason_other,created_at,confirmed_at,expired_at&order=created_at.desc&limit=300`),
                 sbFetch(`/rest/v1/followup_requests?requested_by=eq.${uid}&select=followup_id,status&order=created_at.desc`)
             ]);
             if (!fRes.ok) throw new Error('โหลดข้อมูล follow-up ล้มเหลว');
 
             let followups   = await fRes.json();
             const requests  = rRes.ok ? await rRes.json() : [];
+
+            // ===== เลขแสดงผล: ใช้ latest_quote_no จาก DB (มี _Vn อยู่แล้ว) =====
+            // fallback: ถ้า row เก่ายังไม่มี latest_quote_no → ดึงจาก quotation_queue
+            const latestRevMap = {}; // baseNo → display quote_no ล่าสุด (เช่น FQ...0009_V1)
+            try {
+                const needLookup = followups.filter(f => !f.latest_quote_no).map(f => f.quote_no);
+                const baseNos = [...new Set(needLookup.filter(Boolean))];
+                if (baseNos.length > 0) {
+                    const orFilter = baseNos.map(b => `quote_no.like.${b}*`).join(',');
+                    const qRes = await sbFetch(
+                        `/rest/v1/quotation_queue?created_by=eq.${uid}&or=(${orFilter})&select=quote_no&order=quote_no.asc`
+                    );
+                    if (qRes.ok) {
+                        const qRows = await qRes.json();
+                        qRows.forEach(q => {
+                            const base = String(q.quote_no).replace(/_V\d+$/, '');
+                            const cur  = latestRevMap[base];
+                            const revOf = (s) => {
+                                const m = String(s).match(/_V(\d+)$/);
+                                return m ? parseInt(m[1], 10) : 0;
+                            };
+                            if (!cur || revOf(q.quote_no) > revOf(cur)) {
+                                latestRevMap[base] = q.quote_no;
+                            }
+                        });
+                    }
+                }
+            } catch (_) { /* ถ้าดึงไม่ได้ ใช้ base quote_no ตามเดิม */ }
 
             // ===== auto-expire: pending ที่เกิน followup_expire_days → mark expired =====
             const expireDays = parseInt(_appSettings['followup_expire_days'] || '30', 10);
@@ -7133,10 +7440,11 @@
                 if (seen.has(f.quote_no)) return;
                 seen.add(f.quote_no);
                 _fuQuoteData.push({
-                    quote_no:    f.quote_no,
-                    client_name: f.client_name,
-                    created_at:  f.created_at,
-                    followup:    { ...f, reqStatus: reqMap[f.id] || null }
+                    quote_no:      f.quote_no,                                                    // base (ใช้กับ action / DB)
+                    display_no:    f.latest_quote_no || latestRevMap[f.quote_no] || f.quote_no,   // เลขล่าสุดพร้อม _V (แสดงผล)
+                    client_name:   f.client_name,
+                    created_at:    f.created_at,
+                    followup:      { ...f, reqStatus: reqMap[f.id] || null }
                 });
             });
 
@@ -7184,7 +7492,7 @@
                 el.dataset.clientName = row.client_name || '';
                 el.innerHTML = `
                     <div class="flex-1 min-w-0">
-                        <p class="text-sm font-semibold text-slate-800 truncate">${row.quote_no}</p>
+                        <p class="text-sm font-semibold text-slate-800 truncate">${row.display_no || row.quote_no}</p>
                         <p class="text-xs text-slate-400 truncate">${row.client_name || ''}${dateStr ? ' · ' + dateStr : ''}</p>
                     </div>
                     <div class="flex items-center gap-2 shrink-0">
@@ -7247,7 +7555,7 @@
                 <div class="min-w-0 flex-1">
                     <div class="flex items-center gap-2 flex-wrap">
                         <span class="text-xs font-bold ${labelClass}">${labelText}</span>
-                        <span class="text-xs font-semibold text-slate-600">${row.quote_no}</span>
+                        <span class="text-xs font-semibold text-slate-600">${row.display_no || row.quote_no}</span>
                         ${row.client_name ? `<span class="text-xs text-slate-400 truncate max-w-[120px]">${row.client_name}</span>` : ''}
                     </div>
                     ${reasonText ? `<p class="text-xs text-slate-500 mt-0.5">เหตุผล: ${reasonText}</p>` : ''}
@@ -7267,6 +7575,7 @@
         // ใช้ทุก items แต่ filter ชื่อ/เลขใบ ส่วน pending/done จะถูกแยกใน renderFuQuoteList
         const filtered = _fuQuoteData.filter(r =>
             r.quote_no.toLowerCase().includes(q) ||
+            (r.display_no || '').toLowerCase().includes(q) ||
             (r.client_name || '').toLowerCase().includes(q)
         );
         renderFuQuoteList(filtered);
@@ -8228,12 +8537,37 @@
     <!-- ===== END REVISE MODAL ===== -->
 
     <!-- ===== TOP-RIGHT FIXED BAR ===== -->
-    <div class="fixed top-3 right-4 z-[9990] flex items-center gap-1.5">
+    <!-- ===== TOP NAVBAR (full-width, fixed) ===== -->
+    <!-- แถบเดียว 3 โซน: brand (ซ้ายสุด) · action (กึ่งกลางจอ) · toolbar รายการรถ (ขวาสุด)
+         ปุ่มทุกตัวใช้ neutral slate เป็นฐาน, dark: class กำหนดตรงๆ ในแต่ละ element
+         พื้นทึบเต็มความกว้าง z-[9990] — บังการ์ดที่ scroll ผ่านด้านหลัง + บล็อกคลิกทะลุ -->
+    <nav id="topNavbar" class="fixed top-0 left-0 right-0 z-[9990]
+                bg-white dark:bg-slate-800
+                border-b border-slate-200 dark:border-slate-700
+                shadow-sm">
+        <!-- container relative + justify-between: brand ชิดซ้าย / toolbar ชิดขวา
+             โซนกลาง action วาง absolute left-1/2 -translate-x-1/2 → กึ่งกลางจอเป๊ะเสมอ
+             ไม่ขึ้นกับความกว้างซ้าย/ขวา (แก้ปัญหา action เยื้องขวาเมื่อ toolbar กว้างกว่า brand) -->
+        <div class="max-w-screen-2xl mx-auto px-4 md:px-8 h-14" style="width:100%; display:flex; align-items:center; gap:0.75rem;">
+            <!-- โซนซ้าย: Brand — flex:1 ยืดเท่าฝั่งขวา, เนื้อหาชิดซ้าย -->
+            <div class="flex items-center gap-2 min-w-0" style="flex:1 1 0; justify-content:flex-start;">
+                <span class="flex items-center justify-center w-8 h-8 rounded-lg bg-indigo-50 dark:bg-indigo-500/20 text-indigo-600 dark:text-indigo-300 shrink-0">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17a2 2 0 11-4 0 2 2 0 014 0zM19 17a2 2 0 11-4 0 2 2 0 014 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16V6a1 1 0 00-1-1H4a1 1 0 00-1 1v10a1 1 0 001 1h1m8-1a1 1 0 01-1 1H9m4-1V8a1 1 0 011-1h2.586a1 1 0 01.707.293l3.414 3.414a1 1 0 01.293.707V16a1 1 0 01-1 1h-1m-6-1a1 1 0 001 1h1"/></svg>
+                </span>
+                <span class="text-sm md:text-base font-bold text-slate-800 dark:text-slate-100 truncate">ระบบเสนอราคาประกันภัยรถยนต์</span>
+            </div>
 
-        <!-- Dark mode icon-only -->
+            <!-- โซนกลาง: Action buttons — ตรงกลางเสมอ (brand/toolbar ยืด flex:1 เท่ากันขนาบสองข้าง) -->
+            <div style="flex:0 0 auto; display:flex; align-items:center; justify-content:center; gap:0.375rem;">
+
+        <!-- Dark mode toggle -->
         <button type="button" onclick="toggleDarkMode()" id="darkModeToggleBtn"
             title="สลับโหมดมืด/สว่าง"
-            class="w-8 h-8 flex items-center justify-center rounded-lg bg-white/80 hover:bg-slate-100 dark:bg-slate-700/90 dark:hover:bg-slate-600 border border-slate-200 dark:border-slate-600 text-slate-500 hover:text-slate-700 dark:text-sky-300 dark:hover:text-white shadow-sm backdrop-blur-sm transition-all">
+            class="w-8 h-8 flex items-center justify-center rounded-lg
+                   bg-white/80 hover:bg-slate-100 dark:bg-slate-800/80 dark:hover:bg-slate-700
+                   border border-slate-200 dark:border-slate-700
+                   text-slate-400 hover:text-slate-600 dark:text-slate-400 dark:hover:text-slate-200
+                   shadow-sm backdrop-blur-sm transition-all duration-150">
             <svg id="darkModeIconMoon" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"/></svg>
             <svg id="darkModeIconSun" class="hidden w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"/></svg>
         </button>
@@ -8241,7 +8575,11 @@
         <!-- Follow-up button (แสดงหลัง login) -->
         <button type="button" id="followUpBtn" onclick="openFollowUpModal()"
             title="ติดตามผลการตอบกลับลูกค้า"
-            class="hidden w-8 h-8 items-center justify-center rounded-lg bg-sky-50 hover:bg-sky-100 dark:bg-sky-500/20 dark:hover:bg-sky-500/30 border border-sky-200 dark:border-sky-500/40 text-sky-600 dark:text-sky-400 shadow-sm backdrop-blur-sm transition-all">
+            class="hidden w-8 h-8 items-center justify-center rounded-lg
+                   bg-white/80 hover:bg-slate-100 dark:bg-slate-800/80 dark:hover:bg-slate-700
+                   border border-slate-200 dark:border-slate-700
+                   text-slate-400 hover:text-slate-600 dark:text-slate-400 dark:hover:text-slate-200
+                   shadow-sm backdrop-blur-sm transition-all duration-150">
             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"/>
             </svg>
@@ -8250,60 +8588,87 @@
         <!-- Notification bell (แสดงหลัง login) -->
         <button type="button" id="notifBtn" onclick="openNotifModal()"
             title="การแจ้งเตือน"
-            class="hidden relative w-8 h-8 items-center justify-center rounded-lg bg-white/80 hover:bg-slate-100 border border-slate-200 text-slate-500 hover:text-slate-700 shadow-sm backdrop-blur-sm transition-all">
+            class="hidden relative w-8 h-8 items-center justify-center rounded-lg
+                   bg-white/80 hover:bg-slate-100 dark:bg-slate-800/80 dark:hover:bg-slate-700
+                   border border-slate-200 dark:border-slate-700
+                   text-slate-400 hover:text-slate-600 dark:text-slate-400 dark:hover:text-slate-200
+                   shadow-sm backdrop-blur-sm transition-all duration-150">
             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/>
             </svg>
-            <!-- badge จำนวน unread -->
+            <!-- unread count dot -->
             <span id="notifBadge" class="hidden absolute -top-1 -right-1 min-w-[16px] h-4 px-1 flex items-center justify-center rounded-full bg-rose-500 text-white text-[9px] font-bold leading-none"></span>
         </button>
 
         <!-- User info + actions (แสดงหลัง login) -->
         <div id="userBadge" class="hidden items-center gap-1.5 relative">
-            <!-- ชื่อ + role (คลิกเพื่อดูข้อมูล) -->
-            <div onclick="toggleUserPopup(event)" class="flex items-center gap-1.5 bg-white/90 dark:bg-slate-700/90 border border-slate-200 dark:border-slate-600 rounded-lg px-2.5 py-1.5 shadow-sm backdrop-blur-sm cursor-pointer hover:border-indigo-300 dark:hover:border-indigo-500 transition-all select-none" title="ดูข้อมูลผู้ใช้">
-                <svg class="w-3.5 h-3.5 text-indigo-400 dark:text-indigo-300 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+
+            <!-- ชื่อ + role pill (คลิกเพื่อดูข้อมูล) -->
+            <div onclick="toggleUserPopup(event)"
+                class="flex items-center gap-1.5
+                       bg-white/90 dark:bg-slate-800/90
+                       border border-slate-200 dark:border-slate-700
+                       hover:border-slate-300 dark:hover:border-slate-500
+                       rounded-lg px-2.5 py-1.5
+                       shadow-sm backdrop-blur-sm cursor-pointer transition-all duration-150 select-none"
+                title="ดูข้อมูลผู้ใช้">
+                <!-- user icon -->
+                <svg class="w-3.5 h-3.5 text-slate-400 dark:text-slate-500 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5.121 17.804A13.937 13.937 0 0112 16c2.5 0 4.847.655 6.879 1.804M15 10a3 3 0 11-6 0 3 3 0 016 0z"/>
                 </svg>
-                <span id="userDisplayName" class="text-xs font-semibold text-slate-700 dark:text-slate-100 max-w-[100px] truncate"></span>
-                <span id="userRoleBadge" class="text-[9px] font-bold uppercase px-1 py-0.5 rounded bg-indigo-100 dark:bg-indigo-500/30 text-indigo-600 dark:text-indigo-300 shrink-0"></span>
+                <span id="userDisplayName" class="text-xs font-semibold text-slate-700 dark:text-slate-200 max-w-[100px] truncate"></span>
+                <!-- role badge — className ถูก set โดย JS ตาม role -->
+                <span id="userRoleBadge" class="text-[9px] font-bold uppercase px-1.5 py-0.5 rounded shrink-0"></span>
             </div>
 
             <!-- User info popup -->
-            <div id="userInfoPopup" class="hidden absolute top-12 right-4 z-[9999] w-64 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-600 rounded-xl shadow-xl p-4 space-y-2.5">
+            <div id="userInfoPopup" class="hidden absolute top-12 right-0 z-[9999] w-64
+                                           bg-white dark:bg-slate-800
+                                           border border-slate-200 dark:border-slate-700
+                                           rounded-xl shadow-xl p-4 space-y-2.5">
                 <div class="flex items-center gap-2 pb-2 border-b border-slate-100 dark:border-slate-700">
-                    <div class="w-8 h-8 rounded-full bg-indigo-100 dark:bg-indigo-500/30 flex items-center justify-center shrink-0">
-                        <svg class="w-4 h-4 text-indigo-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <div class="w-8 h-8 rounded-full bg-slate-100 dark:bg-slate-700 flex items-center justify-center shrink-0">
+                        <svg class="w-4 h-4 text-slate-400 dark:text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5.121 17.804A13.937 13.937 0 0112 16c2.5 0 4.847.655 6.879 1.804M15 10a3 3 0 11-6 0 3 3 0 016 0z"/>
                         </svg>
                     </div>
                     <div class="min-w-0">
                         <p id="popupDisplayName" class="text-sm font-bold text-slate-800 dark:text-slate-100 truncate"></p>
-                        <p id="popupEmail" class="text-[10px] text-slate-400 truncate"></p>
+                        <p id="popupEmail" class="text-[10px] text-slate-400 dark:text-slate-500 truncate"></p>
                     </div>
                 </div>
                 <div class="space-y-1.5 text-xs text-slate-600 dark:text-slate-300">
                     <div class="flex items-center gap-2">
-                        <span class="text-slate-400 w-16 shrink-0">Role</span>
+                        <span class="text-slate-400 dark:text-slate-500 w-16 shrink-0">Role</span>
+                        <!-- popupRole className ถูก set โดย JS ตาม role เช่นกัน -->
                         <span id="popupRole" class="font-semibold px-1.5 py-0.5 rounded text-[10px]"></span>
                     </div>
                     <div class="flex items-center gap-2">
-                        <span class="text-slate-400 w-16 shrink-0">ผู้ออกงาน</span>
+                        <span class="text-slate-400 dark:text-slate-500 w-16 shrink-0">ผู้ออกงาน</span>
                         <span id="popupIssuerName" class="truncate"></span>
                     </div>
                     <div class="flex items-center gap-2">
-                        <span class="text-slate-400 w-16 shrink-0">สาขา</span>
+                        <span class="text-slate-400 dark:text-slate-500 w-16 shrink-0">สาขา</span>
                         <span id="popupIssuerBranch" class="truncate"></span>
+                    </div>
+                    <!-- Session countdown -->
+                    <div id="popupCountdownRow" class="hidden items-center gap-2 pt-1.5 mt-1 border-t border-slate-100 dark:border-slate-700">
+                        <svg class="w-3.5 h-3.5 text-slate-400 dark:text-slate-500 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                        </svg>
+                        <span class="text-slate-400 dark:text-slate-500 w-16 shrink-0">Session</span>
+                        <span id="countdownDisplay" class="font-mono font-semibold text-xs text-slate-600 dark:text-slate-300 tracking-widest">00:00:00</span>
                     </div>
                 </div>
             </div>
 
-            <!-- Session countdown timer -->
-            <!-- (ย้ายออกไปอยู่ด้านล่าง bar แล้ว) -->
-
             <!-- Admin button (เฉพาะ admin) -->
             <button id="adminPanelBtn" onclick="openAdminPanel()" title="Admin Panel"
-                class="hidden w-8 h-8 items-center justify-center rounded-lg bg-amber-50 hover:bg-amber-100 dark:bg-amber-500/20 dark:hover:bg-amber-500/30 border border-amber-200 dark:border-amber-500/40 text-amber-600 dark:text-amber-400 shadow-sm transition-all">
+                class="hidden w-8 h-8 items-center justify-center rounded-lg
+                       bg-white/80 hover:bg-slate-100 dark:bg-slate-800/80 dark:hover:bg-slate-700
+                       border border-slate-200 dark:border-slate-700
+                       text-slate-400 hover:text-slate-600 dark:text-slate-400 dark:hover:text-slate-200
+                       shadow-sm transition-all duration-150">
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/>
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
@@ -8312,19 +8677,54 @@
 
             <!-- Logout -->
             <button onclick="doLogout()" title="ออกจากระบบ"
-                class="w-8 h-8 flex items-center justify-center rounded-lg bg-white/80 hover:bg-rose-50 dark:bg-slate-700/80 dark:hover:bg-rose-500/20 border border-slate-200 hover:border-rose-300 dark:border-slate-600 dark:hover:border-rose-500/50 text-slate-400 hover:text-rose-500 dark:text-slate-400 dark:hover:text-rose-400 shadow-sm backdrop-blur-sm transition-all">
+                class="w-8 h-8 flex items-center justify-center rounded-lg
+                       bg-white/80 hover:bg-rose-50 dark:bg-slate-800/80 dark:hover:bg-rose-500/10
+                       border border-slate-200 hover:border-rose-200 dark:border-slate-700 dark:hover:border-rose-500/40
+                       text-slate-400 hover:text-rose-500 dark:text-slate-400 dark:hover:text-rose-400
+                       shadow-sm backdrop-blur-sm transition-all duration-150">
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/>
                 </svg>
             </button>
-        </div>
-    </div>
-    <!-- ===== END TOP-RIGHT FIXED BAR ===== -->
+            </div><!-- /#userBadge -->
 
-    <!-- Session countdown — ลอยอยู่ใต้ top bar ฝั่งขวา ไม่มีกรอบ -->
-    <div id="sessionCountdown" class="hidden fixed z-[9989]" style="top:3.2rem;right:1rem;" title="เวลาที่เหลือก่อน session หมดอายุ">
-        <span id="countdownDisplay" class="text-[11px] font-mono font-medium text-slate-400 dark:text-slate-400 tracking-widest">00:00:00</span>
-    </div>
+            </div><!-- /โซนกลาง Action buttons -->
+
+            <!-- โซนขวา wrapper — flex:1 แสดงตลอด (ถ่วงให้ action อยู่กึ่งกลางแม้ toolbar ถูกซ่อน) -->
+            <div style="flex:1 1 0; display:flex; align-items:center; justify-content:flex-end;">
+            <!-- toolbar รายการรถ (แสดงเฉพาะหน้าฟอร์ม — JS toggle #navbarToolbar) -->
+            <div id="navbarToolbar" class="hidden items-center justify-end gap-2">
+                <!-- ปุ่มสรุปรายการรถ (dropdown) -->
+                <div class="relative">
+                    <button type="button" id="vehicleSummaryBtn" onclick="toggleVehicleSummaryDropdown(event)"
+                        class="flex items-center gap-2 text-sm font-semibold px-3 py-1.5 rounded-lg
+                               bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-600
+                               text-slate-700 dark:text-slate-200 hover:border-indigo-300 dark:hover:border-indigo-500
+                               shadow-sm transition-all">
+                        <svg class="w-4 h-4 text-indigo-500 dark:text-indigo-300 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"/></svg>
+                        <span class="whitespace-nowrap">รายการรถ <span id="vehicleCountBadge" class="text-indigo-600 dark:text-indigo-300">1 คัน</span></span>
+                        <svg id="vehicleSummaryChevron" class="w-4 h-4 text-slate-400 transition-transform duration-150" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+                    </button>
+
+                    <!-- Dropdown สรุปรายคัน (เปิดชิดขวา) -->
+                    <div id="vehicleSummaryDropdown" class="hidden absolute top-full right-0 mt-2 z-[9995] w-80 max-w-[calc(100vw-2rem)]
+                                bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700
+                                rounded-xl shadow-xl overflow-hidden">
+                        <div id="vehicleSummaryList" class="max-h-72 overflow-y-auto divide-y divide-slate-100 dark:divide-slate-700"></div>
+                        <div class="flex items-center justify-between px-4 py-2.5 bg-slate-50 dark:bg-slate-900/50 border-t border-slate-200 dark:border-slate-700">
+                            <span class="text-xs font-semibold text-slate-500 dark:text-slate-400">รวมทั้งสิ้น</span>
+                            <span id="vehicleSummaryGrandTotal" class="text-sm font-bold text-indigo-600 dark:text-indigo-300">0.00 บาท</span>
+                        </div>
+                    </div>
+                </div>
+
+                <button type="button" onclick="setAllVehicleCards(false)" class="hidden sm:block text-xs font-medium text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-100 bg-slate-100 hover:bg-slate-200 dark:bg-slate-700 dark:hover:bg-slate-600 px-2.5 py-1.5 rounded-lg transition-all whitespace-nowrap">ขยายทั้งหมด</button>
+                <button type="button" onclick="setAllVehicleCards(true)" class="hidden sm:block text-xs font-medium text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-100 bg-slate-100 hover:bg-slate-200 dark:bg-slate-700 dark:hover:bg-slate-600 px-2.5 py-1.5 rounded-lg transition-all whitespace-nowrap">ย่อทั้งหมด</button>
+            </div><!-- /#navbarToolbar -->
+            </div><!-- /โซนขวา wrapper -->
+        </div><!-- /แถบเดียว 3 โซน -->
+    </nav>
+    <!-- ===== END TOP NAVBAR ===== -->
 
     <!-- ===== ADMIN MODAL ===== -->
     <div id="adminModal" class="hidden fixed inset-0 z-[9998] flex items-center justify-center p-4" style="background:rgba(0,0,0,0.5)">
