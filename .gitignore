@@ -22,3 +22,6 @@ tools/
 node_modules/
 .DS_Store
 Thumbs.db
+
+# รายงาน review ชั่วคราวจาก sub-agent (ไม่ใช่ส่วนของแอป)
+semantic-review/

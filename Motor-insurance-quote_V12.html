@@ -646,7 +646,7 @@
                         <!-- 2.4 ปุ่มแสดง/ซ่อน รายละเอียดการคำนวณ (ซ้าย) และ ความคุ้มครอง (ขวา) -->
                         <div>
                             <div class="flex items-center justify-between mb-4 flex-wrap gap-2">
-                                <button type="button" onclick="toggleBreakdownSection(this)" class="inline-flex items-center gap-1.5 text-xs font-medium text-slate-600 hover:text-slate-800 bg-slate-100 hover:bg-slate-200 px-3 py-1.5 rounded-lg transition-all">
+                                <button type="button" onclick="toggleBreakdownSection(this)" class="breakdown-toggle-btn hidden inline-flex items-center gap-1.5 text-xs font-medium text-slate-600 hover:text-slate-800 bg-slate-100 hover:bg-slate-200 px-3 py-1.5 rounded-lg transition-all">
                                     <svg class="w-4 h-4 transform transition-transform duration-200 breakdown-chevron-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
                                     <span class="breakdown-toggle-text">แสดงรายละเอียดการคำนวณ</span>
                                 </button>
@@ -908,15 +908,15 @@
                             <button type="button" onclick="closeExportMenu(); runWithQueue(exportQuoteToExcel);" class="w-full flex items-center gap-3 px-4 py-3 text-left text-sm text-slate-700 hover:bg-slate-50 transition-colors">
                                 <svg class="w-5 h-5 text-emerald-600 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-6h6v6M9 3v4a1 1 0 001 1h4a1 1 0 001-1V3M5 21h14a2 2 0 002-2V7l-4-4H7a2 2 0 00-2 2v14a2 2 0 002 2z"></path></svg>
                                 <div>
-                                    <p class="font-medium">Export to Excel</p>
+                                    <p class="font-medium">ดาวน์โหลดไฟล์ใบเสนอราคา</p>
                                     <p class="text-xs text-slate-400">ไฟล์ .xlsx สำหรับงานกลุ่ม (Fleet)</p>
                                 </div>
                             </button>
-                            <button type="button" onclick="closeExportMenu(); runWithQueue(exportCalculationDetailToExcel);" class="w-full flex items-center gap-3 px-4 py-3 text-left text-sm text-slate-700 hover:bg-slate-50 transition-colors border-t border-slate-100">
+                            <button type="button" onclick="closeExportMenu(); onClickCalcDetail();" class="w-full flex items-center gap-3 px-4 py-3 text-left text-sm text-slate-700 hover:bg-slate-50 transition-colors border-t border-slate-100">
                                 <svg class="w-5 h-5 text-indigo-600 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
                                 <div>
-                                    <p class="font-medium">ขอรายละเอียดไฟล์คำนวณ</p>
-                                    <p class="text-xs text-slate-400">ไฟล์ .xlsx รายละเอียดเรทและองค์ประกอบเบี้ยรายคัน ตาม Template</p>
+                                    <p class="font-medium">ดาวน์โหลดไฟล์คำนวณเบี้ย</p>
+                                    <p class="text-xs text-slate-400">ออกได้เมื่อลูกค้ายืนยันตกลงแล้ว (ไฟล์ .xlsx รายละเอียดเบี้ยรายคัน)</p>
                                 </div>
                             </button>
                         </div>
@@ -3652,7 +3652,8 @@
         }
 
         // นำข้อมูลที่ผ่านการตรวจสอบแล้ว ใส่ลงในฟอร์มจริง (ลบการ์ดรถเดิมทั้งหมด แล้วสร้างใหม่ตามจำนวนที่นำเข้า)
-        function applyImportedData(importData) {
+        function applyImportedData(importData, opts) {
+            opts = opts || {};
             document.getElementById('clientName').value = importData.clientName || '';
             document.getElementById('agentName').value = importData.agentName || '';
             // issuerName/issuerBranch ล็อคจาก profile — ไม่ override จาก import
@@ -3665,7 +3666,7 @@
             importData.vehicles.forEach((v, idx) => {
                 if (idx > 0) addVehicle();
                 cards = container.querySelectorAll('.vehicle-card');
-                applyVehicleToCard(cards[idx], v);
+                applyVehicleToCard(cards[idx], v, opts);
             });
 
             updateVehicleNumbers();
@@ -3677,7 +3678,9 @@
         }
 
         // เติมค่าจากข้อมูลรถ 1 คัน ลงในการ์ดรถที่กำหนด โดยใช้ event handler เดิมของฟอร์มเพื่อให้ตรรกะ cascading (ตัวเลือกที่ผูกกัน) ทำงานถูกต้อง
-        function applyVehicleToCard(card, v) {
+        function applyVehicleToCard(card, v, opts) {
+            opts = opts || {};
+            const allowEditModel = opts.allowEditModel === true; // revise = true, import = false
             const typeSelect = card.querySelector('.typeSelect');
             typeSelect.value = v.type;
             onTypeChange(typeSelect);
@@ -3705,18 +3708,31 @@
             if (bmi) {
                 bmi.classList.remove('hidden');
                 bmi.readOnly = false;
+                bmi.disabled = false;
                 bmi.required = true;
                 bmi.value = v.brandModel;
+                // คืน styling ให้ "กรอกแก้ไขได้จริง" (เอา style ล็อกออก) — ทั้ง import และ revise ควรพิมพ์แก้ได้
+                bmi.classList.remove('bg-slate-100', 'border-slate-200', 'text-slate-400', 'cursor-not-allowed');
+                bmi.classList.add('bg-white', 'border-slate-300', 'text-slate-800', 'shadow-sm',
+                    'focus:border-indigo-500', 'focus:ring-2', 'focus:ring-indigo-200');
             }
             if (dbCont) dbCont.classList.add('hidden');
             // เก็บ brand/model/spec ใน dataset แยก field เพื่อให้ collectQuoteData() ดึงกลับได้ถูกต้อง
             card.dataset.savedBrand = v.brand || '';
             card.dataset.savedModel = v.model || '';
             card.dataset.savedSpec  = v.spec  || '';
-            // ซ่อน toggle checkbox ด้วย (ไม่ให้ user switch ไป SearchBox ที่ข้อมูลไม่ตรง)
-            const toggleWrap = card.querySelector('.carManualModeToggle')?.closest('label');
-            if (toggleWrap) toggleWrap.classList.add('hidden');
-            // ล้าง required ของ SearchBox selects เพื่อไม่ติด validation
+            const manualToggle = card.querySelector('.carManualModeToggle');
+            const toggleWrap = manualToggle?.closest('label');
+            if (allowEditModel) {
+                // REVISE: โชว์ toggle "พิมพ์เอง" (checked) เพื่อให้ user สลับไป dropdown เลือกรุ่นจาก Master
+                // ใหม่ได้ (กรณีกรอกรุ่นรถผิด) — ต่างจาก import ที่ซ่อน toggle
+                if (manualToggle) manualToggle.checked = true;
+                if (toggleWrap) toggleWrap.classList.remove('hidden');
+            } else {
+                // IMPORT: ซ่อน toggle เหมือนเดิม (ข้อมูล Excel เป็น text เดียว ไม่ match Master)
+                if (toggleWrap) toggleWrap.classList.add('hidden');
+            }
+            // ล้าง required ของ SearchBox selects เพื่อไม่ติด validation (ตอนนี้อยู่โหมดพิมพ์เอง)
             ['carBrandSelect', 'carModelSelect', 'carSpecSelect'].forEach(cls => {
                 const el = card.querySelector('.' + cls);
                 if (el) { el.required = false; el.value = ''; }
@@ -3962,6 +3978,28 @@
         let currentQuoteNo = '';
         let _lastExportSnapshot = '';  // snapshot JSON ของครั้งล่าสุดที่ export
 
+        // ตรวจว่าใบ (base quote_no) ปิดคิวแล้วหรือยัง (บันทึกผล follow-up แล้ว)
+        // คืน outcome ('pending'|'accepted'|'rejected'|'expired') หรือ null ถ้ายังไม่มี row
+        // คืน { status, outcome }
+        //   status: 'ok'    → outcome = 'pending'|'accepted'|'rejected'|'expired'
+        //           'norow' → ยังไม่มี row (ใบใหม่ ยังไม่เคยรันคิว) → outcome = null
+        //           'error' → query ล้มเหลว (network/token/5xx) → caller ต้อง fail-closed (บล็อกไว้ก่อน)
+        // สำคัญ: แยก error ออกจาก norow เพื่อไม่ให้ gate fail-open ตอน network มีปัญหา
+        async function getFollowupOutcome(quoteNo) {
+            const baseNo = String(quoteNo || '').replace(/_V\d+$/, '');
+            if (!baseNo) return { status: 'norow', outcome: null };
+            try {
+                const res = await sbFetch(`/rest/v1/quote_followup?quote_no=eq.${encodeURIComponent(baseNo)}&select=outcome`);
+                if (!res.ok) return { status: 'error', outcome: null };
+                const rows = await res.json();
+                if (!rows || rows.length === 0) return { status: 'norow', outcome: null };
+                return { status: 'ok', outcome: rows[0].outcome };
+            } catch (e) {
+                console.warn('getFollowupOutcome error:', e);
+                return { status: 'error', outcome: null };
+            }
+        }
+
         async function runWithQueue(exportFn) {
             const snapshot = JSON.stringify(collectQuoteData());
 
@@ -3973,7 +4011,24 @@
                 displayQuoteNo(quoteNo);
 
             } else if (snapshot !== _lastExportSnapshot) {
-                // ---- ข้อมูลเปลี่ยนแปลง: สร้าง _VN ----
+                // ---- ข้อมูลเปลี่ยนแปลง: จะสร้าง _VN (revise) ----
+                // GATE: ถ้าใบนี้ "ปิดคิวแล้ว" (accepted/rejected/expired) ห้าม revise
+                // ต้องกด "ขอแก้ไข" ให้ admin reset กลับเป็น pending ก่อน
+                // บังคับทุก role รวม admin — การ revise ใบที่ปิดคิวแล้วเป็นเรื่อง data integrity
+                // (gate ไฟล์คำนวณก็บังคับทุก role เช่นกัน — bypass ทั้งหมดค่อยทำผ่าน superadmin BACKLOG #24)
+                const fu = await getFollowupOutcome(currentQuoteNo);
+                if (fu.status === 'error') {
+                    // fail-closed: query ล้มเหลว → ไม่ยอมให้ revise (กันแก้ทับใบที่อาจปิดคิวแล้ว)
+                    alert('ไม่สามารถตรวจสอบสถานะใบเสนอราคาได้ในขณะนี้ (การเชื่อมต่อมีปัญหา)\nกรุณาลองใหม่อีกครั้ง');
+                    return;
+                }
+                if (fu.status === 'ok' && fu.outcome !== 'pending') {
+                    const label = fu.outcome === 'accepted' ? 'ลูกค้ายืนยันตกลงทำประกันแล้ว'
+                                : fu.outcome === 'rejected' ? 'บันทึกว่าลูกค้าไม่ทำประกันแล้ว'
+                                : 'ใบนี้หมดอายุการติดตามแล้ว';
+                    alert(`ไม่สามารถแก้ไขใบเสนอราคานี้ได้\n\nเหตุผล: ${label}\n\nถ้าต้องการแก้ไข ให้ไปที่ "ติดตามผล" กดปุ่ม "ขอแก้ไข" เพื่อให้ผู้ดูแลระบบปลดล็อกก่อนนะครับ`);
+                    return;
+                }
                 const quoteNo = await getNextQuoteNo();   // getNextQuoteNo จะ rv เพราะ currentQuoteNo มีค่า
                 currentQuoteNo = quoteNo;
                 _lastExportSnapshot = snapshot;
@@ -4208,6 +4263,8 @@
             return isNaN(n) ? 0 : n;
         }
 
+        // @deprecated — แทนที่ด้วย exportCalculationDetail(quoteNo) ที่ดึงจาก DB + มี gate accepted
+        // ไม่มีการเรียกใช้แล้ว (เก็บไว้อ้างอิงชั่วคราว จะลบใน cleanup รอบถัดไป)
         async function exportCalculationDetailToExcel() {
             if (typeof JSZip === 'undefined') {
                 alert('ไม่สามารถโหลดไลบรารีสำหรับสร้างไฟล์ Excel ได้ กรุณาตรวจสอบการเชื่อมต่ออินเทอร์เน็ต');
@@ -4440,6 +4497,279 @@
             } finally {
                 if (exportBtn) { exportBtn.disabled = false; exportBtn.style.opacity = ''; }
             }
+        }
+
+        // =====================================================================
+        // Gate: ตรวจว่าใบนี้ลูกค้ายืนยัน "ตกลง" (accepted) แล้วหรือยัง
+        // - ดึงจาก quote_followup ด้วย base quote_no
+        // - admin ข้าม gate ได้เสมอ
+        // คืน { ok: boolean, reason: 'accepted'|'not_accepted'|'no_row'|'error' }
+        // =====================================================================
+        async function checkFollowupAccepted(quoteNo) {
+            // บังคับทุก role รวม admin — ต้อง accepted ก่อนถึงโหลดไฟล์คำนวณได้
+            // (สอดคล้องกับ gate revise) ถ้าต้องการ bypass ทั้งหมดค่อยทำผ่าน role superadmin (BACKLOG #24)
+            const baseNo = String(quoteNo || '').replace(/_V\d+$/, '');
+            if (!baseNo) return { ok: false, reason: 'no_row' };
+            try {
+                const res = await sbFetch(`/rest/v1/quote_followup?quote_no=eq.${encodeURIComponent(baseNo)}&select=outcome`);
+                if (!res.ok) return { ok: false, reason: 'error' };
+                const rows = await res.json();
+                if (!rows || rows.length === 0) return { ok: false, reason: 'no_row' };
+                if (rows[0].outcome === 'accepted') return { ok: true, reason: 'accepted' };
+                return { ok: false, reason: 'not_accepted' };
+            } catch (e) {
+                console.warn('checkFollowupAccepted error:', e);
+                return { ok: false, reason: 'error' };
+            }
+        }
+
+        // Popup แจ้ง user (ภาษาคน) เมื่อยังขอไฟล์คำนวณไม่ได้ + ปุ่มลัดไปหน้าติดตามผล
+        function showCalcGateBlocked(reason) {
+            const overlay = document.getElementById('calcGateOverlay');
+            const msgEl   = document.getElementById('calcGateMsg');
+            if (!overlay || !msgEl) {
+                // fallback ถ้า modal ไม่มี
+                alert('ใบนี้ลูกค้ายังไม่ได้ยืนยันตกลงทำประกัน\nถ้าลูกค้าตกลงแล้ว ให้ไปที่ "ติดตามผล" แล้วกด ✓ ตกลง ก่อนนะครับ');
+                return;
+            }
+            msgEl.textContent = (reason === 'no_row')
+                ? 'ยังไม่มีข้อมูลใบเสนอราคานี้ในระบบ กรุณาออกใบเสนอราคาก่อน แล้วให้ลูกค้ายืนยันตกลง'
+                : 'ใบนี้ลูกค้ายังไม่ได้ยืนยันตกลงทำประกัน ถ้าลูกค้าตกลงแล้ว ให้ไปที่ "ติดตามผล" แล้วกด ✓ ตกลง ก่อนนะครับ';
+            overlay.classList.remove('hidden');
+            overlay.classList.add('flex');
+        }
+        function closeCalcGate() {
+            const overlay = document.getElementById('calcGateOverlay');
+            if (overlay) { overlay.classList.add('hidden'); overlay.classList.remove('flex'); }
+        }
+        function calcGateGoFollowup() {
+            closeCalcGate();
+            if (typeof openFollowUpModal === 'function') openFollowUpModal();
+        }
+
+        // =====================================================================
+        // exportCalculationDetail(quoteNo) — ฟังก์ชันกลาง สร้างไฟล์รายละเอียดคำนวณ
+        // ดึงข้อมูลรถจาก DB (quotation_vehicles) ไม่อ่านจากฟอร์ม
+        // → ใช้ได้ทั้งกรณีใบเปิดอยู่ (summary) และใบที่ตกลงภายหลัง (follow-up modal)
+        // Gate: ต้อง accepted ก่อน — บังคับทุก role รวม admin (ยกเว้น opts.skipGate)
+        // =====================================================================
+        async function exportCalculationDetail(quoteNo, opts) {
+            opts = opts || {};
+            if (typeof JSZip === 'undefined') {
+                alert('ไม่สามารถโหลดไลบรารีสำหรับสร้างไฟล์ Excel ได้ กรุณาตรวจสอบการเชื่อมต่ออินเทอร์เน็ต');
+                return;
+            }
+            if (!quoteNo) {
+                alert('ไม่พบเลขที่ใบเสนอราคา');
+                return;
+            }
+
+            // ---- Gate: เช็ค accepted (ยกเว้น opts.skipGate สำหรับกรณีเพิ่งกดตกลงใน modal) ----
+            if (!opts.skipGate) {
+                const gate = await checkFollowupAccepted(quoteNo);
+                if (!gate.ok) { showCalcGateBlocked(gate.reason); return; }
+            }
+
+            const num    = (str) => parseFloat(String(str === undefined || str === null ? '0' : str).replace(/,/g, '')) || 0;
+            const round2 = (n) => Math.round(n * 100) / 100;
+            const baseNo = String(quoteNo).replace(/_V\d+$/, '');
+
+            try {
+                // ---- ดึงรถทั้งหมดของ revision ล่าสุดจาก DB ----
+                // หา revision ล่าสุดของ base ก่อน (จาก quotation_queue) แล้ว query vehicles ของเลขนั้น
+                let targetQuoteNo = quoteNo;
+                try {
+                    const qRes = await sbFetch(`/rest/v1/quotation_queue?quote_no=like.${baseNo}*&select=quote_no`);
+                    if (qRes.ok) {
+                        const qRows = await qRes.json();
+                        const revOf = (s) => { const m = String(s).match(/_V(\d+)$/); return m ? parseInt(m[1], 10) : 0; };
+                        qRows.forEach(q => { if (revOf(q.quote_no) >= revOf(targetQuoteNo)) targetQuoteNo = q.quote_no; });
+                    }
+                } catch (_) {}
+
+                // saveQuotationVehicles เป็น fire-and-forget → ถ้าเพิ่งออกใบ ข้อมูลอาจยังเขียนไม่เสร็จ
+                // retry สั้นๆ (สูงสุด 3 ครั้ง เว้น 700ms) ก่อนยอมแพ้
+                let vehicles = [];
+                for (let attempt = 0; attempt < 3; attempt++) {
+                    const vRes = await sbFetch(`/rest/v1/quotation_vehicles?quote_no=eq.${encodeURIComponent(targetQuoteNo)}&select=*&order=vehicle_seq.asc`);
+                    if (!vRes.ok) throw new Error('ดึงข้อมูลรถล้มเหลว: ' + vRes.status);
+                    vehicles = await vRes.json();
+                    if (vehicles && vehicles.length > 0) break;
+                    if (attempt < 2) await new Promise(r => setTimeout(r, 700));
+                }
+                if (!vehicles || vehicles.length === 0) {
+                    alert('ไม่พบข้อมูลรถของใบเสนอราคานี้ในระบบ\n(ถ้าเพิ่งออกใบ กรุณารอสักครู่แล้วลองใหม่)');
+                    return;
+                }
+
+                const MAX_ROWS = 100;
+                const selected = vehicles.slice(0, MAX_ROWS);
+                if (vehicles.length > MAX_ROWS) {
+                    alert(`ระบบรองรับสูงสุด ${MAX_ROWS} คันต่อ 1 ไฟล์ (ใบนี้มี ${vehicles.length} คัน) จะออกเฉพาะ ${MAX_ROWS} คันแรก`);
+                }
+
+                const zip = await JSZip.loadAsync(TEMPLATE_DETAIL_XLSX_BASE64, { base64: true });
+                const sheetPath = 'xl/worksheets/sheet1.xml';
+                const sheetFile = zip.file(sheetPath);
+                if (!sheetFile) throw new Error('ไม่พบ ' + sheetPath + ' ภายในไฟล์ Template');
+                let sheetXml = await sheetFile.async('string');
+                const setCell = (addr, value) => { sheetXml = setSheetCellXml(sheetXml, addr, value); };
+
+                // ---- ส่วนหัว (ดึงจาก row แรก) ----
+                const first = selected[0];
+                const clientName   = first.client_name   || '-';
+                const agentName    = first.agent_name    || '-';
+                const issuerName   = first.issuer_name   || '-';
+                const issuerBranch = first.issuer_branch || '-';
+                const dateDisplay  = first.quote_date
+                    ? new Date(first.quote_date + 'T00:00:00').toLocaleDateString('th-TH', { timeZone: 'Asia/Bangkok', dateStyle: 'medium' })
+                    : '-';
+                setCell('A2', 'รายละเอียดไฟล์คำนวณ  /  ผู้เอาประกันภัย: ' + clientName);
+                setCell('A3', `เลขที่ใบเสนอราคา: ${targetQuoteNo || '-'}`);
+                setCell('A4', `วันที่ออกงาน: ${dateDisplay}    ฝ่าย/สาขาที่ออกงาน: ${issuerBranch}   ผู้เสนอราคา : ${issuerName}   ตัวแทน/นายหน้า: ${agentName}`);
+
+                // ---- รายคันรถ (แถว 8 เป็นต้นไป) ----
+                const currentYear = 2026;
+                const rowsXml = selected.map((v, idx) => {
+                    const row = 8 + idx;
+
+                    const code   = String(v.vehicle_code || '');
+                    const type   = String(v.type || '1');
+                    const repair = v.repair || '-';
+                    const seat   = num(v.seat);
+                    const cc     = num(v.cc);
+                    const weight = num(v.weight_kg);
+                    const group  = v.car_group;
+                    const year   = parseInt(v.car_year || 0, 10) || 0;
+                    const sumInsured   = num(v.sum_insured);
+                    const accessoryFlag = v.accessory || 'NO';
+                    const plate  = v.plate || '-';
+                    const brand  = v.brand || '-';
+                    const model  = v.model || '-';
+
+                    // พฤติกรรมผู้ขับ: แปลง driver_behavior_discount (เช่น "LV3 (20%)") → 1-5
+                    let behaviorVal = 0;
+                    if (v.driver_behavior_filter === 'ระบุ' && v.driver_behavior_discount && v.driver_behavior_discount !== '-') {
+                        const lvMatch = String(v.driver_behavior_discount).match(/LV\s*(\d+)/i);
+                        behaviorVal = lvMatch ? parseInt(lvMatch[1], 10) : 0;
+                    }
+                    const groupDiscountPct = num(v.group_discount);
+                    const claimDiscountPct = num(v.claim_discount);
+
+                    const rules = getCoverageRules(code, type, repair, weight);
+
+                    // เบี้ยจาก DB
+                    const netPremium = num(v.vol_net);
+                    const stamp = num(v.vol_stamp);
+                    const vat   = num(v.vol_vat);
+                    const grandTotal = num(v.vol_total);
+                    const prbNet   = num(v.prb_net);
+                    const prbStamp = num(v.prb_stamp);
+                    const prbVat   = num(v.prb_vat);
+                    const prbCodeVal = v.prb_code || '-';
+
+                    // breakdown จาก DB
+                    const bdBase   = num(v.calc_base);
+                    const bdGross  = num(v.calc_gross);
+                    const bdAttach = num(v.calc_attach);
+                    const bdRy31   = num(v.calc_ry31);
+
+                    const age = year ? (currentYear - year + 1) : 0;
+
+                    let maxAgeAllowed;
+                    if (type === '3' || type === '2') maxAgeAllowed = 'ไม่จำกัด';
+                    else if (type === '1') maxAgeAllowed = (repair === 'ซ่อมห้าง') ? 5 : 15;
+                    else if (type === '2+' || type === '3+') maxAgeAllowed = 25;
+                    else maxAgeAllowed = 25;
+
+                    const packageId = getPackageId(code, (type === '3' ? '3' : '1'), repair, seat, weight, accessoryFlag);
+
+                    const values = {
+                        A: idx + 1,
+                        B: num(code),
+                        C: prbCodeVal,
+                        D: plate,
+                        E: brand,
+                        F: model,
+                        G: (group !== null && group !== undefined && group !== 0) ? num(group) : null,
+                        H: year || null,
+                        I: cc > 0 ? cc : null,
+                        J: (cc <= 0 && weight > 0) ? weight : null,
+                        K: seat || null,
+                        L: num(type),
+                        M: repair,
+                        N: sumInsured || null,
+                        O: sumInsured || null,
+                        P: accessoryFlag,
+                        Q: behaviorVal,
+                        R: groupDiscountPct / 100,
+                        S: claimDiscountPct / 100,
+                        T: detailParseCoverageAmount(rules.tpbiPerson),
+                        U: detailParseCoverageAmount(rules.tpbiAcc),
+                        V: detailParseCoverageAmount(rules.tppdAcc),
+                        W: seat > 0 ? Math.max(seat - 1, 0) : null,
+                        X: detailParseCoverageAmount(rules.paDriver),
+                        Y: detailParseCoverageAmount(rules.paPassenger),
+                        Z: detailParseCoverageAmount(rules.medical),
+                        AA: detailParseCoverageAmount(rules.bailbond),
+                        AB: bdBase,
+                        AC: 0,
+                        AD: bdGross,
+                        AE: bdAttach,
+                        AF: bdRy31,
+                        AG: 0,
+                        AH: netPremium,
+                        AI: round2(stamp),
+                        AJ: round2(vat),
+                        AK: round2(grandTotal),
+                        AL: prbNet,
+                        AM: round2(prbStamp),
+                        AN: round2(prbVat),
+                        AO: round2(prbNet + prbStamp + prbVat),
+                        AP: age || null,
+                        AQ: maxAgeAllowed,
+                        AR: packageId
+                    };
+                    return buildDetailRowXml(row, values);
+                }).join('');
+
+                const lastRow = 7 + selected.length;
+                sheetXml = sheetXml.replace(/<row r="8"[\s\S]*?<\/row><row r="9"[\s\S]*?<\/row>/, rowsXml);
+                sheetXml = sheetXml.replace(/<dimension ref="A1:AR\d+"\/>/, `<dimension ref="A1:AR${lastRow}"/>`);
+                sheetXml = sheetXml.replace(/sqref="AD8:AD9"/, `sqref="AD8:AD${lastRow}"`);
+                sheetXml = sheetXml.replace(/sqref="T8:AA9"/, `sqref="T8:AA${lastRow}"`);
+                sheetXml = sheetXml.replace(/sqref="AB8:AB9"/, `sqref="AB8:AB${lastRow}"`);
+                zip.file(sheetPath, sheetXml);
+
+                const safeName = String(clientName).replace(/[\\/:*?"<>|]/g, '_');
+                const fileName = `รายละเอียดไฟล์คำนวณ_${safeName}_${new Date().toLocaleDateString('sv-SE', { timeZone: 'Asia/Bangkok' })}.xlsx`;
+                const blob = await zip.generateAsync({
+                    type: 'blob',
+                    mimeType: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+                    compression: 'DEFLATE'
+                });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = fileName;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                setTimeout(() => URL.revokeObjectURL(url), 2000);
+            } catch (err) {
+                console.error(err);
+                alert('เกิดข้อผิดพลาดในการสร้างไฟล์รายละเอียดไฟล์คำนวณ: ' + err.message);
+            }
+        }
+
+        // กดปุ่ม "ดาวน์โหลดไฟล์คำนวณเบี้ย" ในหน้า summary
+        // ใช้ currentQuoteNo (ใบที่ออกไปแล้ว) — ถ้ายังไม่เคยออกใบ ให้เตือนก่อน
+        async function onClickCalcDetail() {
+            if (!currentQuoteNo) {
+                alert('กรุณาออกใบเสนอราคาก่อน (กด "ออกใบเสนอราคา") แล้วให้ลูกค้ายืนยันตกลง จึงจะดาวน์โหลดไฟล์คำนวณได้');
+                return;
+            }
+            await exportCalculationDetail(currentQuoteNo);
         }
 
         // เปิด/ปิดเมนูเลือกรูปแบบ export (Excel / PDF)
@@ -4874,6 +5204,21 @@
                     return;
                 }
 
+                // --- GATE: ถ้าใบนี้ "ปิดคิวแล้ว" (accepted/rejected/expired) ห้าม revise ---
+                // บังคับทุก role รวม admin — ต้องกด "ขอแก้ไข" ให้ admin reset เป็น pending ก่อน
+                const gateFu = await getFollowupOutcome(baseQuote);
+                if (gateFu.status === 'error') {
+                    // fail-closed: ตรวจสถานะไม่ได้ → ไม่ยอมโหลดมาแก้
+                    showReviseStatus('ตรวจสอบสถานะใบไม่ได้ (การเชื่อมต่อมีปัญหา) กรุณาลองใหม่', 'error');
+                    return;
+                }
+                if (gateFu.status === 'ok' && gateFu.outcome !== 'pending') {
+                    showReviseStatus('', 'clear');
+                    closeReviseModal();
+                    showReviseBlocked(baseQuote, gateFu.outcome);
+                    return;
+                }
+
                 // หา rv ล่าสุด
                 let latestRv = 0;
                 for (const row of allRvData) {
@@ -4911,6 +5256,7 @@
                 const qd     = record.quote_data;
                 const nextNo = `${baseQuote}_V${latestRv + 1}`;
 
+                let loadedFullData = false;
                 if (qd && qd.header && qd.vehicles && qd.vehicles.length > 0) {
                     applyImportedData({
                         clientName:   qd.header.clientName   || record.client_name   || '',
@@ -4918,7 +5264,8 @@
                         issuerName:   qd.header.issuerName   || record.issuer_name   || '',
                         issuerBranch: qd.header.issuerBranch || record.issuer_branch || '',
                         vehicles:     qd.vehicles
-                    });
+                    }, { allowEditModel: true });   // revise → โชว์ toggle ให้แก้รุ่นรถได้
+                    loadedFullData = true;
                     showReviseStatus(
                         `โหลดสำเร็จ ${qd.vehicles.length} คัน (${targetQuoteNo}) — กด export จะได้เลข ${nextNo}`,
                         'success'
@@ -4935,7 +5282,9 @@
 
                 // currentQuoteNo ชี้ไปที่ rv ล่าสุดเสมอ เพื่อให้ export ครั้งหน้านับต่อถูก
                 currentQuoteNo = latestQuoteNo;
-                _lastExportSnapshot = '';
+                // เก็บ snapshot ของข้อมูลที่เพิ่งโหลด → ถ้า user ไม่แก้อะไร กด export จะไม่สร้าง _VN
+                // (โหลดเฉพาะ header/ไม่มีรถ → คง '' เพราะ user ต้องกรอกรถใหม่ = ถือว่าเปลี่ยน)
+                _lastExportSnapshot = loadedFullData ? JSON.stringify(collectQuoteData()) : '';
                 // การ์ดแสดงเลขที่ผู้ใช้เลือกจริง (targetQuoteNo) ไม่ใช่ latestQuoteNo เสมอ
                 displayQuoteNo(targetQuoteNo);
                 input.value = '';
@@ -4950,6 +5299,7 @@
         function showReviseStatus(msg, type) {
             const el = document.getElementById('reviseStatus');
             if (!el) return;
+            if (type === 'clear') { el.textContent = ''; el.classList.add('hidden'); return; }
             el.textContent = msg;
             el.className = 'text-xs mt-2 ' + (
                 type === 'success' ? 'text-emerald-600' :
@@ -4957,6 +5307,30 @@
                                      'text-amber-600'
             );
             el.classList.remove('hidden');
+        }
+
+        // Popup กลางจอ: ใบนี้ปิดคิวแล้ว แก้ไม่ได้ (แทน alert ตอน export)
+        function showReviseBlocked(quoteNo, outcome) {
+            const overlay = document.getElementById('reviseBlockedOverlay');
+            const msgEl   = document.getElementById('reviseBlockedMsg');
+            const label = outcome === 'accepted' ? 'ลูกค้ายืนยันตกลงทำประกันแล้ว'
+                        : outcome === 'rejected' ? 'บันทึกว่าลูกค้าไม่ทำประกันแล้ว'
+                        : 'ใบนี้หมดอายุการติดตามแล้ว';
+            if (!overlay || !msgEl) {
+                alert(`ไม่สามารถแก้ไขใบเสนอราคา ${quoteNo} ได้\n\nเหตุผล: ${label}\n\nให้ไปที่ "ติดตามผล" กดปุ่ม "ขอแก้ไข" เพื่อให้ผู้ดูแลระบบปลดล็อกก่อน`);
+                return;
+            }
+            msgEl.innerHTML = `ใบเสนอราคา <span class="font-bold text-slate-800">${quoteNo}</span> — ${label}<br><br>ถ้าต้องการแก้ไข ให้ไปที่ <span class="font-semibold">"ติดตามผล"</span> กดปุ่ม <span class="font-semibold">"ขอแก้ไข"</span> เพื่อให้ผู้ดูแลระบบปลดล็อกก่อนนะครับ`;
+            overlay.classList.remove('hidden');
+            overlay.classList.add('flex');
+        }
+        function closeReviseBlocked() {
+            const overlay = document.getElementById('reviseBlockedOverlay');
+            if (overlay) { overlay.classList.add('hidden'); overlay.classList.remove('flex'); }
+        }
+        function reviseBlockedGoFollowup() {
+            closeReviseBlocked();
+            if (typeof openFollowUpModal === 'function') openFollowUpModal();
         }
 
         // เริ่มใบใหม่ทั้งหมด — reset เลขคิวและซ่อน quote no box
@@ -5174,6 +5548,10 @@
                 document.querySelectorAll('.vehicle-card').forEach((card, idx) => {
                     recalcCardPremium(card);
 
+                    // breakdown เบี้ย (สำหรับไฟล์รายละเอียดคำนวณ — เก็บลง DB ตอนออกใบ)
+                    const _calc = calculatePremiumForCard(card);
+                    const _bd   = _calc ? _calc.breakdown : null;
+
                     const prbSelect     = card.querySelector('.prbSelect');
                     const prbCodeSelect = card.querySelector('.prbCodeSelect');
                     const premiumInputEl = card.querySelector('.premiumInput');
@@ -5248,7 +5626,12 @@
                         driver_behavior_filter:  card.querySelector('.driverBehaviorFilter')?.value        || 'ไม่ระบุ',
                         driver_behavior_discount: card.querySelector('.driverBehaviorDiscountSelect')?.value || '-',
                         // รวม
-                        grand_total:             Math.round((volTotal + prbTotal) * 100) / 100
+                        grand_total:             Math.round((volTotal + prbTotal) * 100) / 100,
+                        // breakdown เบี้ย (สำหรับไฟล์รายละเอียดคำนวณ)
+                        calc_base:               _bd ? Math.round((_bd.base || 0) * 100) / 100 : 0,
+                        calc_gross:              _bd ? Math.round((_bd.grossPremium || 0) * 100) / 100 : 0,
+                        calc_attach:             _bd ? Math.round((_bd.attach || 0) * 100) / 100 : 0,
+                        calc_ry31:               _bd ? Math.round((_bd.ry31 || 0) * 100) / 100 : 0
                     });
                 });
 
@@ -6097,6 +6480,7 @@
             // apply permission
             applyPermissions();
             applyDriverNameFeature();
+            applyBreakdownVisibility();
 
             // แสดง toolbar รายการรถใน navbar (ถ้าอยู่หน้าฟอร์ม)
             updateNavbarToolbar();
@@ -6199,6 +6583,50 @@
         } else {
             // เปิดฟีเจอร์ — โชว์ column กลับมา
             cols.forEach(c => c.classList.remove('hidden'));
+        }
+    }
+
+    // เรียกทุกครั้งที่ login / restore session — ปุ่ม "แสดงรายละเอียดการคำนวณ" โชว์เฉพาะ admin
+    // (user ทั่วไป lv1/lv2 ไม่เห็น เพราะเป็นข้อมูลเรทภายใน)
+    function applyBreakdownVisibility() {
+        const isAdmin = _currentProfile?.role === 'admin';
+
+        function applyToAll() {
+            document.querySelectorAll('.breakdown-toggle-btn').forEach(btn => {
+                btn.classList.toggle('hidden', !isAdmin);
+                // ถ้าไม่ใช่ admin และ panel เปิดค้างอยู่ → ซ่อน panel ด้วย
+                if (!isAdmin) {
+                    const card = btn.closest('.vehicle-card');
+                    const content = card?.querySelector('.breakdown-content');
+                    if (content) content.style.display = 'none';
+                }
+            });
+        }
+
+        // Observer — จัดการ card ใหม่ที่ถูก add เข้ามา
+        function setupBreakdownObserver() {
+            if (window._breakdownVisObserver) return;
+            const container = document.getElementById('vehicleContainer');
+            if (!container) return;
+            window._breakdownVisObserver = new MutationObserver(() => {
+                const admin = _currentProfile?.role === 'admin';
+                document.querySelectorAll('.breakdown-toggle-btn').forEach(btn => {
+                    btn.classList.toggle('hidden', !admin);
+                    // non-admin: ซ่อน panel ที่อาจเปิดค้างในการ์ดใหม่ด้วย (ไม่ใช่แค่ปุ่ม)
+                    if (!admin) {
+                        const content = btn.closest('.vehicle-card')?.querySelector('.breakdown-content');
+                        if (content) content.style.display = 'none';
+                    }
+                });
+            });
+            window._breakdownVisObserver.observe(container, { childList: true });
+        }
+
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', () => { applyToAll(); setupBreakdownObserver(); });
+        } else {
+            applyToAll();
+            setupBreakdownObserver();
         }
     }
 
@@ -7535,7 +7963,7 @@
             } else if (reqStatus === 'rejected') {
                 reqHtml = `<span class="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-rose-100 text-rose-600">❌ ถูกปฏิเสธ</span>`;
             } else if (reqStatus !== 'resolved') {
-                reqHtml = `<button onclick="fuRequestReset('${fu.id}','${row.quote_no}',this)"
+                reqHtml = `<button onclick="fuRequestReset('${fu.id}','${row.display_no || row.quote_no}',this)"
                     class="text-[10px] text-slate-400 hover:text-rose-500 underline transition-colors">ขอแก้ไข</button>`;
             }
 
@@ -7549,6 +7977,15 @@
                 bgClass = 'bg-rose-50 border-rose-200'; labelClass = 'text-rose-600'; labelText = '✗ ไม่ทำประกัน';
             }
 
+            // ปุ่มดาวน์โหลดไฟล์คำนวณ — เฉพาะใบที่ accepted
+            const calcBtnHtml = isAccepted
+                ? `<button onclick="exportCalculationDetail('${row.quote_no}', {skipGate:true})"
+                       class="inline-flex items-center gap-1 text-[11px] font-semibold px-2.5 py-1 rounded-lg bg-indigo-50 hover:bg-indigo-100 text-indigo-700 border border-indigo-200 transition-all">
+                       <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a2 2 0 002 2h12a2 2 0 002-2v-1M12 4v12m0 0l-4-4m4 4l4-4"/></svg>
+                       ไฟล์คำนวณ
+                   </button>`
+                : '';
+
             const el = document.createElement('div');
             el.className = 'flex items-start justify-between gap-3 p-3 rounded-xl border ' + bgClass;
             el.innerHTML = `
@@ -7561,7 +7998,8 @@
                     ${reasonText ? `<p class="text-xs text-slate-500 mt-0.5">เหตุผล: ${reasonText}</p>` : ''}
                     <p class="text-[10px] text-slate-300 mt-1">${dateStr}</p>
                 </div>
-                <div class="shrink-0 flex flex-col items-end gap-1">
+                <div class="shrink-0 flex flex-col items-end gap-1.5">
+                    ${calcBtnHtml}
                     ${reqHtml}
                 </div>`;
             hist.appendChild(el);
@@ -7680,6 +8118,7 @@
             // re-apply filter
             const q = document.getElementById('fuSearchInput').value.trim();
             if (q) filterFuQuoteList();
+            // หมายเหตุ: ไม่ดาวน์โหลดไฟล์คำนวณอัตโนมัติ — user กดปุ่ม "ไฟล์คำนวณ" ที่ใบ accepted เอง
         } catch (e) {
             if (btnEl) btnEl.disabled = false;
             const inlineSec = btnEl?.closest('.fu-reason-inline');
@@ -9112,6 +9551,44 @@
 
     </div>
     <!-- ===== END ADMIN MODAL ===== -->
+
+    <!-- ===== MODAL: แจ้งเตือนยังขอไฟล์คำนวณไม่ได้ (ยังไม่ accepted) ===== -->
+    <div id="calcGateOverlay" class="hidden fixed inset-0 z-[10001] items-center justify-center p-4" style="background:rgba(0,0,0,0.45)">
+        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md">
+            <div class="flex items-center gap-3 px-6 py-4 border-b border-slate-200">
+                <span class="flex items-center justify-center w-10 h-10 rounded-full bg-amber-50 text-amber-500 shrink-0">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01M12 3a9 9 0 100 18 9 9 0 000-18z"></path></svg>
+                </span>
+                <h3 class="text-base font-bold text-slate-800">ยังดาวน์โหลดไฟล์คำนวณไม่ได้</h3>
+            </div>
+            <div class="px-6 py-5">
+                <p id="calcGateMsg" class="text-sm text-slate-600 leading-relaxed"></p>
+            </div>
+            <div class="flex items-center justify-end gap-2 px-6 py-4 border-t border-slate-200">
+                <button type="button" onclick="closeCalcGate()" class="px-4 py-2 rounded-xl text-sm font-medium text-slate-600 hover:bg-slate-100 transition-colors">ปิด</button>
+                <button type="button" onclick="calcGateGoFollowup()" class="px-4 py-2 rounded-xl text-sm font-semibold text-white bg-sky-600 hover:bg-sky-700 transition-colors">ไปหน้าติดตามผล</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ===== MODAL: ใบเสนอราคาปิดคิวแล้ว แก้ไม่ได้ (revise blocked) ===== -->
+    <div id="reviseBlockedOverlay" class="hidden fixed inset-0 z-[10001] items-center justify-center p-4" style="background:rgba(0,0,0,0.45)">
+        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md">
+            <div class="flex items-center gap-3 px-6 py-4 border-b border-slate-200">
+                <span class="flex items-center justify-center w-10 h-10 rounded-full bg-rose-50 text-rose-500 shrink-0">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path></svg>
+                </span>
+                <h3 class="text-base font-bold text-slate-800">แก้ไขใบเสนอราคานี้ไม่ได้</h3>
+            </div>
+            <div class="px-6 py-5">
+                <p id="reviseBlockedMsg" class="text-sm text-slate-600 leading-relaxed"></p>
+            </div>
+            <div class="flex items-center justify-end gap-2 px-6 py-4 border-t border-slate-200">
+                <button type="button" onclick="closeReviseBlocked()" class="px-4 py-2 rounded-xl text-sm font-medium text-slate-600 hover:bg-slate-100 transition-colors">ปิด</button>
+                <button type="button" onclick="reviseBlockedGoFollowup()" class="px-4 py-2 rounded-xl text-sm font-semibold text-white bg-sky-600 hover:bg-sky-700 transition-colors">ไปหน้าติดตามผล</button>
+            </div>
+        </div>
+    </div>
 
     <!-- ===== FOLLOW-UP MODAL ===== -->
     <div id="followUpModal" class="hidden fixed inset-0 z-[9997] flex items-center justify-center p-4" style="background:rgba(0,0,0,0.5)">
