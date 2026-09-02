@@ -8,6 +8,9 @@ supabase/password supabase.txt
 supabase/users.csv
 car_master.json.bak
 
+# Next.js app — แยก repo ต่างหาก ไม่ track ใน html-app repo นี้
+next-app/
+
 # โฟลเดอร์ไฟล์ที่ไม่เกี่ยวข้อง
 ไม่เกี่ยว/
 สำรอง/
